@@ -1,5 +1,5 @@
 <div>
-    @for (let item of shopItems; track item.name()) {
+    @for (item of shopItems; track item.name()) {
         @if (item.displayCondition()){
             <div>
                 <h3>{{ item.name() }}</h3>

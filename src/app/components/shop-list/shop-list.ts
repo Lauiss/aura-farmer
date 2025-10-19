@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { Item, ShopManager } from '../../services/shop-manager';
 import { CommonModule } from '@angular/common';
+import { AuraManager } from '../../services/aura-manager';
 
 @Component({
   selector: 'app-shop-list',
@@ -10,7 +11,7 @@ import { CommonModule } from '@angular/common';
 })
 export class ShopList {
   protected readonly shopManager = inject(ShopManager);
-  public readonly auraManager = inject(ShopManager);
+  public readonly auraManager = inject(AuraManager);
   public readonly shopItems: Item[] = this.shopManager.getAllItems();
 
 
