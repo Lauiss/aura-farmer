@@ -1,0 +1,17 @@
+.body {
+    margin: 0;
+    padding: 0;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+}
+
+.main-button {
+    width: 30%;
+    height: 100%;
+    background-color: red;
+}
