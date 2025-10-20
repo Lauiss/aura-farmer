@@ -1,10 +1,17 @@
 import { Injectable } from '@angular/core';
+import { ItemSave } from './shop-manager';
+
+export interface SaveData {
+  auraCount: number;
+  allTimeAura: number;
+  shopItems: ItemSave[];
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class SaveManager {
-  saveProgress(key: string, data: any): void {
+  saveProgress(key: string, data: SaveData): void {
     try {
       const json = JSON.stringify(data);
       localStorage.setItem(key, json);
@@ -13,7 +20,7 @@ export class SaveManager {
     }
   }
 
-  loadProgress<T>(key: string): T | null {
+  loadProgress<T>(key: string): SaveData | null {
     const json = localStorage.getItem(key);
     if (json) {
       try {

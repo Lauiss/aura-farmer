@@ -1,13 +1,22 @@
+<div class="header">
+    <h2>Shop</h2>
+    <div>
+        <button (click)="cycleBuyAmount()">Acheter {{buyAmount()}}</button>
+        <button> Paramètres</button>
+    </div>
+</div>
 <div>
     @for (item of shopItems; track item.name()) {
         @if (item.displayCondition()){
             <div>
                 <h3>{{ item.name() }}</h3>
-                <p>Price: {{ item.price() }} Aura</p>
+                <p>Price: {{ (item.price() * numberFromBuyAmount(item)) }} Aura</p>
                 <p>Value: {{ item.value() }} Aura/sec</p>
                 <p>Quantity: {{ item.quantity() }}</p>
-                <button (click)="buyItem(item.id,1)" [disabled]="auraManager.auraCount() < item.price()">
-                    Buy
+                <button (click)="buyItem(item.id)"
+                        [disabled]="(auraManager.auraCount() < (item.price() * numberFromBuyAmount(item)))
+                        || auraManager.auraCount() == 0">
+                    Acheter {{numberFromBuyAmount(item)}}
                 </button>
             </div>
         }
