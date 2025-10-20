@@ -55,7 +55,7 @@ export class GamePage {
 
     const saveData: SaveData = {
       auraCount: parseInt(this.auraManager.auraCount().toFixed(2)),
-      allTimeAura: this.auraManager.totalAllTime,
+      allTimeAura: parseInt(this.auraManager.totalAllTime.toFixed(2)),
       shopItems: plainItems
     }
 
