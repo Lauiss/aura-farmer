@@ -25,7 +25,7 @@ jobs:
         run: npm ci
 
       - name: Build Angular app
-        run: npm run build -- --configuration production --output-path=dist/aura-farmer
+        run: npm run build -- --configuration production --base-href ./ --output-path=dist/aura-farmer
 
       # 4️. Lancer semantic-release (pour le changelog + tag + release)
       # - name: Generate changelog and release
