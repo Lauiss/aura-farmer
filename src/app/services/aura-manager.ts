@@ -9,10 +9,6 @@ export class AuraManager {
   protected allTimeAura = signal(-10);
   protected clickValue = signal(1);
 
-  getAuraCount() {
-    return this.auraCount();
-  }
-
   get totalAllTime() {
     return this.allTimeAura();
   }

@@ -46,14 +46,13 @@ export class ShopManager {
     // Ajoute d'autres items ici
   ];
 
-  buyItem(itemId: number, auraAvailable: number): boolean {
+  buyItem(itemId: number, amount: number): boolean {
     const item = this.items.find(i => i.id === itemId);
     if (!item) return false;
     const price = item.price();
-    if (auraAvailable >= price) {
+    if (this.AuraService.auraCount() >= (price * amount)) {
       item.quantity.update(q => q + 1);
-      // Ici, tu peux décrémenter l'aura dans AuraCount
-
+      this.AuraService.auraCount.update(aura => aura - (price * amount));
       return true;
     }
     return false;

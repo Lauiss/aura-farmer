@@ -14,6 +14,9 @@ export class ShopList {
   public readonly auraManager = inject(AuraManager);
   public readonly shopItems: Item[] = this.shopManager.getAllItems();
 
+  buyItem(itemId: number, amount: number): void {
+    this.shopManager.buyItem(itemId, amount);
+  }
 
 
 }

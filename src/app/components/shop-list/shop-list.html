@@ -6,7 +6,7 @@
                 <p>Price: {{ item.price() }} Aura</p>
                 <p>Value: {{ item.value() }} Aura/sec</p>
                 <p>Quantity: {{ item.quantity() }}</p>
-                <button [disabled]="auraManager.auraCount() < item.price()">
+                <button (click)="buyItem(item.id,1)" [disabled]="auraManager.auraCount() < item.price()">
                     Buy
                 </button>
             </div>

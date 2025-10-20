@@ -8,30 +8,10 @@ import { ShopList } from './components/shop-list/shop-list';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, AuraBtn, ShopList],
+  imports: [RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App {
-  protected readonly auraManager = inject(AuraManager);
-  protected readonly shopManager = inject(ShopManager);
-  protected readonly title = signal('aura_farmer');
 
-  ngOnInit() {
-    this.startAuraGain();
-  }
-
-  protected increment() {
-    this.auraManager.increment();
-  }
-
-
-
-  startAuraGain() {
-    interval(100).subscribe(() => {
-      if(this.shopManager.getTotalValue() > 0){
-        this.auraManager.auraCount.update(current => current + this.shopManager.getTotalValue());
-      }
-    });
-  }
 }
