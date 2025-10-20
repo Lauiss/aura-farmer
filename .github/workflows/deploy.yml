@@ -1,0 +1,46 @@
+name: Build and Deploy to Itch.io
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Récupérer le code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️. Installer Node.js (Angular 17 → Node 18+)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 3️. Installer les dépendances et builder
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Angular app
+        run: npm run build -- --configuration production
+
+      # 4️. Installer Butler
+      - name: Install Butler
+        run: |
+          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          unzip butler.zip
+          chmod +x butler
+          sudo mv butler /usr/local/bin/butler
+
+      # 5️. Déployer sur Itch.io
+      - name: Deploy to Itch.io
+        env:
+          BUTLER_API_KEY: ${{ secrets.ITCH_API_KEY }}
+        run: |
+          echo "🚀 Deploying to itch.io..."
+          butler push dist/${{ github.event.repository.name }} ${{ secrets.ITCH_USER }}/${{ secrets.ITCH_GAME }}:${{ secrets.ITCH_CHANNEL }}
+          echo "✅ Deployment completed."
