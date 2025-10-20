@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: ITCH
 
     steps:
       # 1. Récupérer le code
@@ -28,7 +28,13 @@ jobs:
       - name: Build Angular app
         run: npm run build -- --configuration production
 
-      # 4️. Installer Butler
+      # 4️. Lancer semantic-release (pour le changelog + tag + release)
+      - name: Generate changelog and release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
+      # 5. Installer Butler
       - name: Install Butler
         run: |
           curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
@@ -36,11 +42,14 @@ jobs:
           chmod +x butler
           sudo mv butler /usr/local/bin/butler
 
-      # 5️. Déployer sur Itch.io
+      # 6. Déployer sur Itch.io
       - name: Deploy to Itch.io
         env:
           BUTLER_API_KEY: ${{ secrets.ITCH_API_KEY }}
+          ITCH_USER: ${{ secrets.ITCH_USER }}
+          ITCH_GAME: ${{ secrets.ITCH_GAME }}
+          ITCH_CHANNEL: ${{ secrets.ITCH_CHANNEL }}
         run: |
           echo "🚀 Deploying to itch.io..."
-          butler push dist/${{ github.event.repository.name }} ${{ secrets.ITCH_USER }}/${{ secrets.ITCH_GAME }}:${{ secrets.ITCH_CHANNEL }}
-          echo "✅ Deployment completed."
+          echo "User: $ITCH_USER | Game: $ITCH_GAME | Channel: $ITCH_CHANNEL"
+          butler push "dist/aura-farmer" "$ITCH_USER/$ITCH_GAME:$ITCH_CHANNEL"
