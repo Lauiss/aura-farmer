@@ -29,10 +29,10 @@ jobs:
         run: npm run build -- --configuration production
 
       # 4️. Lancer semantic-release (pour le changelog + tag + release)
-      - name: Generate changelog and release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+      # - name: Generate changelog and release
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: npx semantic-release
 
       # 5. Installer Butler
       - name: Install Butler
