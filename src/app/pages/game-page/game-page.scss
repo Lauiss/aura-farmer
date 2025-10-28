@@ -1,3 +1,4 @@
+@import '../../../variables.scss';
 .game-container {
   display: flex;
   flex-direction: column;
@@ -21,5 +22,27 @@
 .main-button {
     width: 30%;
     height: 100%;
-    background-color: red;
+    background-color: $primary;
+}
+
+.counter-container {
+    width: 100%;
+    background-color: $text-color;
+}
+
+.shop {
+    background-color: $bg-color;
+    width: 100%;
+}
+
+.white-text {
+    color: $on-dark-bg-text;
+}
+
+.big-title {
+    font-size: 2rem;
+}
+
+.subtitle {
+    font-size: 1rem;
 }

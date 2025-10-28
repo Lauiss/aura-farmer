@@ -1,12 +1,23 @@
+@import '../../../variables.scss';
+
 .landing-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100vh;
+  background-color: $bg-color;
 }
 button {
   margin: 1rem;
   padding: 1rem 2rem;
   font-size: 1.2rem;
+}
+
+.btn-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  justify-content: center;
+  align-items: center;
 }

@@ -1,9 +1,18 @@
 <div class="app-container">
   <div class="main-button">
-    <h2>Aura Farmer</h2>
-    <h3>Aura: {{ auraManager.auraCount() | formatAura }}</h3>
-    <app-aura-btn (click)="increment()"></app-aura-btn>
+    <div class="counter-container">
+      <div class="flex-row center-items gap-100 white-text big-title">
+        <span>Aura:</span>
+        <h3>{{ auraManager.auraCount() | formatAura }}</h3>
+      </div>
+      <div class="flex-row center-items gap-100 white-text subtitle">
+        <h3>{{ this.shopManager.getTotalValue() | formatAura }}</h3>
+        <span>Aura / Seconde</span>
+      </div>
+    </div>
+    <app-aura-btn #btn (click)="increment($event)"></app-aura-btn>
   </div>
+
   <div class="shop">
     <app-shop-list></app-shop-list>
   </div>

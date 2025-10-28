@@ -1,0 +1,61 @@
+$text-color: #382b22;
+$bg-color: #fff9f0;
+$primary: #b19c85;
+$btn-shadow-color: #fff3e2;
+$btn-hover-bg-color: #fff2e9;
+$btn-before-bg: #f9ddc4;
+$on-dark-bg-text: #ffffff;
+
+$btn-disabled-text: #888;
+$btn-disabled-bg: #f0f0f0;
+$btn-disabled-border: #bbb;
+$btn-disabled-shadow: #e0e0e0;
+$btn-disabled-hover-bg: #eaeaea;
+$btn-disabled-before-bg: #cccccc;
+
+$spacing-0: 0; // 0px
+$spacing-100: 0.5rem; // 8px
+$spacing-150: 0.75rem; // 12px
+$spacing-200: 1rem; // 16px
+$spacing-250: 1.25rem; // 20px
+$spacing-300: 1.5rem; // 24px
+$spacing-400: 2rem; // 32px
+$spacing-500: 2.5rem; // 40px
+$spacing-600: 3rem; // 48px
+$spacing-700: 3.5rem; // 56px
+$spacing-800: 4rem; //64px
+$spacing-900: 4.5rem; // 72px
+
+$radius-0: 0; // 0px
+$radius-100: 0.5rem; // 8px
+$radius-150: 0.75rem; // 12px
+$radius-200: 1rem; // 16px
+$radius-250: 1.25rem; // 20px
+$radius-300: 1.5rem; // 24px
+$radius-400: 2rem; // 32px
+$radius-500: 2.5rem; // 40px
+$radius-600: 3rem; // 48px
+$radius-700: 3.5rem; // 56px
+$radius-800: 4rem; // 64px
+$radius-900: 4.5rem; // 72px
+$radius-1000: 5rem; // 80px
+
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.center-items {
+    align-items: center;
+    justify-content: center;
+}
+
+.gap-100 {
+    gap: $spacing-100;
+}
