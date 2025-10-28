@@ -1,9 +1,19 @@
-.container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+@import '../../../variables.scss';
+
+.stage { display:grid; place-items:center; min-height:60vh; }
+.moyai-wrap {
+  position: relative;         /* le wrapper devient le plan commun */
+  width: 100%;               /* fixe la taille une bonne fois */
+  height: auto;
+  display: inline-block;
+  will-change: transform;
+}
+.moyai { display:block; width:100%; height:auto; }
+.acc {
+  position: absolute;         /* superpose les accessoires */
+  left: var(--spacing-300); top: -3rem;
+  width: 40%; height: auto;  /* alignez votre graphisme comme voulu */
+  pointer-events: none;
 }
 
-.moyai {
-    width: 100%;
-}
+

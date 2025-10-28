@@ -1,0 +1,91 @@
+@import '../../../variables.scss';
+
+button.action-btn.disabled,
+button.action-btn:disabled {
+	color: $btn-disabled-text;
+	background: $btn-disabled-bg;
+	border-color: $btn-disabled-border;
+}
+
+button.action-btn.disabled.learn-more,
+button.action-btn:disabled.learn-more {
+	background: $btn-disabled-bg;
+	color: $btn-disabled-text;
+	border: 2px solid $btn-disabled-border;
+}
+
+button.action-btn.disabled.learn-more::before,
+button.action-btn:disabled.learn-more::before {
+	background: $btn-disabled-before-bg;
+	-webkit-box-shadow: 0 0 0 2px $btn-disabled-border, 0 0.625em 0 0 $btn-disabled-shadow;
+	box-shadow: 0 0 0 2px $btn-disabled-border, 0 0.625em 0 0 $btn-disabled-shadow;
+}
+
+button {
+ position: relative;
+ display: inline-block;
+ cursor: pointer;
+ outline: none;
+ border: 0;
+ vertical-align: middle;
+ text-decoration: none;
+ font-family: inherit;
+ font-size: 15px;
+}
+
+button.learn-more {
+ font-weight: 600;
+ color: $text-color;
+ padding: 1.25em 2em;
+ background: $bg-color;
+ border: 2px solid $primary;
+ border-radius: 0.75em;
+ -webkit-transform-style: preserve-3d;
+ transform-style: preserve-3d;
+ -webkit-transition: background 150ms cubic-bezier(0, 0, 0.58, 1), -webkit-transform 150ms cubic-bezier(0, 0, 0.58, 1);
+ transition: transform 150ms cubic-bezier(0, 0, 0.58, 1), background 150ms cubic-bezier(0, 0, 0.58, 1), -webkit-transform 150ms cubic-bezier(0, 0, 0.58, 1);
+}
+
+button.learn-more::before {
+ position: absolute;
+ content: '';
+ width: 100%;
+ height: 100%;
+ top: 0;
+ left: 0;
+ right: 0;
+ bottom: 0;
+ background: $btn-before-bg;
+ border-radius: inherit;
+ -webkit-box-shadow: 0 0 0 2px $primary, 0 0.625em 0 0 $btn-shadow-color;
+ box-shadow: 0 0 0 2px $primary, 0 0.625em 0 0 $btn-shadow-color;
+ -webkit-transform: translate3d(0, 0.75em, -1em);
+ transform: translate3d(0, 0.75em, -1em);
+ transition: transform 150ms cubic-bezier(0, 0, 0.58, 1), box-shadow 150ms cubic-bezier(0, 0, 0.58, 1), -webkit-transform 150ms cubic-bezier(0, 0, 0.58, 1), -webkit-box-shadow 150ms cubic-bezier(0, 0, 0.58, 1);
+}
+
+button.learn-more:hover {
+ background: $btn-hover-bg-color;
+ -webkit-transform: translate(0, 0.25em);
+ transform: translate(0, 0.25em);
+}
+
+button.learn-more:hover::before {
+ -webkit-box-shadow: 0 0 0 2px $primary, 0 0.5em 0 0 $btn-shadow-color;
+ box-shadow: 0 0 0 2px $primary, 0 0.5em 0 0 $btn-shadow-color;
+ -webkit-transform: translate3d(0, 0.5em, -1em);
+ transform: translate3d(0, 0.5em, -1em);
+}
+
+button.learn-more:active {
+ background: $btn-hover-bg-color;
+ -webkit-transform: translate(0em, 0.75em);
+ transform: translate(0em, 0.75em);
+}
+
+button.learn-more:active::before {
+ -webkit-box-shadow: 0 0 0 2px $primary, 0 0 $btn-shadow-color;
+ box-shadow: 0 0 0 2px $primary, 0 0 $btn-shadow-color;
+ -webkit-transform: translate3d(0, 0, -1em);
+ transform: translate3d(0, 0, -1em);
+}

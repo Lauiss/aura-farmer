@@ -2,10 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { Item, ShopManager } from '../../services/shop-manager';
 import { CommonModule } from '@angular/common';
 import { AuraManager } from '../../services/aura-manager';
+import { ActionBtn } from "../action-btn/action-btn";
 
 @Component({
   selector: 'app-shop-list',
-  imports: [CommonModule],
+  imports: [CommonModule, ActionBtn],
   templateUrl: './shop-list.html',
   styleUrl: './shop-list.scss'
 })
