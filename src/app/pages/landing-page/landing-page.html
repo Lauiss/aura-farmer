@@ -1,7 +1,7 @@
 <div class="landing-container">
   <h1>Aura Farmer</h1>
   <div class="btn-container">
-    <app-action-btn type="button" routerLink="/game">Jouer</app-action-btn>
-    <app-action-btn type="button">Options</app-action-btn>
+    <app-action-btn type="button" (click)="startGame()">Jouer</app-action-btn>
+    <app-action-btn type="button" (click)=" openSettings()">Options</app-action-btn>
   </div>
 </div>

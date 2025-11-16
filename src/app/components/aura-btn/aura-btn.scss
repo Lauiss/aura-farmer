@@ -8,12 +8,24 @@
   display: inline-block;
   will-change: transform;
 }
-.moyai { display:block; width:100%; height:auto; }
+.moyai { display:block;
+  width:100%;
+  height:auto;
+}
+
 .acc {
-  position: absolute;         /* superpose les accessoires */
-  left: var(--spacing-300); top: -3rem;
-  width: 40%; height: auto;  /* alignez votre graphisme comme voulu */
+  position: absolute;
+  width: 100%; height: auto;
   pointer-events: none;
+}
+
+.over {
+  z-index: 3;
+}
+.base {
+  position: absolute;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
 }
 
 

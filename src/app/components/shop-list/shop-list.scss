@@ -1,3 +1,5 @@
+@import '../../../../src/variables.scss';
+
 .shop-items {
     width: 100%;
     display: flex;
@@ -5,22 +7,54 @@
     gap: 0.5rem;
 }
 
-.item-container {
+.header-actions {
     display: flex;
-    flex-direction: column;
-    width: 100%;
+    gap: $spacing-200;
+}
+
+.item-container {
+    border: 5px solid $primary;
+        justify-content: space-between;
+    border-radius: $radius-100;
+    margin: 0 $spacing-200;
+}
+
+.icon-container {
+    display: flex;
+    align-items: center;
+    margin: $spacing-200;
 }
 
 .header {
     display: flex;
     flex-direction: row;
-    justify-content: space-evenly;
     align-items: center;
+    font-size: $spacing-400;
+}
+
+.header-page {
+    margin: $spacing-400;
+    justify-content: space-between;
 }
 
 .content {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: space-between;
+}
+
+.item-icon {
+    background-color: $primary;
+    border-radius: $radius-200;
+    border: 5px solid $text-color;
+    width: $spacing-1200;
+    height: $spacing-1200;
+    margin-right: 1rem;
+}
+
+.action {
+    display: flex;
     align-items: center;
+    margin: $spacing-200;
+    gap: $spacing-200;
 }

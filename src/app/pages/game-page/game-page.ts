@@ -1,18 +1,19 @@
-import { Component, computed, Pipe, PipeTransform, signal, forwardRef, ViewChild, ElementRef } from '@angular/core';
-import { inject } from '@angular/core/primitives/di';
+import { Component, computed, Pipe, PipeTransform, signal, forwardRef, ViewChild, ElementRef,  inject } from '@angular/core';
 import { AuraManager } from '../../services/aura-manager';
 import { ItemSave, ShopManager } from '../../services/shop-manager';
 import { interval } from 'rxjs';
 import { AuraBtn } from "../../components/aura-btn/aura-btn";
 import { ShopList } from "../../components/shop-list/shop-list";
 import { SaveData, SaveManager } from '../../services/save-manager';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
+import { Sound, SoundManager } from '../../services/sound-manager';
 
 @Component({
   standalone: true,
   selector: 'app-game-page',
   templateUrl: './game-page.html',
   styleUrls: ['./game-page.scss'],
-  imports: [AuraBtn, ShopList, forwardRef(() => FormatAuraPipe)]
+  imports: [AuraBtn, ShopList, TranslatePipe, forwardRef(() => FormatAuraPipe)]
 })
 export class GamePage {
 
@@ -20,31 +21,34 @@ export class GamePage {
   @ViewChild('btn', { read: ElementRef, static: true })
   private btnRef!: ElementRef<HTMLElement>;
 
-  constructor(
-    protected readonly auraManager: AuraManager,
-    protected readonly shopManager: ShopManager,
-    protected readonly saveManager: SaveManager
-  ) {}
+  public readonly soundManager = inject(SoundManager);
+  public readonly translate = inject(TranslateService);
+  public readonly auraManager = inject(AuraManager);
+  public readonly shopManager = inject(ShopManager);
+  public readonly saveManager = inject(SaveManager);
 
   ngOnInit() {
     this.loadSave();
     this.startAuraGain();
+    this.soundManager.changeMusic(Sound.Game);
   }
 
   protected increment(e?: MouseEvent) {
     const before = this.auraManager.auraCount();
-    this.auraManager.increment();               // ta logique existante
+    this.auraManager.increment();
     const after = this.auraManager.auraCount();
 
-    const delta = +(after - before).toFixed(2); // gère les upgrades/click power
+    const delta = +(after - before).toFixed(2);
     if (e && delta !== 0) {
-      this.jellyButton(e);                      // petit effet “gelée” sur le bouton
+      this.jellyButton(e);
       this.spawnFloatingDelta(e.clientX, e.clientY, delta);
     }
+
+    this.soundManager.playFX(Sound.Plop);
   }
 
   startAuraGain() {
-    interval(100).subscribe(() => {
+    interval(1000).subscribe(() => {
       if(this.shopManager.getTotalValue() > 0){
         this.auraManager.auraCount.update(current => current + this.shopManager.getTotalValue());
         this.auraManager.allTimeAura.update(total => total + this.shopManager.getTotalValue());
@@ -87,6 +91,10 @@ export class GamePage {
     if (saveData.shopItems) {
       this.shopManager.restoreFromSave(saveData.shopItems);
     }
+  }
+
+  setLanguage(lang: string){
+    this.translate.use(lang);
   }
 
   // Animation pour les clicks

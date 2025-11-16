@@ -1,28 +1,37 @@
-<div class="header">
+<div class="header header-page">
     <h2>Shop</h2>
-    <div>
+    <div class="header-actions">
         <app-action-btn (click)="cycleBuyAmount()">Acheter {{buyAmount()}}</app-action-btn>
-        <app-action-btn> Paramètres</app-action-btn>
+        <app-action-btn [disabled]="true"> Améliorations Moyai</app-action-btn>
+        <app-action-btn [disabled]="true"> Paramètres</app-action-btn>
     </div>
 </div>
 <div class="shop-items">
     @for (item of shopItems; track item.name()) {
         @if (item.displayCondition()){
-            <div class="item-container">
+            <div class="item-container flex flex-row">
+                <div class="flex flex-row">
+                <div class="icon-container">
+                    <img [src]="item.icon" alt="{{ item.name() }}" class="item-icon"/>
+                </div>
+                <div class="flex flex-column">
                 <div class="header">
                     <h3>{{ item.name() }}</h3>
-                    <app-action-btn (click)="buyItem(item.id)"
-                        [disabled]="(auraManager.auraCount() < (item.price() * numberFromBuyAmount(item)))
-                        || auraManager.auraCount() == 0"
-                        class="learn-more">
-                    Acheter {{numberFromBuyAmount(item)}}
-                </app-action-btn>
                 </div>
                 <div class="content">
                     <p>Price: {{ (item.price() * numberFromBuyAmount(item)) | number:'1.0-0' }} Aura</p>
                     <p>Value: {{ item.value() | number:'1.0-2' }} Aura/sec</p>
                     <p>Quantity: {{ item.quantity() | number:'1.0-0' }}</p>
                 </div>
+            </div>
+            </div>
+            <div class="action">
+                    <app-action-btn (click)="buyItem(item.id)"
+                        [disabled]="auraManager.auraCount() < (item.price() * numberFromBuyAmount(item))">
+                    Acheter {{numberFromBuyAmount(item)}}
+                </app-action-btn>
+                <app-action-btn [disabled]="true">Améliorations</app-action-btn>
+            </div>
             </div>
         }
     }
