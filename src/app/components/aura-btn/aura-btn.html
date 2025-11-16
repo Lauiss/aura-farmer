@@ -1,6 +1,23 @@
 <div class="container" #box (click)="boing($event)">
     <div #moyaiWrap class="moyai-wrap">
-        <!-- <img src="hat.png" class="acc hat" alt="hat"> -->
-        <img #moyai src="moyai.png" alt="Moyai" class="moyai" />
+        @if (unlocks[0].unlocked) {
+        <img #moyai src="assets/imgs/moyai_earings.png" alt="Moyai earing" class="moyai acc over" draggable="false" />
+        }
+        @if (unlocks[1].unlocked) {
+        <img #moyai src="assets/imgs/moyai_sunglasses.png" alt="Moyai sunglasses" class="moyai acc over" draggable="false" />
+        }
+        @if (unlocks[2].unlocked) {
+        <img #moyai src="assets/imgs/moyai_tatoos.png" alt="Moyai tatoos" class="moyai acc" draggable="false" />
+        }
+        @if (unlocks[3].unlocked) {
+        <img #moyai src="assets/imgs/moyai_tuxedo.png" alt="Moyai tuxedo" class="moyai acc" draggable="false" />
+        }
+        @if (unlocks[4].unlocked) {
+        <img #moyai src="assets/imgs/moyai_tie.png" alt="Moyai tie" class="moyai acc" draggable="false" />
+        }
+        @if (unlocks[5].unlocked) {
+        <img #moyai src="assets/imgs/moyai_crown.png" alt="Moyai crown" class="moyai acc over" draggable="false" />
+        }
+        <img #moyai src="assets/imgs/moyai_base.png" alt="Moyai" class="moyai" draggable="false" />
     </div>
 </div>

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
 
 @Component({
   selector: 'app-action-btn',
@@ -13,6 +13,7 @@ export class ActionBtn {
   @Output() click = new EventEmitter<Event>();
 
   onClick(event: Event) {
+    event.stopPropagation();
     if (!this.disabled) {
       this.click.emit(event);
     }

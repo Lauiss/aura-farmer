@@ -1,6 +1,9 @@
 import { Injectable, Signal, WritableSignal, computed, inject, signal } from '@angular/core';
 import { AuraManager } from './aura-manager';
-import { shopItems } from '../../assets/static-items';
+import { shopItems } from '../../assets/static/static-items';
+import { Upgrade } from './game-manager';
+import { moyaiUpgrades } from '../../assets/static/moyai-upgrades';
+import { MoyaiUpgrades } from '../components/aura-btn/aura-btn';
 
 export interface Item {
   id: number;
@@ -11,6 +14,8 @@ export interface Item {
   factor: number;
   displayCondition: Signal<boolean>;
   unlocked: boolean;
+  upgrades?: Upgrade[];
+  icon: string;
 }
 
 export interface ItemSave {
@@ -26,17 +31,29 @@ export interface ItemSave {
   providedIn: 'root'
 })
 export class ShopManager {
-  protected readonly AuraService = inject(AuraManager);
+  protected readonly auraService = inject(AuraManager);
   items = signal<Item[]>(shopItems);
+  moyaiUpgrades = signal<MoyaiUpgrades[]>(moyaiUpgrades);
 
   buyItem(itemId: number, amount: string): void {
-
     const item = this.items().find(i => i.id === itemId);
     if (!item) return;
     let amountToBuy = this.getAmountToBuy(amount, item);
+
+    // Pour les achats multiples (10, 100), vérifier le coût total
+    if (amount === '10' || amount === '100') {
+      let totalCost = 0;
+      let price = item.price();
+      for (let i = 0; i < amountToBuy; i++) {
+        totalCost += price;
+        price = Math.round(price * item.factor);
+      }
+      if (this.auraService.auraCount() < totalCost) return; // pas assez d'aura, rien n'est acheté
+    }
+
     for (let i = 0; i < amountToBuy; i++) {
-      if (this.AuraService.auraCount() >= item.price()) {
-        this.AuraService.auraCount.update(c => c - item.price());
+      if (this.auraService.auraCount() >= item.price()) {
+        this.auraService.auraCount.update(c => c - item.price());
         item.quantity.update(q => q + 1);
         item.price.update(p => Math.round(p * item.factor));
       } else {
@@ -70,13 +87,13 @@ export class ShopManager {
         break;
     }
 
-    return amountToBuy;
+    return Math.max(1, amountToBuy);
   }
 
   calculateMaxAffordable(item: Item): number {
     let count = 0;
     let price = item.price();
-    let aura = this.AuraService.auraCount();
+    let aura = this.auraService.auraCount();
 
     while (aura >= price) {
       aura -= price;
@@ -100,5 +117,9 @@ export class ShopManager {
         }
     }
     this.items.set(items);
+  }
+
+  unlockMoyaiUpgrade(index: number) {
+    this.moyaiUpgrades()[index].unlocked = true;
   }
 }

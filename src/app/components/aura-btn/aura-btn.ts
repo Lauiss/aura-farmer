@@ -1,4 +1,14 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, Signal, ViewChild, WritableSignal } from '@angular/core';
+import { moyaiUpgrades } from '../../../assets/static/moyai-upgrades';
+
+export interface MoyaiUpgrades {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  unlocked: boolean;
+  displayCondition: WritableSignal<boolean>;
+}
 
 @Component({
   selector: 'app-aura-btn',
@@ -10,6 +20,8 @@ export class AuraBtn {
   @ViewChild('moyai', { static: true }) moyai!: ElementRef<HTMLImageElement>;
   @ViewChild('box', { static: true }) box!: ElementRef<HTMLDivElement>;
   @ViewChild('moyaiWrap', { static: true }) wrap!: ElementRef<HTMLDivElement>;
+
+  unlocks: MoyaiUpgrades[] = moyaiUpgrades;
 
   boing(e: MouseEvent) {
     const el = this.wrap.nativeElement;
