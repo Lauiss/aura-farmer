@@ -3,7 +3,7 @@
     <div class="header-actions">
         <app-action-btn (click)="cycleBuyAmount()">Acheter {{buyAmount()}}</app-action-btn>
         <app-action-btn [disabled]="true"> Améliorations Moyai</app-action-btn>
-        <app-action-btn [disabled]="true"> Paramètres</app-action-btn>
+        <app-action-btn (click)="openSettingsModal()"> Paramètres</app-action-btn>
     </div>
 </div>
 <div class="shop-items">
@@ -35,5 +35,30 @@
             </div>
         }
     }
+    <div>
+        <app-action-btn (click)="buyUnlock(0)">
+            Acheter boucles oreilles
+        </app-action-btn>
+
+        <app-action-btn (click)="buyUnlock(1)">
+            Acheter Lunettes
+        </app-action-btn>
+
+        <app-action-btn (click)="buyUnlock(2)">
+            Acheter Tatoos
+        </app-action-btn>
+
+        <app-action-btn (click)="buyUnlock(3)">
+            Acheter Costume
+        </app-action-btn>
+
+        <app-action-btn (click)="buyUnlock(4)">
+            Acheter Cravate
+        </app-action-btn>
+
+        <app-action-btn (click)="buyUnlock(5)">
+            Acheter Couronne
+        </app-action-btn>
+    </div>
 
 </div>

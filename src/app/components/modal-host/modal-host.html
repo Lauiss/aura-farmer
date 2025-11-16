@@ -1,0 +1,8 @@
+
+@if (modalManager.currentComponent()) {
+  <div class="modal-backdrop" (click)="modalManager.close()"></div>
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <ng-container *ngComponentOutlet="modalManager.currentComponent()!"></ng-container>
+  </div>
+}
+

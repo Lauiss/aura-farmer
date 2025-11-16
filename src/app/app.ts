@@ -5,10 +5,11 @@ import { interval } from 'rxjs';
 import { AuraManager } from './services/aura-manager';
 import { ShopManager } from './services/shop-manager';
 import { ShopList } from './components/shop-list/shop-list';
+import { ModalHost } from "./components/modal-host/modal-host";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, ModalHost],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

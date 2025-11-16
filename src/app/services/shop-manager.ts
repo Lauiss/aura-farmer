@@ -2,6 +2,8 @@ import { Injectable, Signal, WritableSignal, computed, inject, signal } from '@a
 import { AuraManager } from './aura-manager';
 import { shopItems } from '../../assets/static/static-items';
 import { Upgrade } from './game-manager';
+import { moyaiUpgrades } from '../../assets/static/moyai-upgrades';
+import { MoyaiUpgrades } from '../components/aura-btn/aura-btn';
 
 export interface Item {
   id: number;
@@ -31,6 +33,7 @@ export interface ItemSave {
 export class ShopManager {
   protected readonly auraService = inject(AuraManager);
   items = signal<Item[]>(shopItems);
+  moyaiUpgrades = signal<MoyaiUpgrades[]>(moyaiUpgrades);
 
   buyItem(itemId: number, amount: string): void {
     const item = this.items().find(i => i.id === itemId);
@@ -114,5 +117,9 @@ export class ShopManager {
         }
     }
     this.items.set(items);
+  }
+
+  unlockMoyaiUpgrade(index: number) {
+    this.moyaiUpgrades()[index].unlocked = true;
   }
 }

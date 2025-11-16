@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { AuraManager } from '../../services/aura-manager';
 import { ActionBtn } from "../action-btn/action-btn";
 import { Sound, SoundManager } from '../../services/sound-manager';
+import { ModalManager } from '../../services/modal-manager';
+import { Settings } from '../settings/settings';
 
 @Component({
   selector: 'app-shop-list',
@@ -15,6 +17,7 @@ export class ShopList {
   protected readonly shopManager = inject(ShopManager);
   public readonly auraManager = inject(AuraManager);
   public readonly soundManager = inject(SoundManager);
+  private readonly modalManager = inject(ModalManager);
   public readonly shopItems: Item[] = this.shopManager.getAllItems();
   buyAmount = signal<'1' | '10' | '100' | 'MAX'>('1');
   buyAmountNumber = signal<number>(1);
@@ -35,4 +38,13 @@ export class ShopList {
     return this.shopManager.getAmountToBuy(this.buyAmount(), item);
   }
 
+  openSettingsModal(){
+    this.modalManager.open(Settings);
+  }
+
+  buyUnlock(index: number) {
+    if( this.auraManager.auraCount() >= this.shopManager.moyaiUpgrades()[index].price){
+    this.shopManager.unlockMoyaiUpgrade(index);
+    }
+  }
 }
