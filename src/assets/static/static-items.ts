@@ -85,7 +85,7 @@ export const shopItems: Item[] = [
     price: signal(10000),
     factor: 1.19,
     displayCondition: computed(() => {
-        if(shopItems[5].quantity() >= 1){
+        if(shopItems[4].quantity() >= 1){
           return true;
         }
         return false;
@@ -101,7 +101,7 @@ export const shopItems: Item[] = [
     price: signal(20000),
     factor: 1.21,
     displayCondition: computed(() => {
-        if(shopItems[6].quantity() >= 1){
+        if(shopItems[5].quantity() >= 1){
           return true;
         }
         return false;
@@ -117,7 +117,7 @@ export const shopItems: Item[] = [
     price: signal(200000),
     factor: 1.22,
     displayCondition: computed(() => {
-        if(shopItems[7].quantity() >= 1){
+        if(shopItems[6].quantity() >= 1){
           return true;
         }
         return false;
