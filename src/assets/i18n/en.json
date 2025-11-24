@@ -1,3 +1,24 @@
 {
-    "TEST": "TEST en Anglais"
+    "PLAY": "Play",
+    "SETTINGS": "Settings",
+    "AURA_PER_SECOND": "Aura / Second",
+    "AURA": "Aura",
+    "BUY": "Buy",
+    "MOYAI_UPGRADES": "Moyai upgrades",
+    "PRICE": "Price",
+    "VALUE": "Value",
+    "LEVEL": "Level",
+    "UPGRADES": "Upgrades",
+    "FX_VOLUME": "FX Volume",
+    "AMBIANCE_VOLUME": "Music Volume",
+    "LANGUAGE": "Language",
+    "ENGLISH": "English",
+    "FRENCH": "French",
+    "OFFLINE_PROGRESSION_MESSAGE": "While you were away, you've generated :",
+    "IN": "in",
+    "SECONDS": "seconds",
+    "UNLOCKED": "Unlocked",
+    "FINAL_MULTIPLIER": "Bonus Multiplier",
+    "CLICK_VALUE": "Click Value",
+    "PRICE_REDUCTION": "Price Reduction %"
 }

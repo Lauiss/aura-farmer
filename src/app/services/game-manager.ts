@@ -23,4 +23,7 @@ export interface Upgrade {
 })
 export class GameManager {
 
+  applyItemUpgrade(upgrade: Upgrade): void {}
+
+  applyMoyaiUpgrade(upgradeId: number): void {}
 }

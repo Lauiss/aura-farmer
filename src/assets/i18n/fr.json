@@ -1,3 +1,24 @@
 {
-    "TEST": "TEST en Français"
+    "PLAY": "Jouer",
+    "SETTINGS": "Options",
+    "AURA_PER_SECOND": "Aura / Seconde",
+    "AURA": "Aura",
+    "BUY": "Acheter",
+    "MOYAI_UPGRADES": "Améliorations Moyai",
+    "PRICE": "Prix",
+    "VALUE": "Valeur",
+    "LEVEL": "Niveau",
+    "UPGRADES": "Améliorations",
+    "FX_VOLUME": "Volume des Effets Sonores",
+    "AMBIANCE_VOLUME": "Volume de la Musique",
+    "LANGUAGE": "Langue",
+    "ENGLISH": "Anglais",
+    "FRENCH": "Français",
+    "OFFLINE_PROGRESSION_MESSAGE": "Pendant votre absence, vous avez généré :",
+    "IN": "en",
+    "SECONDS": "secondes",
+    "UNLOCKED": "Débloqué",
+    "FINAL_MULTIPLIER": "Multiplicateur Bonus",
+    "CLICK_VALUE": "Valeur par Clic",
+    "PRICE_REDUCTION": "% de Réduction de Prix"
 }

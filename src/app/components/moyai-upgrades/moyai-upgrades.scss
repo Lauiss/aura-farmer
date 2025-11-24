@@ -1,0 +1,8 @@
+@import '../../../../src/variables.scss';
+
+.container {
+    justify-content: space-between;
+    align-items: center;
+    gap: $spacing-200;
+    margin: $spacing-200;
+}

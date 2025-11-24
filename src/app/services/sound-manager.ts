@@ -41,4 +41,11 @@ export class SoundManager {
     this.currentMusic.loop = true;
     this.currentMusic.play();
   }
+
+  public updateAmbianceVolume(volume: number): void {
+    this.ambianceVolume.set(volume);
+    if (this.currentMusic) {
+      this.currentMusic.volume = volume;
+    }
+  }
 }

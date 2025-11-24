@@ -7,6 +7,10 @@ import { ShopList } from "../../components/shop-list/shop-list";
 import { SaveData, SaveManager } from '../../services/save-manager';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Sound, SoundManager } from '../../services/sound-manager';
+import { OfflineProgressAnnouncer } from '../../components/offline-progress-announcer/offline-progress-announcer';
+import { ModalManager } from '../../services/modal-manager';
+import { Settings } from '../../components/settings/settings';
+import { SettingsManager } from '../../services/settings-manager';
 
 @Component({
   standalone: true,
@@ -26,8 +30,12 @@ export class GamePage {
   public readonly auraManager = inject(AuraManager);
   public readonly shopManager = inject(ShopManager);
   public readonly saveManager = inject(SaveManager);
+  public readonly modalManager = inject(ModalManager);
+  public readonly settingsManager = inject(SettingsManager);
+
 
   ngOnInit() {
+    this.settingsManager.getSettingsConfig();
     this.loadSave();
     this.startAuraGain();
     this.soundManager.changeMusic(Sound.Game);
@@ -53,24 +61,39 @@ export class GamePage {
         this.auraManager.auraCount.update(current => current + this.shopManager.getTotalValue());
         this.auraManager.allTimeAura.update(total => total + this.shopManager.getTotalValue());
       }
-      this.createSave();
     });
+
+    interval(10000).subscribe(() => {
+        this.createSave();
+    })
   }
 
   createSave() {
     const plainItems: ItemSave[] = this.shopManager.getAllItems().map(item => ({
       id: item.id,
       value: item.value(),
-      quantity: item.quantity(),
+      quantity: item.level(),
       price: item.price(),
       factor: item.factor,
+      upgrades: item.upgrades,
       unlocked: item.unlocked
+    }));
+
+    const moyaiUpgrades = this.shopManager.moyaiUpgrades().map(upgrade => ({
+      id: upgrade.id,
+      unlocked: upgrade.unlocked
     }));
 
     const saveData: SaveData = {
       auraCount: parseInt(this.auraManager.auraCount().toFixed(2)),
       allTimeAura: parseInt(this.auraManager.totalAllTime.toFixed(2)),
-      shopItems: plainItems
+      shopItems: plainItems,
+      moyaiUpgrades: moyaiUpgrades,
+      counters: this.shopManager.getCountersValue()
+    }
+
+    if (moyaiUpgrades[0].unlocked){
+      saveData.lastSaveTime = Date.now();
     }
 
     this.saveManager.saveProgress(this.saveLocation,saveData);
@@ -89,12 +112,41 @@ export class GamePage {
     }
 
     if (saveData.shopItems) {
-      this.shopManager.restoreFromSave(saveData.shopItems);
+      this.shopManager.restoreItemsFromSave(saveData.shopItems);
     }
-  }
 
-  setLanguage(lang: string){
-    this.translate.use(lang);
+    if (saveData.moyaiUpgrades) {
+      this.shopManager.restoreMoyaiUpgradesFromSave(saveData.moyaiUpgrades);
+    }
+
+    if (saveData.counters) {
+      this.shopManager.restoreCountersFromSave(saveData.counters);
+    }
+
+    if (saveData.lastSaveTime) {
+      const now = Date.now();
+      const elapsedSeconds = Math.floor((now - saveData.lastSaveTime) / 1000);
+
+      if (elapsedSeconds < 60) {
+        return;
+      }
+
+      const maxOfflineSeconds = 8 * 60 * 60; // 8 heures
+      const offlineSeconds = Math.min(elapsedSeconds, maxOfflineSeconds);
+
+      const totalValue = this.shopManager.getTotalValue();
+      if (totalValue > 0 && offlineSeconds > 0) {
+        const offlineGain = totalValue * offlineSeconds;
+        this.auraManager.auraCount.update(current => current + offlineGain);
+        this.auraManager.allTimeAura.update(total => total + offlineGain);
+        this.modalManager.open(OfflineProgressAnnouncer, {
+          data: {
+            offlineProgression: offlineGain,
+            offlineTime: offlineSeconds
+          }
+        });
+      }
+    }
   }
 
   // Animation pour les clicks

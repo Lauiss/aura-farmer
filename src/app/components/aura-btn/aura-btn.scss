@@ -1,6 +1,11 @@
 @import '../../../variables.scss';
 
 .stage { display:grid; place-items:center; min-height:60vh; }
+
+.container {
+  cursor: pointer;
+}
+
 .moyai-wrap {
   position: relative;         /* le wrapper devient le plan commun */
   width: 100%;               /* fixe la taille une bonne fois */

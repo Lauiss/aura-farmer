@@ -1,3 +1,5 @@
+@import '../../../../src/variables.scss';
+
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -9,13 +11,14 @@
 }
 
 .modal-content {
+  background-color: $primary;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
+  padding: $spacing-200;
+  border-radius: $radius-100;
+  border: 5px solid $text-color;
   z-index: 1001;
   max-width: 90vw;
   max-height: 90vh;

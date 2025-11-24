@@ -1,0 +1,22 @@
+@import '../../../../src/variables.scss';
+
+.settings-panel {
+    background-color: $primary;
+}
+
+.align {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: $spacing-200;
+
+    span {
+        display: inline-block;
+        min-width: 45px;
+        text-align: right;
+    }
+}
+
+.margin-left-25 {
+    margin-left: 25px;
+}

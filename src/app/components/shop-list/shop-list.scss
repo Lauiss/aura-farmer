@@ -4,7 +4,7 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: $spacing-100;
 }
 
 .header-actions {
@@ -14,7 +14,7 @@
 
 .item-container {
     border: 5px solid $primary;
-        justify-content: space-between;
+    justify-content: space-between;
     border-radius: $radius-100;
     margin: 0 $spacing-200;
 }
@@ -23,6 +23,18 @@
     display: flex;
     align-items: center;
     margin: $spacing-200;
+}
+
+.header-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.infos-container {
+    display: flex;
+    flex-direction: row;
+    gap: $spacing-400;
+    margin: $spacing-100 $spacing-200;
 }
 
 .header {

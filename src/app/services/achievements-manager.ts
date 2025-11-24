@@ -1,6 +1,6 @@
 import { Injectable, WritableSignal } from '@angular/core';
 
-interface Achievement {
+export interface Achievement {
   title: string;
   description: string;
   icon?: string;

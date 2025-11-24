@@ -1,5 +1,12 @@
 import { Component, ElementRef, Signal, ViewChild, WritableSignal } from '@angular/core';
 import { moyaiUpgrades } from '../../../assets/static/moyai-upgrades';
+import { UpgradeType } from '../../services/shop-manager';
+
+export interface Effect {
+  type: UpgradeType;
+  value: number;
+  targetItemId?: number[];
+}
 
 export interface MoyaiUpgrades {
   id: number;
@@ -7,7 +14,13 @@ export interface MoyaiUpgrades {
   description: string;
   price: number;
   unlocked: boolean;
+  effect: Effect;
   displayCondition: WritableSignal<boolean>;
+}
+
+export interface MoyaiUpgradeSave {
+  id: number;
+  unlocked: boolean;
 }
 
 @Component({

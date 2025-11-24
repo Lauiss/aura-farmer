@@ -1,0 +1,21 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.generated-aura {
+    display: flex;
+    flex-direction: row;
+    gap: 0.3rem;
+}
+
+.bold {
+    font-weight: bold;
+        font-size: 2rem;
+}
+
+.align-center {
+    justify-content: center;
+    align-items: center;
+}

@@ -1,0 +1,12 @@
+<div class="container align-center">
+    <p aria-live="polite">
+        {{ 'OFFLINE_PROGRESSION_MESSAGE' | translate }}
+    </p>
+<div class="generated-aura align-center">
+        <span class="bold">{{ offlineProgression() | formatAura }}</span> <p>{{ 'AURA' | translate }}</p>
+        <span>{{ 'IN' | translate }}</span>
+        <span class="bold">{{ hours() }}</span> <span>H</span>
+        <span class="bold">{{ minutes() }}</span> <span>M</span>
+        <span class="bold">{{ seconds() }}</span> <span>S</span>
+    </div>
+</div>

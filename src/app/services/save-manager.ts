@@ -1,17 +1,27 @@
 import { Injectable } from '@angular/core';
 import { ItemSave } from './shop-manager';
+import { MoyaiUpgradeSave } from '../components/aura-btn/aura-btn';
+import { SettingsConfig } from './settings-manager';
 
 export interface SaveData {
   auraCount: number;
   allTimeAura: number;
   shopItems: ItemSave[];
+  moyaiUpgrades: MoyaiUpgradeSave[];
+  counters: {};
+  lastSaveTime?: number;
+}
+
+export enum SaveLocation {
+  GameSave = "AURA_FARMER_SAVE",
+  Settings = "AURA_FARMER_SETTINGS"
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class SaveManager {
-  saveProgress(key: string, data: SaveData): void {
+  saveProgress(key: string, data: SaveData | SettingsConfig): void {
     try {
       const json = JSON.stringify(data);
       localStorage.setItem(key, json);
@@ -20,7 +30,7 @@ export class SaveManager {
     }
   }
 
-  loadProgress<T>(key: string): SaveData | null {
+  loadProgress<T>(key: string): any {
     const json = localStorage.getItem(key);
     if (json) {
       try {
