@@ -18,18 +18,20 @@ export class SettingsManager {
   private soundManager = inject(SoundManager);
   private translate = inject(TranslateService);
 
-  settingConfig: SettingsConfig = {
+  defaultConfig: SettingsConfig = {
     fxVolume: 1,
     musicVolume: 1,
     language: 'en'
   };
+
+  settingConfig;
 
   constructor() {
     this.loadSettingsConfig();
   }
 
   private loadSettingsConfig() {
-    this.settingConfig = this.saveManager.loadProgress(SaveLocation.Settings);
+    this.settingConfig = this.saveManager.loadProgress(SaveLocation.Settings) ?? this.defaultConfig;
 
     this.soundManager.fxVolume.set(this.settingConfig?.fxVolume ?? 1);
     this.soundManager.updateAmbianceVolume(this.settingConfig?.musicVolume ?? 1);
