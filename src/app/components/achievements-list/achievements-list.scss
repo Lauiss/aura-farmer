@@ -1,0 +1,123 @@
+@import '../../../../src/variables.scss';
+
+.achievements-container {
+  padding: $spacing-200;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: $spacing-300;
+  text-align: center;
+
+  h2 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 700;
+  }
+
+  .progress {
+    margin-top: $spacing-100;
+    font-size: 18px;
+    opacity: 0.8;
+  }
+}
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: $spacing-200;
+}
+
+.achievement-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: $radius-100;
+  padding: $spacing-200;
+  display: flex;
+  gap: $spacing-200;
+  transition: all 0.3s ease;
+  position: relative;
+  opacity: 0.5;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  &.unlocked {
+    opacity: 1;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+    border-color: rgba(102, 126, 234, 0.4);
+  }
+}
+
+.achievement-icon-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.achievement-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  filter: grayscale(100%);
+
+  .unlocked & {
+    filter: grayscale(0%);
+  }
+}
+
+.unlock-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: white;
+  border: 2px solid $primary;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+}
+
+.achievement-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-50;
+}
+
+.achievement-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: $text-color;
+}
+
+.achievement-description {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+.locked-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.6;
+  width: fit-content;
+}

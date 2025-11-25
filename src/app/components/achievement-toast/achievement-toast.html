@@ -1,0 +1,16 @@
+<div class="toast-container">
+  @for (achievement of achievements(); track achievement.id) {
+    <div class="achievement-toast">
+      @if (achievement.icon) {
+        <img [src]="achievement.icon" [alt]="achievement.title" class="toast-icon">
+      }
+      <div class="toast-content">
+        <div class="toast-header">
+          <span class="toast-badge">{{ 'ACHIEVEMENT_UNLOCKED' | translate }}</span>
+        </div>
+        <h3 class="toast-title">{{ achievement.title | translate }}</h3>
+        <p class="toast-description">{{ achievement.description | translate }}</p>
+      </div>
+    </div>
+  }
+</div>

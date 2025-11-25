@@ -11,6 +11,8 @@ import { OfflineProgressAnnouncer } from '../../components/offline-progress-anno
 import { ModalManager } from '../../services/modal-manager';
 import { Settings } from '../../components/settings/settings';
 import { SettingsManager } from '../../services/settings-manager';
+import { AchievementsManager } from '../../services/achievements-manager';
+import { createAchievements } from '../../../assets/static/achievements';
 
 @Component({
   standalone: true,
@@ -32,11 +34,25 @@ export class GamePage {
   public readonly saveManager = inject(SaveManager);
   public readonly modalManager = inject(ModalManager);
   public readonly settingsManager = inject(SettingsManager);
+  public readonly achievementsManager = inject(AchievementsManager);
 
 
   ngOnInit() {
     this.settingsManager.getSettingsConfig();
+
+    // Initialiser les achievements
+    const achievements = createAchievements(
+      () => this.shopManager.getAllItems(),
+      () => this.achievementsManager.totalClicks(),
+      () => this.auraManager.allTimeAura()
+    );
+    this.achievementsManager.setAchievements(achievements);
+
     this.loadSave();
+
+    // Vérifier rétroactivement les achievements (sans notification)
+    this.achievementsManager.checkAchievementsSilently();
+
     this.startAuraGain();
     this.soundManager.changeMusic(Sound.Game);
   }
@@ -45,6 +61,9 @@ export class GamePage {
     const before = this.auraManager.auraCount();
     this.auraManager.increment();
     const after = this.auraManager.auraCount();
+
+    // Incrémenter le compteur de clics
+    this.achievementsManager.incrementClicks();
 
     const delta = +(after - before).toFixed(2);
     if (e && delta !== 0) {
@@ -61,6 +80,8 @@ export class GamePage {
         this.auraManager.auraCount.update(current => current + this.shopManager.getTotalValue());
         this.auraManager.allTimeAura.update(total => total + this.shopManager.getTotalValue());
       }
+      // Vérifier les achievements toutes les secondes
+      this.achievementsManager.checkAchievements();
     });
 
     interval(10000).subscribe(() => {
@@ -89,7 +110,9 @@ export class GamePage {
       allTimeAura: parseInt(this.auraManager.totalAllTime.toFixed(2)),
       shopItems: plainItems,
       moyaiUpgrades: moyaiUpgrades,
-      counters: this.shopManager.getCountersValue()
+      counters: this.shopManager.getCountersValue(),
+      achievements: this.achievementsManager.getAchievementsForSave(),
+      totalClicks: this.achievementsManager.totalClicks()
     }
 
     if (moyaiUpgrades[0].unlocked){
@@ -121,6 +144,14 @@ export class GamePage {
 
     if (saveData.counters) {
       this.shopManager.restoreCountersFromSave(saveData.counters);
+    }
+
+    if (saveData.achievements) {
+      this.achievementsManager.restoreFromSave(saveData.achievements);
+    }
+
+    if (saveData.totalClicks) {
+      this.achievementsManager.totalClicks.set(saveData.totalClicks);
     }
 
     if (saveData.lastSaveTime) {

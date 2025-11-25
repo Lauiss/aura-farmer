@@ -4,6 +4,7 @@
     <div class="header-actions">
         <app-action-btn (click)="cycleBuyAmount()">{{ 'BUY' | translate }} {{buyAmount()}}</app-action-btn>
         <app-action-btn (click)="openMoyaiUpgradesModal()" [disabled]="auraManager.allTimeAura() < unlockUpgrades"> {{ 'MOYAI_UPGRADES' | translate }}</app-action-btn>
+        <app-action-btn (click)="openAchievementsModal()">{{ 'ACHIEVEMENTS' | translate }}</app-action-btn>
         <app-action-btn (click)="openSettingsModal()">{{ 'SETTINGS' | translate }}</app-action-btn>
     </div>
     </div>

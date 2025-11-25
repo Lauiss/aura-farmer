@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { ItemSave } from './shop-manager';
 import { MoyaiUpgradeSave } from '../components/aura-btn/aura-btn';
 import { SettingsConfig } from './settings-manager';
+import { AchievementSave } from './achievements-manager';
 
 export interface SaveData {
   auraCount: number;
@@ -10,6 +11,8 @@ export interface SaveData {
   moyaiUpgrades: MoyaiUpgradeSave[];
   counters: {};
   lastSaveTime?: number;
+  achievements?: AchievementSave[];
+  totalClicks?: number;
 }
 
 export enum SaveLocation {

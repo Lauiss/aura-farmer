@@ -1,0 +1,78 @@
+@import '../../../../src/variables.scss';
+
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-100;
+  pointer-events: none;
+}
+
+.achievement-toast {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: $radius-100;
+  padding: $spacing-200;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: $spacing-200;
+  min-width: 320px;
+  max-width: 400px;
+  animation: slideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.toast-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.toast-content {
+  flex: 1;
+  color: white;
+}
+
+.toast-header {
+  margin-bottom: $spacing-50;
+}
+
+.toast-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.toast-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: $spacing-50;
+}
+
+.toast-description {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

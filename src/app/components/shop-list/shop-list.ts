@@ -10,6 +10,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { MoyaiUpgradesShop } from '../moyai-upgrades/moyai-upgrades';
 import { FormatAuraPipe } from '../../pages/game-page/game-page';
 import { ItemUpgradesShop } from '../item-upgrades/item-upgrades';
+import { AchievementsList } from '../achievements-list/achievements-list';
 
 @Component({
   selector: 'app-shop-list',
@@ -48,6 +49,10 @@ export class ShopList {
 
   openSettingsModal(){
     this.modalManager.open(Settings);
+  }
+
+  openAchievementsModal(){
+    this.modalManager.open(AchievementsList);
   }
 
   openMoyaiUpgradesModal() {

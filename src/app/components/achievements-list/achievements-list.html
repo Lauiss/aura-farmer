@@ -1,0 +1,28 @@
+<div class="achievements-container">
+  <div class="header">
+    <h2>{{ 'ACHIEVEMENTS' | translate }}</h2>
+    <p class="progress">{{ achievementsManager.getUnlockedCount() }} / {{ achievementsManager.getTotalCount() }}</p>
+  </div>
+
+  <div class="achievements-grid">
+    @for (achievement of achievementsManager.achievements(); track achievement.id) {
+      <div class="achievement-card" [class.unlocked]="achievement.unlocked">
+        @if (achievement.icon) {
+          <div class="achievement-icon-wrapper">
+            <img [src]="achievement.icon" [alt]="achievement.title" class="achievement-icon">
+            @if (achievement.unlocked) {
+              <div class="unlock-badge">✓</div>
+            }
+          </div>
+        }
+        <div class="achievement-info">
+          <h3 class="achievement-title">{{ achievement.title | translate }}</h3>
+          <p class="achievement-description">{{ achievement.description | translate }}</p>
+          @if (!achievement.unlocked) {
+            <span class="locked-badge">{{ 'LOCKED' | translate }}</span>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>
