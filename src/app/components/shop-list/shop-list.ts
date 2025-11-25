@@ -55,6 +55,6 @@ export class ShopList {
   }
 
   openItemUpgradesModal(item: Item) {
-    this.modalManager.open(ItemUpgradesShop, { data: item});
+    this.modalManager.open(ItemUpgradesShop, { data: { upgrades: item.upgrades, itemId: item.id } });
   }
 }

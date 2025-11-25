@@ -1,1 +1,14 @@
-<p>item-upgrades works!</p>
+<div class="flex flex-column gap-100">
+@for (upgrade of upgrades(); track upgrade.id) {
+        <div class="flex flex-row container">
+            <div class="flex flex-column">
+                <h3>{{ upgrade.name | translate }}</h3>
+                <p>{{ upgrade.description | translate }}</p>
+                <p>{{ 'PRICE' | translate }}: {{ upgrade.price | formatAura }}</p>
+            </div>
+            <app-action-btn (click)="buyUpgrade(upgrade)" [disabled]="upgrade.unlocked">
+                {{ upgrade.unlocked ? ('UNLOCKED' | translate) : ('BUY' | translate) }}
+            </app-action-btn>
+        </div>
+}
+</div>

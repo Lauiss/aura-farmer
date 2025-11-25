@@ -36,6 +36,7 @@ export interface ItemSave {
   price: number;
   factor: number;
   unlocked: boolean;
+  upgrades?: { id: number; unlocked: boolean }[];
 }
 
 @Injectable({
@@ -70,7 +71,7 @@ export class ShopManager {
       if (this.auraService.auraCount() >= item.price()) {
         this.auraService.auraCount.update(c => c - item.price());
         item.level.update(q => q + 1);
-        item.price.update(p => Math.round((p * item.factor) * this.priceReduction()));
+        item.price.update(p => Math.round(p * item.factor));
       } else {
         break;
       }
@@ -131,6 +132,16 @@ export class ShopManager {
           existing.level.set(saved.quantity);
           existing.price.set(saved.price);
           existing.unlocked = saved.unlocked;
+
+          // Restaurer les upgrades
+          if (saved.upgrades && existing.upgrades) {
+            for (const savedUpgrade of saved.upgrades) {
+              const existingUpgrade = existing.upgrades.find(u => u.id === savedUpgrade.id);
+              if (existingUpgrade) {
+                existingUpgrade.unlocked = savedUpgrade.unlocked;
+              }
+            }
+          }
         }
     }
     this.items.set(items);
@@ -163,7 +174,61 @@ export class ShopManager {
   }
 
   unlockMoyaiUpgrade(index: number) {
+    this.applyEffect(this.moyaiUpgrades()[index].effect);
     this.moyaiUpgrades()[index].unlocked = true;
+  }
+
+  unlockUpgrade(itemId: number, upgradeId: number) {
+    const item = this.items().find(i => i.id === itemId);
+    if(!item || !item.upgrades){ return; }
+    const upgrade = item.upgrades.find(u => u.id === upgradeId);
+    if(!upgrade || upgrade.unlocked){ return; }
+    if(this.auraService.auraCount() < upgrade.price){ return; }
+
+    this.auraService.auraCount.update(c => c - upgrade.price);
+    upgrade.unlocked = true;
+    this.applyEffect(upgrade.effect);
+  }
+
+  applyEffect(effect: Effect) {
+    switch(effect.type){
+      case UpgradeType.MULTIPLIER:
+        // Si targetItemId est défini, c'est un boost d'item spécifique
+        if(effect.targetItemId){
+          const items = this.items();
+          for(const id of effect.targetItemId){
+            const item = items.find(i => i.id === id);
+            if(item){
+              item.value.update(v => Number((v * (1 + effect.value)).toFixed(2)));
+            }
+          }
+          this.items.set([...items]);
+        } else {
+          // Sinon c'est un multiplicateur global
+          this.finalMultiplier.set(Number((this.finalMultiplier() * (1 + effect.value)).toFixed(2)));
+        }
+        break;
+      case UpgradeType.CLICK:
+        this.clickMultiplier.set(Number((this.clickMultiplier() * (1 + effect.value)).toFixed(2)));
+        this.auraService.defineClickValue(this.clickMultiplier());
+        break;
+      case UpgradeType.PRICE_REDUCTION:
+        this.priceReduction.set(Number((this.priceReduction() * (1 + effect.value)).toFixed(2)));
+        break;
+      case UpgradeType.ITEM_BOOST:
+        if(effect.targetItemId){
+          const items = this.items();
+          for(const id of effect.targetItemId){
+            const item = items.find(i => i.id === id);
+            if(item){
+              item.value.update(v => Number((v * (1 + effect.value)).toFixed(2)));
+            }
+          }
+          // Forcer la mise à jour du signal items
+          this.items.set([...items]);
+        }
+        break;
+    }
   }
 
   getCountersValue() {
@@ -172,6 +237,10 @@ export class ShopManager {
       clickMultiplier: this.clickMultiplier(),
       priceReduction: this.priceReduction()
     };
+  }
+
+  unbuyMoyaiUpgrade(index: number) {
+    this.moyaiUpgrades()[index].unlocked = false;
   }
 }
 export { UpgradeType };

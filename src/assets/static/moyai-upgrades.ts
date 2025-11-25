@@ -15,10 +15,10 @@ export const moyaiUpgrades: MoyaiUpgrades[] = [
         {
         id: 1,
         name: 'sunglasses',
-        description: 'x2 aura per click',
+        description: 'x1000 aura per click',
         unlocked: false,
-        effect : { type: UpgradeType.CLICK, value: 1 },
-        price: 1500,
+        effect : { type: UpgradeType.CLICK, value: 1000 },
+        price: 150000,
         displayCondition: signal(true),
     },
         {

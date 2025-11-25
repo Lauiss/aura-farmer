@@ -19,8 +19,17 @@ export class MoyaiUpgradesShop {
   moyaiUpgrades = signal<MoyaiUpgrades[]>(moyaiUpgrades);
 
   buyUnlock(index: number) {
-    if( this.auraManager.auraCount() >= this.moyaiUpgrades()[index].price){
-    this.shopManager.unlockMoyaiUpgrade(index);
+    const upgrade = this.moyaiUpgrades()[index];
+    if (this.auraManager.auraCount() >= upgrade.price && !upgrade.unlocked) {
+      this.auraManager.auraCount.update(c => c - upgrade.price);
+      this.shopManager.unlockMoyaiUpgrade(index);
     }
+  }
+
+  unbuyAll() {
+    for (let i = 0; i < this.moyaiUpgrades().length; i++) {
+      this.shopManager.unbuyMoyaiUpgrade(i);
+    }
+    this.shopManager.clickMultiplier.set(1);
   }
 }

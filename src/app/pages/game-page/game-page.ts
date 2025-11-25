@@ -75,7 +75,7 @@ export class GamePage {
       quantity: item.level(),
       price: item.price(),
       factor: item.factor,
-      upgrades: item.upgrades,
+      upgrades: item.upgrades?.map(u => ({ id: u.id, unlocked: u.unlocked })),
       unlocked: item.unlocked
     }));
 
