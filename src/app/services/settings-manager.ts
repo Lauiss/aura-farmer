@@ -24,7 +24,7 @@ export class SettingsManager {
     language: 'en'
   };
 
-  settingConfig;
+  settingConfig: SettingsConfig = this.defaultConfig;
 
   constructor() {
     this.loadSettingsConfig();
