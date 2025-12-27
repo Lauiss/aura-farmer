@@ -1,7 +1,7 @@
 {
     "PLAY": "Jouer",
     "SETTINGS": "Options",
-    "AURA_PER_SECOND": "Aura / Seconde",
+    "AURA_PER_SECOND": " / Seconde",
     "AURA": "Aura",
     "BUY": "Acheter",
     "MOYAI_UPGRADES": "Améliorations Moyai",
@@ -18,7 +18,11 @@
     "IN": "en",
     "SECONDS": "secondes",
     "UNLOCKED": "Débloqué",
+    "LOCKED": "Pas encore débloqué",
     "FINAL_MULTIPLIER": "Multiplicateur Bonus",
     "CLICK_VALUE": "Valeur par Clic",
-    "PRICE_REDUCTION": "% de Réduction de Prix"
+    "PRICE_REDUCTION": "% de Réduction de Prix",
+    "ACHIEVEMENTS": "Succès",
+    "ACHIEVEMENT_UNLOCKED": "Succès Débloqué"
+
 }

@@ -12,7 +12,7 @@
 }
 
 .achievement-toast {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: $bg-color;
   border-radius: $radius-100;
   padding: $spacing-200;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
@@ -22,7 +22,7 @@
   min-width: 320px;
   max-width: 400px;
   animation: slideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid $primary;
 }
 
 .toast-icon {
@@ -30,12 +30,13 @@
   height: 50px;
   border-radius: 8px;
   object-fit: cover;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  background-color: $primary;
+  border: 2px solid $text-color;
 }
 
 .toast-content {
   flex: 1;
-  color: white;
+  color: $text-color;
 }
 
 .toast-header {
@@ -43,7 +44,7 @@
 }
 
 .toast-badge {
-  background: rgba(255, 255, 255, 0.2);
+  background: $primary;
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 11px;

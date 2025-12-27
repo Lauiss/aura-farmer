@@ -3,11 +3,11 @@
     <div class="counter-container">
       <div class="flex-row center-items gap-100 white-text big-title">
         <h3>{{ auraManager.auraCount() | formatAura }}</h3>
-        <span>{{ 'AURA' | translate }}</span>
+        <span tooltip="Aura"><img class="aura-logo" src="assets/imgs/aura.png"/></span>
       </div>
       <div class="flex-row center-items gap-100 white-text subtitle">
         <h3>{{ this.shopManager.getTotalValue() | formatAura }}</h3>
-        <span>{{ 'AURA_PER_SECOND' | translate }}</span>
+        <span><img class="aura-logo-small" src="assets/imgs/aura.png"/>{{ 'AURA_PER_SECOND' | translate }}</span>
       </div>
     </div>
     <app-aura-btn #btn (click)="increment($event)"></app-aura-btn>

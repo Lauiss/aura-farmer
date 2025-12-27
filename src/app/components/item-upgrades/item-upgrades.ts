@@ -5,6 +5,7 @@ import { ShopManager } from '../../services/shop-manager';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ActionBtn } from '../action-btn/action-btn';
 import { FormatAuraPipe } from '../../pages/game-page/game-page';
+import { AuraManager } from '../../services/aura-manager';
 
 @Component({
   selector: 'app-item-upgrades',
@@ -16,14 +17,13 @@ export class ItemUpgradesShop {
 
   modalManager = inject(ModalManager);
   shopManager = inject(ShopManager);
+  auraManager = inject(AuraManager);
 
   upgrades = computed(() => {
-    console.log('upgrades', this.modalManager.modalData()?.data?.upgrades)
     return this.modalManager.modalData()?.data?.upgrades;
   });
 
   itemId = computed(() => {
-    console.log('upgrades', this.modalManager.modalData()?.data?.itemId)
     return this.modalManager.modalData()?.data?.itemId;
   })
 

@@ -1,7 +1,7 @@
 {
     "PLAY": "Play",
     "SETTINGS": "Settings",
-    "AURA_PER_SECOND": "Aura / Second",
+    "AURA_PER_SECOND": " / Second",
     "AURA": "Aura",
     "BUY": "Buy",
     "MOYAI_UPGRADES": "Moyai upgrades",
@@ -20,5 +20,7 @@
     "UNLOCKED": "Unlocked",
     "FINAL_MULTIPLIER": "Bonus Multiplier",
     "CLICK_VALUE": "Click Value",
-    "PRICE_REDUCTION": "Price Reduction %"
+    "PRICE_REDUCTION": "Price Reduction %",
+    "ACHIEVEMENTS": "Achievements",
+    "ACHIEVEMENT_UNLOCKED": "Achievement Unlocked"
 }

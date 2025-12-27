@@ -7,13 +7,14 @@
 }
 
 .moyai-wrap {
-  position: relative;         /* le wrapper devient le plan commun */
-  width: 100%;               /* fixe la taille une bonne fois */
+  position: relative;
+  width: 100%;
   height: auto;
   display: inline-block;
   will-change: transform;
 }
-.moyai { display:block;
+.moyai {
+  display:block;
   width:100%;
   height:auto;
 }
@@ -22,6 +23,7 @@
   position: absolute;
   width: 100%; height: auto;
   pointer-events: none;
+  z-index: 2;
 }
 
 .over {
@@ -33,4 +35,10 @@
   width: 100%; height: 100%;
 }
 
+.bg {
+  position: absolute;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  z-index: -1;
+}
 

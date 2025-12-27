@@ -1,12 +1,13 @@
 <div class="flex flex-column gap-100">
 @for (upgrade of upgrades(); track upgrade.id) {
         <div class="flex flex-row container">
+            <img src="assets/imgs/upgrades/upgrade_generic.png" alt="upgrade_icon" class="upgrade-icon"/>
             <div class="flex flex-column">
                 <h3>{{ upgrade.name | translate }}</h3>
                 <p>{{ upgrade.description | translate }}</p>
-                <p>{{ 'PRICE' | translate }}: {{ upgrade.price | formatAura }}</p>
+                <p>{{ 'PRICE' | translate }}: {{ upgrade.price | formatAura }} <img class="aura-logo" src="assets/imgs/aura.png"/></p>
             </div>
-            <app-action-btn (click)="buyUpgrade(upgrade)" [disabled]="upgrade.unlocked">
+            <app-action-btn (click)="buyUpgrade(upgrade)" [disabled]="upgrade.unlocked || auraManager.auraCount() < upgrade.price">
                 {{ upgrade.unlocked ? ('UNLOCKED' | translate) : ('BUY' | translate) }}
             </app-action-btn>
         </div>

@@ -1,4 +1,4 @@
-import { Component, forwardRef, inject, signal } from '@angular/core';
+import { Component, computed, forwardRef, inject, signal } from '@angular/core';
 import { Item, ShopManager } from '../../services/shop-manager';
 import { CommonModule } from '@angular/common';
 import { AuraManager } from '../../services/aura-manager';
@@ -25,6 +25,7 @@ export class ShopList {
   private readonly modalManager = inject(ModalManager);
 
   unlockUpgrades = 1000000;
+  unlockButtons = 10000;
 
 
   public readonly shopItems: Item[] = this.shopManager.getAllItems();

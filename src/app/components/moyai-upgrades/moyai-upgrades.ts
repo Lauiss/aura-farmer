@@ -25,11 +25,4 @@ export class MoyaiUpgradesShop {
       this.shopManager.unlockMoyaiUpgrade(index);
     }
   }
-
-  unbuyAll() {
-    for (let i = 0; i < this.moyaiUpgrades().length; i++) {
-      this.shopManager.unbuyMoyaiUpgrade(i);
-    }
-    this.shopManager.clickMultiplier.set(1);
-  }
 }

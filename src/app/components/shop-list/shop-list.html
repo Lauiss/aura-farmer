@@ -2,8 +2,10 @@
     <div class="header header-page">
     <h2>Shop</h2>
     <div class="header-actions">
+        @if (auraManager.allTimeAura() > unlockButtons){
         <app-action-btn (click)="cycleBuyAmount()">{{ 'BUY' | translate }} {{buyAmount()}}</app-action-btn>
         <app-action-btn (click)="openMoyaiUpgradesModal()" [disabled]="auraManager.allTimeAura() < unlockUpgrades"> {{ 'MOYAI_UPGRADES' | translate }}</app-action-btn>
+        }
         <app-action-btn (click)="openAchievementsModal()">{{ 'ACHIEVEMENTS' | translate }}</app-action-btn>
         <app-action-btn (click)="openSettingsModal()">{{ 'SETTINGS' | translate }}</app-action-btn>
     </div>
@@ -29,8 +31,8 @@
                     <h3>{{ item.name() }}</h3>
                 </div>
                 <div class="content">
-                    <p>{{'PRICE' | translate}}: {{ (item.price() * numberFromBuyAmount(item)) | formatAura }} {{ 'AURA' | translate }}</p>
-                    <p>{{'VALUE' | translate}}: {{ item.value() | number:'1.0-2' }} {{'AURA_PER_SECOND' | translate}}</p>
+                    <p>{{'PRICE' | translate}}: {{ (item.price() * numberFromBuyAmount(item)) | formatAura }} <img class="aura-logo" src="assets/imgs/aura.png"/></p>
+                    <p>{{'VALUE' | translate}}: {{ item.value() | number:'1.0-2' }} <img class="aura-logo" src="assets/imgs/aura.png"/> {{'AURA_PER_SECOND' | translate}}</p>
                     <p>{{'LEVEL' | translate}}: {{ item.level() | number:'1.0-0' }}</p>
                 </div>
             </div>
@@ -44,5 +46,24 @@
             </div>
             </div>
         }
+    }
+    @if (!shopItems[shopItems.length-1].displayCondition()) {
+        <div class="item-container flex flex-row gray">
+            <div class="flex flex-row">
+                <div class="icon-container">
+                    <img src="assets/imgs/upgrades/unknown_upgrade.png" alt="unknown" class="item-icon"/>
+                </div>
+                <div class="flex flex-column">
+                    <div class="header">
+                        <h3>?????</h3>
+                    </div>
+                    <div class="content">
+                        <p>{{'PRICE' | translate}}: ???</p>
+                        <p>{{'VALUE' | translate}}: ???</p>
+                        <p>{{'LEVEL' | translate}}: ???</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     }
 </div>

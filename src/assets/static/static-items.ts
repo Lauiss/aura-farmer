@@ -40,7 +40,7 @@ export const shopItems: Item[] = [
     price: signal(500),
     factor: 1.14,
     displayCondition: computed(() => {
-        if(shopItems[1].level() >= 7){
+        if(shopItems[1].level() >= 20){
           return true;
         }
         return false;
@@ -57,7 +57,7 @@ export const shopItems: Item[] = [
     price: signal(3000),
     factor: 1.16,
     displayCondition: computed(() => {
-        if(shopItems[2].level() >= 10 && shopItems[0].level() >= 69){
+        if(shopItems[2].level() >= 20){
           return true;
         }
         return false;
@@ -74,7 +74,7 @@ export const shopItems: Item[] = [
     price: signal(20000),
     factor: 1.18,
     displayCondition: computed(() => {
-        if(shopItems[3].level() >= 1){
+        if(shopItems[3].level() >= 20){
           return true;
         }
         return false;
@@ -91,7 +91,7 @@ export const shopItems: Item[] = [
     price: signal(120000),
     factor: 1.19,
     displayCondition: computed(() => {
-        if(shopItems[4].level() >= 1){
+        if(shopItems[4].level() >= 20){
           return true;
         }
         return false;
@@ -108,7 +108,7 @@ export const shopItems: Item[] = [
     price: signal(1000000),
     factor: 1.21,
     displayCondition: computed(() => {
-        if(shopItems[5].level() >= 1){
+        if(shopItems[5].level() >= 20){
           return true;
         }
         return false;
@@ -125,7 +125,7 @@ export const shopItems: Item[] = [
     price: signal(15000000),
     factor: 1.22,
     displayCondition: computed(() => {
-        if(shopItems[6].level() >= 1){
+        if(shopItems[6].level() >= 20){
           return true;
         }
         return false;
