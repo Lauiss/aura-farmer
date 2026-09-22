@@ -31,7 +31,8 @@ Clicker incrémental Angular. Prototype : https://lauiss.itch.io/chad-aura-farme
 - La sauvegarde est du localStorage via `SaveManager`; clé de partie `AURA_FARMER_SAVE`, clé d'options `SaveLocation.Settings`.
 - Toute boucle d'animation Three.js tourne dans `NgZone.runOutsideAngular` pour ne pas déclencher la détection de changements à 60 fps.
 - La boucle de jeu (production passive, succès, sauvegarde) vit dans [`GameLoop`](src/app/services/game-loop.ts), **pas dans une page**. Une boucle attachée à `game-page` s'arrêterait dès qu'on passe à la boutique, et se rabonnerait à chaque retour en multipliant les gains.
-- Les indications du moyai passent par [`HintManager`](src/app/services/hint-manager.ts) : `show('CLÉ_DE_TRADUCTION')` fait surgir la tête et sa bulle en bas de l'écran. C'est le point d'entrée pour tout message de ce genre.
+- Tout ce que le jeu dit au joueur passe par [`HintManager`](src/app/services/hint-manager.ts), qui fait parler la tête de moyai en bas de l'écran : `show('CLÉ')` pour une indication, `announce({ titleKey, body, icon })` pour une annonce mise en avant comme un succès. Les messages s'enchaînent dans une file au lieu de s'écraser.
+- Les succès **ne créent leur liste qu'une fois par session** (`GamePage` ne reconstruit que si elle est vide). La reconstruire à chaque montage de la page la remettait à l'état verrouillé, et le contrôle périodique les redébloquait tous en les annonçant à nouveau.
 
 ## 3D
 
@@ -41,6 +42,7 @@ Clicker incrémental Angular. Prototype : https://lauiss.itch.io/chad-aura-farme
 - [moyai-viewer.ts](src/app/components/moyai-viewer/moyai-viewer.ts) — scène autonome, `TrackballControls` (rotation libre sur tous les axes, pan désactivé), rotation lente automatique tant que l'utilisateur n'a pas touché à la statue.
 - [models/trophy.ts](src/app/three/models/trophy.ts) — `createTrophy({ unlocked })`, ambré ou gris, pour les succès. Ses anses passent par une `ExtrudeGeometry` : `loft` n'empile que selon Y et ne sait pas suivre une courbe.
 - [models/shop-bag.ts](src/app/three/models/shop-bag.ts) — `createShopBag()`, l'icône de la boutique.
+- [models/finger.ts](src/app/three/models/finger.ts) — l'index du « chut », joué par `MoyaiViewer.playShush()` quand on clique en possédant le Mewing. Le doigt est enfant de la statue, donc il la suit si elle tourne.
 - [models/question-mark.ts](src/app/three/models/question-mark.ts) et [models/arrow.ts](src/app/three/models/arrow.ts) — le « ? » de ce qui n'est pas dévoilé et la flèche verte des améliorations. Plus aucune icône 2D dans la carte : tout passe par `ModelIcons`.
 - [models/gear.ts](src/app/three/models/gear.ts) — `createGear()`, l'engrenage du bouton des options. Profil denté dessiné point par point puis extrudé ; garder le sommet de dent large devant les flancs, sinon la roue s'effile en étoile.
 - [snapshot.ts](src/app/three/snapshot.ts) — rend un modèle **une fois** en data URL. Les icônes passent par là plutôt que par un canvas vivant chacune : un navigateur ne tient qu'une poignée de contextes WebGL (~16) et la liste des succès en affiche des dizaines. Le cache est dans [ModelIcons](src/app/services/model-icons.ts), avec repli sur les anciens PNG si WebGL manque.
@@ -67,6 +69,7 @@ Les modales suivent le même thème, **toutes** — y compris celles du jeu (pro
 ## Règles de jeu à connaître
 
 - **Combo de rotation** : faire tourner la statue alimente [`SpinCombo`](src/app/services/spin-combo.ts), qui monte un multiplicateur appliqué au clic suivant. Les tours complets comptent séparément en lacet et en tangage. Le service est nourri **hors de la zone Angular**, image par image, et n'écrit dans ses signaux que lorsque la valeur affichée change — sinon la détection de changements repartirait à 60 Hz. Le rapport passe par l'entrée `spinReporter` de `MoyaiViewer`, un simple rappel et non une sortie Angular, pour la même raison.
+- **Chaîne d'améliorations** : sans champ `requires` explicite, chaque amélioration d'un article ouvre la suivante de sa liste (`ShopManager.upgradeRequirements`). La carte s'arrête à la première encore fermée.
 - **Dévoilement de la carte** : `shop-map` s'arrête au **premier article non dévoilé**, affiché anonyme, et ne rend rien au-delà. Le joueur ne voit jamais plus loin que sa prochaine étape.
 
 - Chaque article de la boutique a un `maxLevel` (200 pour l'instant, dans [static-items.ts](src/assets/static/static-items.ts)). `ShopManager.getAmountToBuy` plafonne la quantité et `buyItem` s'arrête au plafond : demander 100 exemplaires à deux niveaux de la fin n'en achète que deux.

@@ -1,15 +1,25 @@
-@if (hintManager.message(); as message) {
+@if (hintManager.current(); as message) {
   <div class="hint" role="status" aria-live="polite">
-    <div class="statue">
-      <!-- Orientation de trois quarts, figée : l'indication ne doit pas
-           attirer l'œil plus que le message qu'elle porte. -->
-      <app-moyai-viewer
-        [interactive]="false"
-        [idleSpin]="0"
-        [rotation]="[0.05, 0.55, 0]"
-        [distance]="4.4"
-      ></app-moyai-viewer>
+    <div class="speaker">
+      @if (message.icon) {
+        <img [src]="message.icon" alt="" class="icon">
+      } @else {
+        <!-- Orientation de trois quarts, figée : l'indication ne doit pas
+             attirer l'œil plus que le message qu'elle porte. -->
+        <app-moyai-viewer
+          [interactive]="false"
+          [idleSpin]="0"
+          [rotation]="[0.05, 0.55, 0]"
+          [distance]="4.4"
+        ></app-moyai-viewer>
+      }
     </div>
-    <p class="bubble">{{ message | translate }}</p>
+
+    <div class="bubble">
+      @if (message.titleKey) {
+        <p class="title">{{ message.titleKey | translate }}</p>
+      }
+      <p class="body">{{ message.body ?? (message.bodyKey! | translate) }}</p>
+    </div>
   </div>
 }

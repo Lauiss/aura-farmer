@@ -100,23 +100,27 @@ export class ShopMap {
       // voit donc jamais plus loin que sa prochaine étape.
       if (!revealed) break;
 
-      // Améliorations en deux colonnes sous l'article : une seule rangée
-      // suffisait à faire se chevaucher les grappes voisines, certains
-      // articles en comptant dix.
+      // Les améliorations descendent en chaîne sous leur article : chacune
+      // ouvre la suivante, et le lien vertical donne à voir cet ordre.
       const upgrades = item.upgrades ?? [];
-      upgrades.forEach((upgrade, u) => {
-        const column = u % 2 === 0 ? -1 : 1;
-        const row = Math.floor(u / 2);
+      let previousUpgrade = { x, y };
+      for (const [u, upgrade] of upgrades.entries()) {
+        const position = { x, y: 1060 + u * 300 };
         nodes.push({
           key: `upgrade-${item.id}-${upgrade.id}`,
           kind: 'upgrade',
-          x: x + column * 175,
-          y: 1080 + row * 260,
-          parent: { x, y },
+          x: position.x,
+          y: position.y,
+          parent: previousUpgrade,
           item,
           upgrade
         });
-      });
+        previousUpgrade = position;
+
+        // On s'arrête à la première amélioration encore fermée : comme pour
+        // les articles, le joueur ne voit qu'un cran devant lui.
+        if (!upgrade.unlocked) break;
+      }
     }
 
     return nodes;
@@ -133,6 +137,12 @@ export class ShopMap {
   isOwned(node: MapNode): boolean {
     if (node.kind === 'upgrade') return node.upgrade!.unlocked;
     return this.shopManager.isMaxed(node.item!);
+  }
+
+  /** Une amélioration dont les prérequis manquent n'est pas encore achetable. */
+  isAvailable(node: MapNode): boolean {
+    if (node.kind !== 'upgrade') return true;
+    return this.shopManager.isUpgradeAvailable(node.item!, node.upgrade!);
   }
 
   isMaxed(node: MapNode): boolean {
@@ -167,6 +177,10 @@ export class ShopMap {
       return;
     }
     if (this.isOwned(node)) return;
+    if (!this.isAvailable(node)) {
+      this.hintManager.show('SHOP_LOCKED_HINT');
+      return;
+    }
     if (!this.affordable(node)) {
       this.hintManager.show('SHOP_TOO_EXPENSIVE_HINT');
       return;

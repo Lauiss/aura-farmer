@@ -7,9 +7,9 @@
 // Ni noir pur ni blanc pur : le contraste maximal fait vibrer les arêtes de la
 // statue et écrase ses facettes les plus sombres, qui se confondraient avec la
 // page. Un gris chaud très sombre laisse le modèle se détacher.
-$menu-bg: #121211;
-$menu-surface: #1c1c1a;
-$menu-surface-raised: rgba(255, 255, 255, 0.04);
+$menu-bg: #24241f;
+$menu-surface: #2e2e29;
+$menu-surface-raised: rgba(255, 255, 255, 0.055);
 
 $menu-text: #ede6d6;
 // Sur fond sombre, un texte clair paraît optiquement plus maigre qu'il ne
@@ -17,8 +17,8 @@ $menu-text: #ede6d6;
 $menu-text-dim: rgba(237, 230, 214, 0.74);
 $menu-text-faint: rgba(237, 230, 214, 0.46);
 
-$menu-border: rgba(237, 230, 214, 0.14);
-$menu-border-strong: rgba(237, 230, 214, 0.3);
+$menu-border: rgba(237, 230, 214, 0.16);
+$menu-border-strong: rgba(237, 230, 214, 0.32);
 
 // Graisse de base du menu : le 400 par défaut décroche sur le sombre.
 $menu-weight: 500;

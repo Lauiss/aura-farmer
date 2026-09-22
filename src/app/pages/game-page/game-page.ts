@@ -30,6 +30,12 @@ export class GamePage {
   @ViewChild('btn', { read: ElementRef, static: true })
   private btnRef!: ElementRef<HTMLElement>;
 
+  @ViewChild('btn', { static: true })
+  private viewer!: MoyaiViewer;
+
+  /** Identifiant de l'article Mewing, qui débloque le geste du « chut ». */
+  private readonly mewingItemId = 4;
+
   public readonly soundManager = inject(SoundManager);
   public readonly translate = inject(TranslateService);
   public readonly auraManager = inject(AuraManager);
@@ -73,13 +79,18 @@ export class GamePage {
   ngOnInit() {
     this.settingsManager.getSettingsConfig();
 
-    // Initialiser les achievements
-    const achievements = createAchievements(
-      () => this.shopManager.getAllItems(),
-      () => this.achievementsManager.totalClicks(),
-      () => this.auraManager.allTimeAura()
-    );
-    this.achievementsManager.setAchievements(achievements);
+    // Une seule fois par session. Recréer la liste à chaque montage la
+    // remettait à l'état verrouillé, et le contrôle périodique les
+    // redébloquait tous en annonçant chacun d'eux à nouveau.
+    if (this.achievementsManager.achievements().length === 0) {
+      this.achievementsManager.setAchievements(
+        createAchievements(
+          () => this.shopManager.getAllItems(),
+          () => this.achievementsManager.totalClicks(),
+          () => this.auraManager.allTimeAura()
+        )
+      );
+    }
 
     // La boucle vit dans un service, pas dans la page : la production d'aura
     // doit continuer pendant qu'on parcourt la carte de la boutique.
@@ -92,7 +103,8 @@ export class GamePage {
     const before = this.auraManager.auraCount();
     // Le combo de rotation dope le clic : cliquer une statue lancée rapporte
     // davantage que cliquer une statue immobile.
-    this.auraManager.increment(this.spinCombo.current());
+    const multiplier = this.spinCombo.current();
+    this.auraManager.increment(multiplier);
     const after = this.auraManager.auraCount();
 
     // Incrémenter le compteur de clics
@@ -101,10 +113,20 @@ export class GamePage {
     const delta = +(after - before).toFixed(2);
     if (e && delta !== 0) {
       this.jellyButton(e);
-      this.spawnFloatingDelta(e.clientX, e.clientY, delta);
+      this.spawnFloatingDelta(e.clientX, e.clientY, delta, multiplier);
+    }
+
+    if (this.hasMewing()) {
+      this.viewer?.playShush();
     }
 
     this.soundManager.playFX(Sound.Plop);
+  }
+
+  /** Le geste n'apparaît qu'une fois le Mewing possédé. */
+  private hasMewing(): boolean {
+    const mewing = this.shopManager.getAllItems().find(item => item.id === this.mewingItemId);
+    return (mewing?.level() ?? 0) > 0;
   }
 
   // Animation pour les clicks
@@ -140,11 +162,28 @@ export class GamePage {
   }
 
   /** Crée un “+X” flottant à la position du clic (coordonnées écran) */
-  private spawnFloatingDelta(clientX: number, clientY: number, delta: number) {
+  private spawnFloatingDelta(clientX: number, clientY: number, delta: number, multiplier = 1) {
     const span = document.createElement('span');
     // tu peux réutiliser ton pipe si tu veux le même formatage :
     const formatted = new FormatAuraPipe().transform(delta >= 0 ? delta : -delta);
     span.textContent = `${delta >= 0 ? '+' : '-'}${formatted}`;
+
+    // Un clic porté par un combo se signale : c'est toute la récompense du
+    // geste, il ne doit pas passer pour un clic ordinaire.
+    if (multiplier > 1.05) {
+      const badge = document.createElement('small');
+      badge.textContent = ` ${this.translate.instant('COMBO_CLICK')} ×${multiplier.toFixed(1)}`;
+      Object.assign(badge.style, {
+        display: 'block',
+        marginTop: '2px',
+        fontSize: '15px',
+        fontWeight: '700',
+        letterSpacing: '0.12em',
+        textTransform: 'uppercase',
+        color: '#ffb347'
+      } as CSSStyleDeclaration);
+      span.appendChild(badge);
+    }
 
     // Style inline pour éviter de toucher tes SCSS
     Object.assign(span.style, {
@@ -154,6 +193,7 @@ export class GamePage {
       transform: 'translate(-50%, -50%)',
       fontWeight: '700',
       fontSize: '40px',
+      textAlign: 'center',
       color: 'white',
       textShadow: '0 1px 0 rgba(0,0,0,.4)',
       pointerEvents: 'none',

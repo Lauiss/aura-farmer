@@ -29,6 +29,12 @@ export interface ItemUpgrade {
   effect: Effect;
   price: number;
   unlocked: boolean;
+  /**
+   * Améliorations à posséder avant de pouvoir acheter celle-ci. Quand le
+   * champ est absent, la convention s'applique : chaque amélioration ouvre la
+   * suivante de sa liste.
+   */
+  requires?: number[];
 }
 
 export interface ItemSave {
@@ -193,11 +199,30 @@ export class ShopManager {
     this.moyaiUpgrades()[index].unlocked = true;
   }
 
+  /**
+   * Améliorations dont dépend celle-ci. Sans `requires` explicite, chaque
+   * amélioration ouvre la suivante : la liste forme une chaîne.
+   */
+  upgradeRequirements(item: Item, upgrade: ItemUpgrade): ItemUpgrade[] {
+    const list = item.upgrades ?? [];
+    if (upgrade.requires) {
+      return list.filter(candidate => upgrade.requires!.includes(candidate.id));
+    }
+    const index = list.indexOf(upgrade);
+    return index > 0 ? [list[index - 1]] : [];
+  }
+
+  /** Vrai quand tous les prérequis sont acquis. */
+  isUpgradeAvailable(item: Item, upgrade: ItemUpgrade): boolean {
+    return this.upgradeRequirements(item, upgrade).every(required => required.unlocked);
+  }
+
   unlockUpgrade(itemId: number, upgradeId: number) {
     const item = this.items().find(i => i.id === itemId);
     if(!item || !item.upgrades){ return; }
     const upgrade = item.upgrades.find(u => u.id === upgradeId);
     if(!upgrade || upgrade.unlocked){ return; }
+    if(!this.isUpgradeAvailable(item, upgrade)){ return; }
     if(this.auraService.auraCount() < upgrade.price){ return; }
 
     this.auraService.auraCount.update(c => c - upgrade.price);

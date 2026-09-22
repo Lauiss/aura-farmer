@@ -1,40 +1,39 @@
-import { Component, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
-import { Achievement, AchievementsManager } from '../../services/achievements-manager';
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
+import { AchievementsManager } from '../../services/achievements-manager';
+import { HintManager } from '../../services/hint-manager';
 import { ModelIcons } from '../../services/model-icons';
+import { TranslateService } from '@ngx-translate/core';
 
-import { TranslatePipe } from '@ngx-translate/core';
-
+/**
+ * Relaie les succès débloqués vers la bulle du moyai, en bas de l'écran.
+ *
+ * Le composant ne rend plus rien lui-même : il ne sert qu'à brancher le flux
+ * des succès sur la file de messages, et reste monté au niveau de
+ * l'application pour écouter en permanence.
+ */
 @Component({
   selector: 'app-achievement-toast',
-  imports: [TranslatePipe],
-  templateUrl: './achievement-toast.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
-  styleUrl: './achievement-toast.scss'
+  imports: [],
+  template: '',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: ''
 })
 export class AchievementToast implements OnInit {
-  private achievementsManager = inject(AchievementsManager);
-  achievements = signal<Achievement[]>([]);
 
+  private readonly achievementsManager = inject(AchievementsManager);
+  private readonly hintManager = inject(HintManager);
   private readonly modelIcons = inject(ModelIcons);
-
-  /** Un bandeau n'apparaît que pour un succès débloqué : toujours le trophée ambré. */
-  get trophyIcon(): string {
-    return this.modelIcons.trophy(true);
-  }
+  private readonly translate = inject(TranslateService);
 
   ngOnInit() {
-    // S'abonner aux nouveaux achievements débloqués
     this.achievementsManager.achievementUnlocked$.subscribe(achievement => {
-      this.showAchievement(achievement);
+      this.hintManager.announce({
+        titleKey: 'ACHIEVEMENT_UNLOCKED',
+        // Le titre du succès est une clé, traduite ici plutôt que dans le
+        // gabarit : la bulle affiche indifféremment du texte ou une clé.
+        body: this.translate.instant(achievement.title),
+        icon: this.modelIcons.trophy(true)
+      });
     });
-  }
-
-  showAchievement(achievement: Achievement) {
-    this.achievements.update(list => [...list, achievement]);
-
-    // Retirer le toast après 4 secondes
-    setTimeout(() => {
-      this.achievements.update(list => list.filter(a => a.id !== achievement.id));
-    }, 4000);
   }
 }
