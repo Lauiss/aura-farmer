@@ -3,7 +3,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { Achievement, AchievementsManager } from '../../services/achievements-manager';
 import { HintManager } from '../../services/hint-manager';
 import { ModalManager } from '../../services/modal-manager';
-import { TrophyIcons } from '../../services/trophy-icons';
+import { ModelIcons } from '../../services/model-icons';
 import { AchievementDetail } from '../achievement-detail/achievement-detail';
 
 @Component({
@@ -16,13 +16,13 @@ import { AchievementDetail } from '../achievement-detail/achievement-detail';
 export class AchievementsList {
   achievementsManager = inject(AchievementsManager);
 
-  private readonly trophyIcons = inject(TrophyIcons);
+  private readonly modelIcons = inject(ModelIcons);
   private readonly hintManager = inject(HintManager);
   private readonly modalManager = inject(ModalManager);
 
   /** Trophée ambré pour un succès débloqué, gris sinon. */
   trophyIcon(unlocked: boolean): string {
-    return this.trophyIcons.get(unlocked);
+    return this.modelIcons.trophy(unlocked);
   }
 
   onAchievementClick(achievement: Achievement): void {

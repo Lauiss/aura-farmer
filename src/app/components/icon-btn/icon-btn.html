@@ -1,0 +1,10 @@
+<button
+  type="button"
+  class="icon-btn"
+  [disabled]="disabled()"
+  [attr.aria-label]="label() | translate"
+  (click)="onClick()"
+>
+  <img [src]="icon()" alt="" class="icon">
+  <span class="label" aria-hidden="true">{{ label() | translate }}</span>
+</button>

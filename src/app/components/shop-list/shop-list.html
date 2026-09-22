@@ -6,8 +6,16 @@
         <app-action-btn (click)="cycleBuyAmount()">{{ 'BUY' | translate }} {{buyAmount()}}</app-action-btn>
         <app-action-btn (click)="openMoyaiUpgradesModal()" [disabled]="auraManager.allTimeAura() < unlockUpgrades"> {{ 'MOYAI_UPGRADES' | translate }}</app-action-btn>
         }
-        <app-action-btn (click)="openAchievementsModal()">{{ 'ACHIEVEMENTS' | translate }}</app-action-btn>
-        <app-action-btn (click)="openSettingsModal()">{{ 'SETTINGS' | translate }}</app-action-btn>
+        <app-icon-btn
+            [icon]="trophyIcon"
+            label="ACHIEVEMENTS"
+            (activate)="openAchievementsModal()"
+        ></app-icon-btn>
+        <app-icon-btn
+            [icon]="gearIcon"
+            label="SETTINGS"
+            (activate)="openSettingsModal()"
+        ></app-icon-btn>
     </div>
     </div>
     @if (auraManager.allTimeAura() > unlockUpgrades){

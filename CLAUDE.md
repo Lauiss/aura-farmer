@@ -23,6 +23,8 @@ Clicker incrémental Angular. Prototype : https://lauiss.itch.io/chad-aura-farme
 
 ### Conventions
 
+- Un bouton réduit à une icône passe par [`app-icon-btn`](src/app/components/icon-btn/icon-btn.ts), jamais par une image cliquable. Il réunit les quatre dispositifs qui rendent l'icône compréhensible : vrai `<button>`, `aria-label` traduit avec l'image en `alt=""`, libellé visible au survol **et au focus clavier**, et un cadre qui signale l'interactivité au repos. Ne pas remplacer ce libellé par un `title` natif : il n'apparaît jamais au clavier.
+
 - Les modales passent par `ModalManager.open(Component, data?, size?)` + `<app-modal-host>` (monté dans [app.html](src/app/app.html)). La taille est normalisée (`sm` 24rem, `md` 34rem — le défaut, `lg` 48rem, `xl` 66rem) pour que deux panneaux de même nature s'affichent à la même largeur.
 - `ModalManager` est une **pile** : `open()` empile par-dessus ce qui est affiché et `close()` ne retire que le panneau du dessus (`closeAll()` vide tout). `modalData()` et `currentComponent()` renvoient le sommet de la pile. Le `z-index` est calculé par le gabarit à partir du rang, il n'est pas en dur dans le SCSS.
 - Un élément en `position: fixed` placé **dans** une modale se positionne par rapport à elle et non par rapport à l'écran : `.modal-content` porte un `transform`, qui devient son bloc conteneur. Ce qui doit se caler sur l'écran se monte au niveau de l'application, comme `<app-moyai-hint>`.
@@ -36,7 +38,8 @@ Clicker incrémental Angular. Prototype : https://lauiss.itch.io/chad-aura-farme
   - Bruit déterministe (seed) : même graine, même statue. `disposeObject()` libère le GPU.
 - [moyai-viewer.ts](src/app/components/moyai-viewer/moyai-viewer.ts) — scène autonome, `TrackballControls` (rotation libre sur tous les axes, pan désactivé), rotation lente automatique tant que l'utilisateur n'a pas touché à la statue.
 - [models/trophy.ts](src/app/three/models/trophy.ts) — `createTrophy({ unlocked })`, ambré ou gris, pour les succès. Ses anses passent par une `ExtrudeGeometry` : `loft` n'empile que selon Y et ne sait pas suivre une courbe.
-- [snapshot.ts](src/app/three/snapshot.ts) — rend un modèle **une fois** en data URL. Les icônes de succès passent par là plutôt que par un canvas vivant chacune : un navigateur ne tient qu'une poignée de contextes WebGL (~16) et la liste en affiche des dizaines. Le cache est dans [TrophyIcons](src/app/services/trophy-icons.ts).
+- [models/gear.ts](src/app/three/models/gear.ts) — `createGear()`, l'engrenage du bouton des options. Profil denté dessiné point par point puis extrudé ; garder le sommet de dent large devant les flancs, sinon la roue s'effile en étoile.
+- [snapshot.ts](src/app/three/snapshot.ts) — rend un modèle **une fois** en data URL. Les icônes passent par là plutôt que par un canvas vivant chacune : un navigateur ne tient qu'une poignée de contextes WebGL (~16) et la liste des succès en affiche des dizaines. Le cache est dans [ModelIcons](src/app/services/model-icons.ts), avec repli sur les anciens PNG si WebGL manque.
 - Tout composant Three.js doit appeler `forceContextLoss()` en plus de `dispose()` s'il peut être monté et démonté plusieurs fois.
 - Piège matériau : un `metalness` élevé sans carte d'environnement rend presque noir — un métal ne renvoie que son environnement. Garder `metalness` bas et faire porter l'éclat par la couleur de base.
 - Toutes les générations 3D suivantes doivent rester **low poly** et `flatShading: true`.

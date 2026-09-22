@@ -1,0 +1,87 @@
+@use '../../../variables' as *;
+
+:host {
+  display: inline-block;
+}
+
+.icon-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: $spacing-800;
+  height: $spacing-800;
+  padding: $spacing-100;
+  background-color: $bg-color;
+  border: 3px solid $text-color;
+  border-radius: $radius-200;
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.15s ease;
+}
+
+.icon-btn:hover:not(:disabled),
+.icon-btn:focus-visible {
+  background-color: $btn-hover-bg-color;
+  transform: scale(1.06);
+}
+
+.icon-btn:focus-visible {
+  outline: 3px solid $primary;
+  outline-offset: 2px;
+}
+
+.icon-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.icon-btn:disabled {
+  cursor: not-allowed;
+  background-color: $btn-disabled-bg;
+  border-color: $btn-disabled-border;
+}
+
+.icon-btn:disabled .icon {
+  opacity: 0.4;
+}
+
+.icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* --- Libellé au survol et au focus clavier --- */
+.label {
+  position: absolute;
+  top: calc(100% + #{$spacing-100});
+  left: 50%;
+  transform: translateX(-50%);
+  padding: $spacing-50 $spacing-100;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  color: $bg-color;
+  background-color: $text-color;
+  border-radius: $radius-100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 1;
+}
+
+.icon-btn:hover .label,
+.icon-btn:focus-visible .label {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-btn,
+  .label {
+    transition: none;
+  }
+
+  .icon-btn:hover:not(:disabled),
+  .icon-btn:focus-visible,
+  .icon-btn:active:not(:disabled) {
+    transform: none;
+  }
+}

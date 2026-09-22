@@ -11,10 +11,12 @@ import { MoyaiUpgradesShop } from '../moyai-upgrades/moyai-upgrades';
 import { FormatAuraPipe } from '../../pages/game-page/game-page';
 import { ItemUpgradesShop } from '../item-upgrades/item-upgrades';
 import { AchievementsList } from '../achievements-list/achievements-list';
+import { IconBtn } from '../icon-btn/icon-btn';
+import { ModelIcons } from '../../services/model-icons';
 
 @Component({
   selector: 'app-shop-list',
-  imports: [CommonModule, ActionBtn, TranslatePipe, forwardRef(() => FormatAuraPipe)],
+  imports: [CommonModule, ActionBtn, IconBtn, TranslatePipe, forwardRef(() => FormatAuraPipe)],
   templateUrl: './shop-list.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './shop-list.scss'
@@ -24,6 +26,10 @@ export class ShopList {
   public readonly auraManager = inject(AuraManager);
   public readonly soundManager = inject(SoundManager);
   private readonly modalManager = inject(ModalManager);
+  private readonly modelIcons = inject(ModelIcons);
+
+  readonly trophyIcon = this.modelIcons.trophy(true);
+  readonly gearIcon = this.modelIcons.gear();
 
   unlockUpgrades = 1000000;
   unlockButtons = 10000;
