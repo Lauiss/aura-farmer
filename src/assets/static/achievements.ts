@@ -4,7 +4,9 @@ import { Achievement } from "../../app/services/achievements-manager";
 export function createAchievements(
   getShopItems: () => any[],
   getTotalClicks: () => number,
-  getTotalAura: () => number
+  getTotalAura: () => number,
+  getOutfitPieces: () => { unlocked: boolean }[] = () => [],
+  getMaxedSkillCount: () => number = () => 0
 ): Achievement[] {
   const achievements: Achievement[] = [
     {
@@ -541,6 +543,41 @@ export function createAchievements(
       description: "Avoir tous les items débloqués.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
       condition: () => getShopItems().every(i => i?.level() >= 1),
+      unlocked: false,
+    },
+    {
+      id: 68,
+      title: "Drip Naissant",
+      description: "Débloquer une première pièce d'outfit pour le moyai.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getOutfitPieces().some(piece => piece.unlocked),
+      unlocked: false,
+    },
+    {
+      id: 69,
+      title: "Drip Intégral",
+      description: "Débloquer toutes les pièces d'outfit du moyai.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => {
+        const pieces = getOutfitPieces();
+        return pieces.length > 0 && pieces.every(piece => piece.unlocked);
+      },
+      unlocked: false,
+    },
+    {
+      id: 70,
+      title: "Maxxing",
+      description: "Porter une compétence à son niveau maximal.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getMaxedSkillCount() >= 1,
+      unlocked: false,
+    },
+    {
+      id: 71,
+      title: "Full Maxxing",
+      description: "Porter cinq compétences à leur niveau maximal.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getMaxedSkillCount() >= 5,
       unlocked: false,
     }
   ];

@@ -9,15 +9,16 @@ import {
 } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { Router } from '@angular/router';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuraManager } from '../../services/aura-manager';
 import { HintManager } from '../../services/hint-manager';
 import { Item, ItemUpgrade, ShopManager } from '../../services/shop-manager';
+import { MoyaiUpgrades } from '../../components/aura-btn/aura-btn';
 import { Sound, SoundManager } from '../../services/sound-manager';
 import { FormatAuraPipe } from '../game-page/game-page';
 import { ModelIcons } from '../../services/model-icons';
 
-type NodeKind = 'root' | 'category' | 'item' | 'upgrade';
+type NodeKind = 'root' | 'category' | 'item' | 'upgrade' | 'outfit' | 'outfit-upgrade';
 
 export interface MapNode {
   key: string;
@@ -32,10 +33,13 @@ export interface MapNode {
   comingSoon?: boolean;
   item?: Item;
   upgrade?: ItemUpgrade;
+  /** Pièce d'outfit, et son rang dans la liste des améliorations du moyai. */
+  piece?: MoyaiUpgrades;
+  pieceIndex?: number;
 }
 
 /** Dimensions du monde. Les nœuds sont placés dans ce repère, pas en pixels écran. */
-const WORLD = { width: 10400, height: 4100 };
+const WORLD = { width: 10400, height: 4400 };
 const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 1.8;
 
@@ -64,6 +68,7 @@ export class ShopMap {
   private readonly soundManager = inject(SoundManager);
   private readonly hintManager = inject(HintManager);
   private readonly modelIcons = inject(ModelIcons);
+  private readonly translate = inject(TranslateService);
   private readonly router = inject(Router);
 
   readonly world = WORLD;
@@ -71,6 +76,7 @@ export class ShopMap {
   readonly questionIcon = this.modelIcons.question();
   readonly arrowIcon = this.modelIcons.arrow();
   readonly buildingIcon = this.modelIcons.shop();
+  readonly hangerIcon = this.modelIcons.hanger();
 
   readonly buyAmount = signal<'1' | '10' | '100' | 'MAX'>('1');
 
@@ -114,16 +120,50 @@ export class ShopMap {
       labelKey: 'SHOP_CATEGORY_TEACHINGS'
     });
 
-    // Seconde branche : les gains passifs, qui accueilleront les vêtements du
-    // moyai. Elle est annoncée mais close tant qu'ils n'ont pas de modèle 3D.
+    // Seconde branche : l'outfit, où l'on habille la statue.
+    const outfit = { x: 600, y: 1350 };
     nodes.push({
-      key: 'category-passive',
+      key: 'category-outfit',
       kind: 'category',
-      x: 600,
-      y: 1250,
+      x: outfit.x,
+      y: outfit.y,
       parent: root,
-      labelKey: 'SHOP_CATEGORY_PASSIVE',
-      comingSoon: true
+      labelKey: 'SHOP_CATEGORY_OUTFIT'
+    });
+
+    // Les pièces descendent sous la catégorie, chacune avec ses améliorations
+    // sur sa droite. Elles ne se conditionnent pas l'une l'autre : ce sont des
+    // achats indépendants, seul le prix les ordonne.
+    this.shopManager.moyaiUpgrades().forEach((piece, index) => {
+      const position = { x: outfit.x, y: 2050 + index * 320 };
+      nodes.push({
+        key: `outfit-${piece.id}`,
+        kind: 'outfit',
+        x: position.x,
+        y: position.y,
+        parent: index === 0 ? outfit : { x: outfit.x, y: 2050 + (index - 1) * 320 },
+        piece,
+        pieceIndex: index
+      });
+
+      if (!piece.unlocked) return;
+
+      let previous = position;
+      for (const [u, upgrade] of (piece.upgrades ?? []).entries()) {
+        const spot = { x: outfit.x + 420 + u * 380, y: position.y };
+        nodes.push({
+          key: `outfit-upgrade-${piece.id}-${upgrade.id}`,
+          kind: 'outfit-upgrade',
+          x: spot.x,
+          y: spot.y,
+          parent: previous,
+          piece,
+          pieceIndex: index,
+          upgrade
+        });
+        previous = spot;
+        if (!upgrade.unlocked) break;
+      }
     });
 
     const items = this.shopManager.getAllItems();
@@ -166,12 +206,17 @@ export class ShopMap {
   /** Nœud qui vient d'être acheté, pour lui donner son à-coup. */
   readonly burst = signal<{ key: string; first: boolean } | null>(null);
 
+  /** Angles des éclats projetés à l'achat, répartis tout autour du nœud. */
+  readonly sparks = Array.from({ length: 10 }, (_, i) => i * 36);
+
   // --- Lecture d'un nœud -------------------------------------------------
 
   /** Un article non dévoilé reste anonyme, comme dans la liste d'origine. */
   /** Un article non dévoilé reste anonyme ; ses améliorations le suivent. */
   isRevealed(node: MapNode): boolean {
     if (node.kind === 'root' || node.kind === 'category') return true;
+    if (node.kind === 'outfit') return node.piece!.displayCondition();
+    if (node.kind === 'outfit-upgrade') return true;
     return node.item!.displayCondition();
   }
 
@@ -179,19 +224,33 @@ export class ShopMap {
     // La racine est acquise d'entrée : c'est le point de départ.
     if (node.kind === 'root') return true;
     if (node.kind === 'category') return !node.comingSoon;
-    if (node.kind === 'upgrade') return this.shopManager.isUpgradeMaxed(node.upgrade!);
+    if (node.kind === 'outfit') return node.piece!.unlocked;
+    if (node.kind === 'upgrade' || node.kind === 'outfit-upgrade') {
+      return this.shopManager.isUpgradeMaxed(node.upgrade!);
+    }
     return this.shopManager.isMaxed(node.item!);
   }
 
   /** Exemplaires achetés sur exemplaires possibles, pour une amélioration. */
+  /** Nom affiché d'un nœud, qu'il s'agisse d'un article ou d'une pièce. */
+  nodeName(node: MapNode): string {
+    if (node.kind === 'outfit') return `COSMETIC_${node.piece!.name.toUpperCase()}`;
+    return node.upgrade!.name;
+  }
+
   upgradeCount(node: MapNode): string {
     return `${this.shopManager.upgradePurchases(node.upgrade!)} / ${this.shopManager.upgradeMaxPurchases(node.upgrade!)}`;
   }
 
   /** Une amélioration dont les prérequis manquent n'est pas encore achetable. */
   isAvailable(node: MapNode): boolean {
-    if (node.kind !== 'upgrade') return true;
-    return this.shopManager.isUpgradeAvailable(node.item!, node.upgrade!);
+    if (node.kind === 'upgrade') {
+      return this.shopManager.isUpgradeAvailable(node.item!.upgrades ?? [], node.upgrade!);
+    }
+    if (node.kind === 'outfit-upgrade') {
+      return this.shopManager.isUpgradeAvailable(node.piece!.upgrades ?? [], node.upgrade!);
+    }
+    return true;
   }
 
   isMaxed(node: MapNode): boolean {
@@ -202,7 +261,10 @@ export class ShopMap {
     // La racine et les catégories ne s'achètent pas : elles n'ont pas
     // d'article derrière elles, et le gabarit lit quand même leur prix.
     if (node.kind === 'root' || node.kind === 'category') return 0;
-    if (node.kind === 'upgrade') return this.shopManager.upgradePrice(node.upgrade!);
+    if (node.kind === 'outfit') return node.piece!.price;
+    if (node.kind === 'upgrade' || node.kind === 'outfit-upgrade') {
+      return this.shopManager.upgradePrice(node.upgrade!);
+    }
     return node.item!.price() * this.amountFor(node.item!);
   }
 
@@ -246,17 +308,25 @@ export class ShopMap {
     // Un premier achat se fête plus fort qu'un renfort : on note lequel des
     // deux avant de toucher aux données.
     const first =
-      node.kind === 'upgrade'
-        ? this.shopManager.upgradePurchases(node.upgrade!) === 0
-        : node.item!.level() === 0;
+      node.kind === 'item'
+        ? node.item!.level() === 0
+        : node.kind === 'outfit'
+          ? true
+          : this.shopManager.upgradePurchases(node.upgrade!) === 0;
 
     if (node.kind === 'item') {
       this.shopManager.buyItem(node.item!.id, this.buyAmount());
+    } else if (node.kind === 'outfit') {
+      this.shopManager.buyMoyaiUpgrade(node.pieceIndex!);
+    } else if (node.kind === 'outfit-upgrade') {
+      this.shopManager.buyOutfitUpgrade(node.pieceIndex!, node.upgrade!.id);
     } else {
       this.shopManager.unlockUpgrade(node.item!.id, node.upgrade!.id);
     }
 
-    this.celebrate(node, first);
+    // Un premier achat et un palier atteint se fêtent fort ; un renfort
+    // ordinaire se contente de quelques éclats.
+    this.celebrate(node, first || this.isOwned(node));
     this.soundManager.playFX(Sound.Buy);
   }
 
@@ -273,7 +343,8 @@ export class ShopMap {
     }, first ? 1100 : 550);
 
     if (first) {
-      const name = node.kind === 'upgrade' ? node.upgrade!.name : node.item!.name();
+      const name =
+        node.kind === 'item' ? node.item!.name() : this.translate.instant(this.nodeName(node));
       this.hintManager.announce({ titleKey: 'SHOP_FIRST_UNLOCK', body: name }, 3200);
     }
   }

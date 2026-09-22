@@ -1,6 +1,6 @@
 import { Component, ElementRef, Signal, ViewChild, WritableSignal, ChangeDetectionStrategy } from '@angular/core';
 import { moyaiUpgrades } from '../../../assets/static/moyai-upgrades';
-import { UpgradeType } from '../../services/shop-manager';
+import { ItemUpgrade, UpgradeType } from '../../services/shop-manager';
 
 export interface Effect {
   type: UpgradeType;
@@ -16,11 +16,14 @@ export interface MoyaiUpgrades {
   unlocked: boolean;
   effect: Effect;
   displayCondition: WritableSignal<boolean>;
+  /** Améliorations propres à la pièce, sur le même modèle que les articles. */
+  upgrades?: ItemUpgrade[];
 }
 
 export interface MoyaiUpgradeSave {
   id: number;
   unlocked: boolean;
+  upgrades?: { id: number; unlocked: boolean; purchases?: number }[];
 }
 
 @Component({

@@ -61,5 +61,6 @@
     "COSMETIC_TATOOS": "Tattoos",
     "COSMETIC_CROWN": "Crown",
     "COSMETIC_TUXEDO": "Suit jacket",
-    "COSMETIC_TIE": "Tie"
+    "COSMETIC_TIE": "Tie",
+    "SHOP_CATEGORY_OUTFIT": "Outfit"
 }

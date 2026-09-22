@@ -224,9 +224,25 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.shush.visible = true;
   }
 
-  /** Positions clés du geste, dans le repère de la statue recentrée. */
-  private static readonly SHUSH_MOUTH = new THREE.Vector3(0.24, -0.2, 1.05);
-  private static readonly SHUSH_JAW = new THREE.Vector3(0.8, -0.66, 0.4);
+  /**
+   * Trajet du geste, dans le repère de la statue recentrée. Une simple
+   * interpolation entre deux points coupait au travers du menton : la mâchoire
+   * n'est pas une droite, elle part de l'avant du visage, contourne le menton
+   * et remonte vers l'oreille. Les points suivent ce contour, décalés vers
+   * l'extérieur pour que le doigt effleure la pierre sans y entrer.
+   */
+  private static readonly SHUSH_PATH = new THREE.CatmullRomCurve3(
+    [
+      new THREE.Vector3(0.26, -0.18, 1.0), // devant les lèvres
+      new THREE.Vector3(0.38, -0.44, 0.86), // amorce de la descente
+      new THREE.Vector3(0.58, -0.6, 0.62), // coin du menton
+      new THREE.Vector3(0.78, -0.58, 0.26), // le long de la mâchoire
+      new THREE.Vector3(0.88, -0.48, -0.08) // sous l'oreille
+    ],
+    false,
+    'catmullrom',
+    0.4
+  );
   private static readonly SHUSH_DURATION = 1.45;
 
   private animateShush(delta: number): void {
@@ -246,8 +262,10 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     // Adoucissement aux deux bouts, pour que le doigt ne parte pas d'un coup.
     const eased = slide * slide * (3 - 2 * slide);
 
-    finger.position.lerpVectors(MoyaiViewer.SHUSH_MOUTH, MoyaiViewer.SHUSH_JAW, eased);
-    finger.rotation.set(0, 0, -eased * 0.9);
+    MoyaiViewer.SHUSH_PATH.getPointAt(eased, finger.position);
+    // Le doigt s'incline et se tourne vers la tempe au fil du glissé, au lieu
+    // de rester dressé comme au moment du « chut ».
+    finger.rotation.set(0, eased * 0.7, -eased * 1.15);
 
     const fadeIn = THREE.MathUtils.clamp(t / 0.1, 0, 1);
     const fadeOut = THREE.MathUtils.clamp((1 - t) / 0.18, 0, 1);

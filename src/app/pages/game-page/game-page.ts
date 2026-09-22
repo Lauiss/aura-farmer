@@ -106,7 +106,9 @@ export class GamePage {
         createAchievements(
           () => this.shopManager.getAllItems(),
           () => this.achievementsManager.totalClicks(),
-          () => this.auraManager.allTimeAura()
+          () => this.auraManager.allTimeAura(),
+          () => this.shopManager.moyaiUpgrades(),
+          () => this.shopManager.maxedSkillCount()
         )
       );
     }

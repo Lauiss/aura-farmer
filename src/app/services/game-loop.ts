@@ -73,7 +73,12 @@ export class GameLoop {
 
     const moyaiUpgrades = this.shopManager.moyaiUpgrades().map(upgrade => ({
       id: upgrade.id,
-      unlocked: upgrade.unlocked
+      unlocked: upgrade.unlocked,
+      upgrades: upgrade.upgrades?.map(u => ({
+        id: u.id,
+        unlocked: u.unlocked,
+        purchases: u.purchases ?? 0
+      }))
     }));
 
     const saveData: SaveData = {

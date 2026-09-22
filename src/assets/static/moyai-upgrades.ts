@@ -1,6 +1,7 @@
 import { signal } from "@angular/core";
 import { MoyaiUpgrades } from "../../app/components/aura-btn/aura-btn";
 import { UpgradeType } from "../../app/services/shop-manager";
+import { outfitUpgrades } from "./outfit-upgrades";
 
 export const moyaiUpgrades: MoyaiUpgrades[] = [
     {
@@ -11,6 +12,7 @@ export const moyaiUpgrades: MoyaiUpgrades[] = [
         price: 500,
         effect: { type: UpgradeType.MULTIPLIER, value: 0.05 },
         displayCondition: signal(true),
+        upgrades: [],
     },
         {
         id: 1,
@@ -20,6 +22,7 @@ export const moyaiUpgrades: MoyaiUpgrades[] = [
         effect : { type: UpgradeType.CLICK, value: 1000 },
         price: 150000,
         displayCondition: signal(true),
+        upgrades: [],
     },
         {
         id: 2,
@@ -29,6 +32,7 @@ export const moyaiUpgrades: MoyaiUpgrades[] = [
         price: 5000,
         effect: { type: UpgradeType.ITEM_BOOST, targetItemId: [0,1,2] , value: 0.10 },
         displayCondition: signal(true),
+        upgrades: [],
     },
         {
         id: 3,
@@ -38,6 +42,7 @@ export const moyaiUpgrades: MoyaiUpgrades[] = [
         effect: { type: UpgradeType.PRICE_REDUCTION, value: -0.05 },
         price: 20000,
         displayCondition: signal(true),
+        upgrades: [],
     },
         {
         id: 4,
@@ -47,6 +52,7 @@ export const moyaiUpgrades: MoyaiUpgrades[] = [
         effect: { type: UpgradeType.CLICK, value: 0.20 },
         price: 75000,
         displayCondition: signal(true),
+        upgrades: [],
     },
         {
         id: 5,
@@ -56,5 +62,12 @@ export const moyaiUpgrades: MoyaiUpgrades[] = [
         price: 250000,
         effect: { type: UpgradeType.MULTIPLIER, value: 0.15 },
         displayCondition: signal(true),
+        upgrades: [],
     },
 ];
+
+// Rattachement par nom : les améliorations vivent dans leur propre fichier,
+// et la liste des pièces reste lisible.
+for (const upgrade of moyaiUpgrades) {
+    upgrade.upgrades = outfitUpgrades[upgrade.name] ?? [];
+}

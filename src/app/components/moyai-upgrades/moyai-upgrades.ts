@@ -20,10 +20,6 @@ export class MoyaiUpgradesShop {
   moyaiUpgrades = signal<MoyaiUpgrades[]>(moyaiUpgrades);
 
   buyUnlock(index: number) {
-    const upgrade = this.moyaiUpgrades()[index];
-    if (this.auraManager.auraCount() >= upgrade.price && !upgrade.unlocked) {
-      this.auraManager.auraCount.update(c => c - upgrade.price);
-      this.shopManager.unlockMoyaiUpgrade(index);
-    }
+    this.shopManager.buyMoyaiUpgrade(index);
   }
 }

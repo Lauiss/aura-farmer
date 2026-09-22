@@ -162,9 +162,14 @@
   outline: none;
 }
 
-.node.kind-upgrade {
+.node.kind-upgrade,
+.node.kind-outfit-upgrade {
   width: 16rem;
   padding: $spacing-250 $spacing-200;
+}
+
+.node.kind-outfit {
+  width: 18rem;
 }
 
 .node.owned {
@@ -186,7 +191,8 @@
   object-fit: contain;
 }
 
-.node.kind-upgrade .mark {
+.node.kind-upgrade .mark,
+.node.kind-outfit-upgrade .mark {
   width: 4rem;
   height: 4rem;
 }
@@ -341,5 +347,68 @@
   .node.burst-first,
   .node.burst-first::after {
     animation: none;
+  }
+}
+
+/* --- Éclats projetés à l'achat --------------------------------------- */
+// Chaque éclat part du centre du nœud selon son propre angle. La rotation est
+// portée par un conteneur pour que la translation reste simple à écrire.
+.sparks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.spark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background-color: $menu-accent;
+  transform: rotate(var(--angle)) translateX(0);
+  opacity: 0;
+  animation: spark 0.55s ease-out forwards;
+}
+
+.node.burst-first .spark {
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  animation-duration: 0.9s;
+}
+
+@keyframes spark {
+  0% {
+    transform: rotate(var(--angle)) translateX(10px) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(var(--angle)) translateX(130px) scale(0.2);
+    opacity: 0;
+  }
+}
+
+.node.burst-first .spark {
+  animation-name: spark-far;
+}
+
+@keyframes spark-far {
+  0% {
+    transform: rotate(var(--angle)) translateX(14px) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(var(--angle)) translateX(210px) scale(0.2);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spark {
+    animation: none;
+    opacity: 0;
   }
 }

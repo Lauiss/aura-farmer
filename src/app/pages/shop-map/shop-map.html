@@ -54,6 +54,13 @@
           [style.top.px]="node.y"
           (click)="activate(node)"
         >
+          @if (burstState(node) !== 'none') {
+            <span class="sparks" aria-hidden="true">
+              @for (spark of sparks; track spark) {
+                <span class="spark" [style.--angle.deg]="spark"></span>
+              }
+            </span>
+          }
           @if (node.kind === 'root' || node.kind === 'category') {
             <img [src]="node.kind === 'root' ? moyaiIcon : buildingIcon" alt="" class="mark">
             <span class="name">{{ node.labelKey! | translate }}</span>
@@ -77,6 +84,17 @@
                 <small>{{ 'AURA' | translate }}</small>
               </span>
               <span class="meta">&times;{{ amountFor(node.item!) }}</span>
+            }
+          } @else if (node.kind === 'outfit') {
+            <img [src]="hangerIcon" alt="" class="mark">
+            <span class="name">{{ nodeName(node) | translate }}</span>
+            @if (isOwned(node)) {
+              <span class="cost owned-label">{{ 'UNLOCKED' | translate }}</span>
+            } @else {
+              <span class="cost">
+                {{ price(node) | formatAura }}
+                <small>{{ 'AURA' | translate }}</small>
+              </span>
             }
           } @else {
             <img [src]="arrowIcon" alt="" class="mark">

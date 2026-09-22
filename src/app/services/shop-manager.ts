@@ -3,7 +3,7 @@ import { AuraManager } from './aura-manager';
 import { shopItems } from '../../assets/static/static-items';
 import { Upgrade } from './game-manager';
 import { moyaiUpgrades } from '../../assets/static/moyai-upgrades';
-import { Effect, MoyaiUpgrades } from '../components/aura-btn/aura-btn';
+import { Effect, MoyaiUpgrades, MoyaiUpgradeSave } from '../components/aura-btn/aura-btn';
 import { UpgradeType } from '../../assets/static/enum/upgrade-types';
 
 export interface Item {
@@ -221,16 +221,62 @@ export class ShopManager {
     }
   }
 
-  restoreMoyaiUpgradesFromSave(savedUpgrades: {id: number, unlocked: boolean}[]){
+  restoreMoyaiUpgradesFromSave(savedUpgrades: MoyaiUpgradeSave[]){
     if(!savedUpgrades){ return;}
     const upgrades = this.moyaiUpgrades();
     for(const saved of savedUpgrades){
       const existing = upgrades.find(u => u.id === saved.id);
       if(existing){
         existing.unlocked = saved.unlocked;
+
+        for(const savedUpgrade of saved.upgrades ?? []){
+          const existingUpgrade = existing.upgrades?.find(u => u.id === savedUpgrade.id);
+          if(existingUpgrade){
+            existingUpgrade.unlocked = savedUpgrade.unlocked;
+            existingUpgrade.purchases =
+              savedUpgrade.purchases ?? (savedUpgrade.unlocked ? 1 : 0);
+          }
+        }
       }
     }
-    this.moyaiUpgrades.set(upgrades);
+    this.moyaiUpgrades.set([...upgrades]);
+  }
+
+  /**
+   * Achat d'une pièce d'outfit. La vérification du prix vivait dans le
+   * composant : la ramener ici évite qu'un second appelant l'oublie.
+   */
+  buyMoyaiUpgrade(index: number): void {
+    const piece = this.moyaiUpgrades()[index];
+    if (!piece || piece.unlocked) return;
+    if (this.auraService.auraCount() < piece.price) return;
+
+    this.auraService.auraCount.update(c => c - piece.price);
+    this.unlockMoyaiUpgrade(index);
+  }
+
+  /** Achat d'une amélioration de pièce d'outfit, sur le modèle des articles. */
+  buyOutfitUpgrade(pieceIndex: number, upgradeId: number): void {
+    const piece = this.moyaiUpgrades()[pieceIndex];
+    if (!piece?.unlocked || !piece.upgrades) return;
+
+    const upgrade = piece.upgrades.find(u => u.id === upgradeId);
+    if (!upgrade || this.isUpgradeMaxed(upgrade)) return;
+    if (!this.isUpgradeAvailable(piece.upgrades, upgrade)) return;
+
+    const price = this.upgradePrice(upgrade);
+    if (this.auraService.auraCount() < price) return;
+
+    this.auraService.auraCount.update(c => c - price);
+    upgrade.purchases = this.upgradePurchases(upgrade) + 1;
+    upgrade.unlocked = true;
+    this.applyEffect(upgrade.effect);
+    this.moyaiUpgrades.set([...this.moyaiUpgrades()]);
+  }
+
+  /** Compétences portées à leur plafond, pour les succès. */
+  maxedSkillCount(): number {
+    return this.items().filter(item => this.isMaxed(item)).length;
   }
 
   unlockMoyaiUpgrade(index: number) {
@@ -242,8 +288,7 @@ export class ShopManager {
    * Améliorations dont dépend celle-ci. Sans `requires` explicite, chaque
    * amélioration ouvre la suivante : la liste forme une chaîne.
    */
-  upgradeRequirements(item: Item, upgrade: ItemUpgrade): ItemUpgrade[] {
-    const list = item.upgrades ?? [];
+  upgradeRequirements(list: ItemUpgrade[], upgrade: ItemUpgrade): ItemUpgrade[] {
     if (upgrade.requires) {
       return list.filter(candidate => upgrade.requires!.includes(candidate.id));
     }
@@ -252,8 +297,8 @@ export class ShopManager {
   }
 
   /** Vrai quand tous les prérequis sont acquis. */
-  isUpgradeAvailable(item: Item, upgrade: ItemUpgrade): boolean {
-    return this.upgradeRequirements(item, upgrade).every(required => required.unlocked);
+  isUpgradeAvailable(list: ItemUpgrade[], upgrade: ItemUpgrade): boolean {
+    return this.upgradeRequirements(list, upgrade).every(required => required.unlocked);
   }
 
   /**
@@ -283,7 +328,7 @@ export class ShopManager {
     const upgrade = item.upgrades.find(u => u.id === upgradeId);
     if(!upgrade){ return; }
     if(this.isUpgradeMaxed(upgrade)){ return; }
-    if(!this.isUpgradeAvailable(item, upgrade)){ return; }
+    if(!this.isUpgradeAvailable(item.upgrades, upgrade)){ return; }
 
     const price = this.upgradePrice(upgrade);
     if(this.auraService.auraCount() < price){ return; }
