@@ -22,6 +22,10 @@ body {
     line-height: 1.5;
     // Pile système en attendant que la typo du jeu soit choisie.
     font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    // Le 16px par défaut manquait de lisibilité. Volontairement posé sur
+    // `body` et non sur `html` : sur `html`, tous les espacements en rem
+    // grossiraient avec, et la mise en page du jeu bougerait.
+    font-size: 1.0625rem;
 }
 
 // Les contrôles de formulaire n'héritent pas de la police par défaut.

@@ -26,8 +26,9 @@ app-moyai-viewer {
   left: 50%;
   bottom: $spacing-400;
   transform: translateX(-50%);
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
+  font-size: 0.8rem;
+  font-weight: $menu-weight;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: $menu-text-faint;
   white-space: nowrap;

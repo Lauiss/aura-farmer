@@ -12,11 +12,17 @@ $menu-surface: #1c1c1a;
 $menu-surface-raised: rgba(255, 255, 255, 0.04);
 
 $menu-text: #ede6d6;
-$menu-text-dim: rgba(237, 230, 214, 0.55);
-$menu-text-faint: rgba(237, 230, 214, 0.28);
+// Sur fond sombre, un texte clair paraît optiquement plus maigre qu'il ne
+// l'est : les niveaux secondaires sont remontés, et la graisse avec eux.
+$menu-text-dim: rgba(237, 230, 214, 0.74);
+$menu-text-faint: rgba(237, 230, 214, 0.46);
 
 $menu-border: rgba(237, 230, 214, 0.14);
 $menu-border-strong: rgba(237, 230, 214, 0.3);
+
+// Graisse de base du menu : le 400 par défaut décroche sur le sombre.
+$menu-weight: 500;
+$menu-weight-strong: 600;
 
 $menu-accent: #e8b84b;
 $menu-accent-soft: rgba(232, 184, 75, 0.16);
