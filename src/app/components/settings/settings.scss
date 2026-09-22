@@ -13,7 +13,7 @@
 
     h2 {
         grid-column: 1 / -1;
-        font-size: 1.05rem;
+        font-size: $menu-size-title;
         font-weight: $menu-weight-strong;
         letter-spacing: 0.12em;
         text-transform: uppercase;
@@ -24,7 +24,7 @@
 .align {
     display: contents;
     color: $menu-text-dim;
-    font-size: 1rem;
+    font-size: $menu-size-body;
     font-weight: $menu-weight;
 
     span {

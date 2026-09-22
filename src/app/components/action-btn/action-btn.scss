@@ -40,7 +40,7 @@ button.ghost {
 	border: none;
 	border-radius: 0;
 	color: $menu-text-dim;
-	font-size: 1.2rem;
+	font-size: $menu-size-lead;
 	font-weight: $menu-weight-strong;
 	// Un texte plus gras demande moins d'interlettrage pour rester aéré.
 	letter-spacing: 0.1em;

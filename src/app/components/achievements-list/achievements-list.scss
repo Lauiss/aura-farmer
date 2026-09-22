@@ -13,7 +13,7 @@
 
   h2 {
     margin: 0;
-    font-size: 1.05rem;
+    font-size: $menu-size-title;
     font-weight: $menu-weight-strong;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -21,7 +21,7 @@
 
   .progress {
     margin-top: $spacing-100;
-    font-size: 18px;
+    font-size: $menu-size-subtitle;
     color: $menu-accent;
     font-variant-numeric: tabular-nums;
   }
@@ -84,14 +84,14 @@
 
 .achievement-title {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: $menu-size-subtitle;
   font-weight: $menu-weight-strong;
   color: $menu-text;
 }
 
 .achievement-description {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: $menu-size-small;
   color: $menu-text-dim;
   line-height: 1.45;
 }
@@ -101,7 +101,7 @@
   padding: 4px 10px;
   background: $menu-surface-raised;
   border-radius: 4px;
-  font-size: 0.8rem;
+  font-size: $menu-size-small;
   font-weight: $menu-weight;
   text-transform: uppercase;
   letter-spacing: 0.08em;

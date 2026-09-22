@@ -10,7 +10,6 @@
 
 /* --- Colonne gauche : la scène Three.js --- */
 .statue {
-  position: relative;
   min-width: 0;
   min-height: 0;
 }
@@ -19,20 +18,6 @@ app-moyai-viewer {
   display: block;
   width: 100%;
   height: 100%;
-}
-
-.hint {
-  position: absolute;
-  left: 50%;
-  bottom: $spacing-400;
-  transform: translateX(-50%);
-  font-size: 0.8rem;
-  font-weight: $menu-weight;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: $menu-text-faint;
-  white-space: nowrap;
-  pointer-events: none;
 }
 
 /* --- Colonne droite : le menu --- */

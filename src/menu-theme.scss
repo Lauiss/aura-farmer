@@ -24,6 +24,13 @@ $menu-border-strong: rgba(237, 230, 214, 0.3);
 $menu-weight: 500;
 $menu-weight-strong: 600;
 
+// Échelle typographique, à partir des 16px de base du projet.
+$menu-size-title: 1.4rem; // titre de panneau
+$menu-size-lead: 1.2rem; // entrées du menu principal
+$menu-size-subtitle: 1.05rem; // titre de carte
+$menu-size-body: 1rem;
+$menu-size-small: 0.9rem;
+
 $menu-accent: #e8b84b;
 $menu-accent-soft: rgba(232, 184, 75, 0.16);
 $menu-accent-border: rgba(232, 184, 75, 0.45);

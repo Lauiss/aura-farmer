@@ -8,7 +8,7 @@
   min-width: min(20rem, 80vw);
 
   h2 {
-    font-size: 1.05rem;
+    font-size: $menu-size-title;
     font-weight: $menu-weight-strong;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -20,7 +20,7 @@ dl {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: $spacing-150 $spacing-400;
-  font-size: 1rem;
+  font-size: $menu-size-body;
   font-weight: $menu-weight;
 }
 
@@ -35,7 +35,7 @@ dd {
 
 a {
   align-self: flex-start;
-  font-size: 0.95rem;
+  font-size: $menu-size-small;
   font-weight: $menu-weight;
   color: $menu-text-dim;
   text-decoration: none;
