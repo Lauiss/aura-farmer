@@ -38,5 +38,10 @@
     "ZOOM_OUT": "Dézoomer",
     "SHOP_LOCKED_HINT": "Continue à aura farmer pour débloquer ça !",
     "SHOP_TOO_EXPENSIVE_HINT": "Il te manque de l'aura pour te l'offrir !",
-    "MAXED": "Maxxé"
+    "MAXED": "Maxxé",
+    "COMBO_WARMING": "Ça chauffe",
+    "COMBO_LOCKED_IN": "Locked in",
+    "COMBO_CRACKED": "Cracked",
+    "COMBO_ASCENDED": "Ascended",
+    "COMBO_TURNS": "tours"
 }

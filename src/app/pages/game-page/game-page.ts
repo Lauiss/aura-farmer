@@ -13,6 +13,8 @@ import { createAchievements } from '../../../assets/static/achievements';
 import { GameLoop } from '../../services/game-loop';
 import { AchievementsList } from '../../components/achievements-list/achievements-list';
 import { ModelIcons } from '../../services/model-icons';
+import { SpinCombo } from '../../services/spin-combo';
+import { ComboMeter } from '../../components/combo-meter/combo-meter';
 import { Router } from '@angular/router';
 
 @Component({
@@ -21,7 +23,7 @@ import { Router } from '@angular/router';
   templateUrl: './game-page.html',
   styleUrls: ['./game-page.scss'],
   changeDetection: ChangeDetectionStrategy.Eager,
-  imports: [MoyaiViewer, IconBtn, TranslatePipe, forwardRef(() => FormatAuraPipe)]
+  imports: [MoyaiViewer, IconBtn, ComboMeter, TranslatePipe, forwardRef(() => FormatAuraPipe)]
 })
 export class GamePage {
 
@@ -38,6 +40,15 @@ export class GamePage {
   private readonly modelIcons = inject(ModelIcons);
   private readonly router = inject(Router);
   private readonly gameLoop = inject(GameLoop);
+  private readonly spinCombo = inject(SpinCombo);
+
+  /**
+   * Passé tel quel à la statue, qui l'appelle à chaque image hors de la zone
+   * Angular. Lié une fois pour toutes, sinon le gabarit en recréerait un à
+   * chaque détection de changements.
+   */
+  readonly reportSpin = (yaw: number, pitch: number, dt: number) =>
+    this.spinCombo.report(yaw, pitch, dt);
 
   readonly shopIcon = this.modelIcons.shop();
   readonly trophyIcon = this.modelIcons.trophy(true);
@@ -79,7 +90,9 @@ export class GamePage {
 
   protected increment(e?: MouseEvent) {
     const before = this.auraManager.auraCount();
-    this.auraManager.increment();
+    // Le combo de rotation dope le clic : cliquer une statue lancée rapporte
+    // davantage que cliquer une statue immobile.
+    this.auraManager.increment(this.spinCombo.current());
     const after = this.auraManager.auraCount();
 
     // Incrémenter le compteur de clics

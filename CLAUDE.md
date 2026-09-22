@@ -66,6 +66,9 @@ Les modales suivent le même thème, **toutes** — y compris celles du jeu (pro
 
 ## Règles de jeu à connaître
 
+- **Combo de rotation** : faire tourner la statue alimente [`SpinCombo`](src/app/services/spin-combo.ts), qui monte un multiplicateur appliqué au clic suivant. Les tours complets comptent séparément en lacet et en tangage. Le service est nourri **hors de la zone Angular**, image par image, et n'écrit dans ses signaux que lorsque la valeur affichée change — sinon la détection de changements repartirait à 60 Hz. Le rapport passe par l'entrée `spinReporter` de `MoyaiViewer`, un simple rappel et non une sortie Angular, pour la même raison.
+- **Dévoilement de la carte** : `shop-map` s'arrête au **premier article non dévoilé**, affiché anonyme, et ne rend rien au-delà. Le joueur ne voit jamais plus loin que sa prochaine étape.
+
 - Chaque article de la boutique a un `maxLevel` (200 pour l'instant, dans [static-items.ts](src/assets/static/static-items.ts)). `ShopManager.getAmountToBuy` plafonne la quantité et `buyItem` s'arrête au plafond : demander 100 exemplaires à deux niveaux de la fin n'en achète que deux.
 - Les améliorations cosmétiques du moyai (habits, lunettes, couronne…) sont **retirées de l'affichage** de la carte, en attendant d'être modelées en accessoires 3D. Les données et le moteur restent en place dans `moyai-upgrades.ts` et `ShopManager`.
 

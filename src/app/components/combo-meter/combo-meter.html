@@ -1,0 +1,9 @@
+@if (active()) {
+  <div class="combo" [class]="'combo tier-' + tier()" role="status" aria-live="polite">
+    <p class="value">&times;{{ display() }}</p>
+    <p class="tier">{{ tierLabel() | translate }}</p>
+    @if (combo.turns() > 0) {
+      <p class="turns">{{ combo.turns() }} {{ 'COMBO_TURNS' | translate }}</p>
+    }
+  </div>
+}

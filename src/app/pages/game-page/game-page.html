@@ -33,8 +33,11 @@
       class="hero"
       [interactive]="true"
       [idleSpin]="0"
+      [spinReporter]="reportSpin"
       (clicked)="increment($event)"
     ></app-moyai-viewer>
+
+    <app-combo-meter class="combo"></app-combo-meter>
   </main>
 
   <nav class="actions">

@@ -71,9 +71,19 @@
 
 /* --- La statue, cible de clic --- */
 .stage {
+  position: relative;
   display: grid;
   place-items: center;
   min-height: 0;
+}
+
+// Le compteur de combo se superpose en haut de la scène, sans déplacer la
+// statue quand il apparaît.
+.combo {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .hero {

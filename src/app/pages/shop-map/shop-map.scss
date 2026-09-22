@@ -115,8 +115,8 @@
   flex-direction: column;
   align-items: center;
   gap: $spacing-100;
-  width: 17rem;
-  padding: $spacing-250 $spacing-200;
+  width: 20rem;
+  padding: $spacing-300 $spacing-250;
   text-align: center;
   color: $menu-text;
   background-color: $menu-surface;
@@ -133,8 +133,8 @@
 }
 
 .node.kind-upgrade {
-  width: 14rem;
-  padding: $spacing-200 $spacing-150;
+  width: 16rem;
+  padding: $spacing-250 $spacing-200;
 }
 
 .node.owned {
@@ -151,14 +151,14 @@
 
 .mark {
   display: block;
-  width: 4.5rem;
-  height: 4.5rem;
+  width: 5.5rem;
+  height: 5.5rem;
   object-fit: contain;
 }
 
 .node.kind-upgrade .mark {
-  width: 3.25rem;
-  height: 3.25rem;
+  width: 4rem;
+  height: 4rem;
 }
 
 .name {

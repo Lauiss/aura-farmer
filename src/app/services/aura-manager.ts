@@ -13,9 +13,11 @@ export class AuraManager {
     return this.allTimeAura();
   }
 
-  increment() {
-    this.auraCount.update(current => current + this.clickValue());
-    this.allTimeAura.update(total => total + this.clickValue());
+  /** `multiplier` porte le combo de rotation ; 1 quand la statue est immobile. */
+  increment(multiplier = 1) {
+    const gain = this.clickValue() * multiplier;
+    this.auraCount.update(current => current + gain);
+    this.allTimeAura.update(total => total + gain);
   }
 
   defineAllTimeAura(amount: number) {

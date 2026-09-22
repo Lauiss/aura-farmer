@@ -31,7 +31,7 @@ export interface MapNode {
 }
 
 /** Dimensions du monde. Les nœuds sont placés dans ce repère, pas en pixels écran. */
-const WORLD = { width: 4600, height: 2400 };
+const WORLD = { width: 8800, height: 2900 };
 const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 1.8;
 
@@ -87,40 +87,37 @@ export class ShopMap {
     const nodes: MapNode[] = [];
     const items = this.shopManager.getAllItems();
 
-    // Les articles serpentent horizontalement, pour que la carte se parcoure
-    // de gauche à droite en suivant la progression.
-    items.forEach((item, index) => {
-      const x = 420 + index * 520;
-      const y = 1200 + (index % 2 === 0 ? -260 : 260);
-      const previous =
-        index === 0
-          ? null
-          : { x: 420 + (index - 1) * 520, y: 1200 + ((index - 1) % 2 === 0 ? -260 : 260) };
+    for (const [index, item] of items.entries()) {
+      const revealed = item.displayCondition();
+      const x = 700 + index * 1000;
+      const y = 640;
+      const previous = index === 0 ? null : { x: 700 + (index - 1) * 1000, y };
 
       nodes.push({ key: `item-${item.id}`, kind: 'item', x, y, parent: previous, item });
 
-      // Améliorations en éventail sous l'article, hors de l'axe principal.
+      // Dévoilement d'un cran à la fois : on s'arrête au premier article non
+      // dévoilé, qui reste anonyme et cache tout ce qui le suit. Le joueur ne
+      // voit donc jamais plus loin que sa prochaine étape.
+      if (!revealed) break;
+
+      // Améliorations en deux colonnes sous l'article : une seule rangée
+      // suffisait à faire se chevaucher les grappes voisines, certains
+      // articles en comptant dix.
       const upgrades = item.upgrades ?? [];
-      const spread = 190;
-      const direction = index % 2 === 0 ? -1 : 1;
       upgrades.forEach((upgrade, u) => {
-        const offset = (u - (upgrades.length - 1) / 2) * spread;
+        const column = u % 2 === 0 ? -1 : 1;
+        const row = Math.floor(u / 2);
         nodes.push({
           key: `upgrade-${item.id}-${upgrade.id}`,
           kind: 'upgrade',
-          x: x + offset,
-          y: y + direction * 400,
+          x: x + column * 175,
+          y: 1080 + row * 260,
           parent: { x, y },
           item,
           upgrade
         });
       });
-    });
-
-    // Les améliorations cosmétiques du moyai (habits, lunettes, couronne…) ne
-    // figurent volontairement pas ici : elles reposaient sur des sprites 2D
-    // qui n'ont plus cours depuis que la statue est en 3D. Les données et le
-    // moteur restent en place, seul l'affichage attend d'être repensé.
+    }
 
     return nodes;
   });
@@ -248,8 +245,8 @@ export class ShopMap {
   recenter(): void {
     const rect = this.viewport().nativeElement.getBoundingClientRect();
     this.zoom.set(0.7);
-    this.panX.set(rect.width / 2 - 420 * 0.7);
-    this.panY.set(rect.height / 2 - 1200 * 0.7);
+    this.panX.set(rect.width / 2 - 700 * 0.7);
+    this.panY.set(rect.height / 2 - 900 * 0.7);
   }
 
   ngAfterViewInit(): void {

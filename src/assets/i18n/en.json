@@ -38,5 +38,10 @@
     "ZOOM_OUT": "Zoom out",
     "SHOP_LOCKED_HINT": "Keep aura farming to unlock this!",
     "SHOP_TOO_EXPENSIVE_HINT": "You don't have enough aura for this one!",
-    "MAXED": "Maxed"
+    "MAXED": "Maxed",
+    "COMBO_WARMING": "Warming up",
+    "COMBO_LOCKED_IN": "Locked in",
+    "COMBO_CRACKED": "Cracked",
+    "COMBO_ASCENDED": "Ascended",
+    "COMBO_TURNS": "spins"
 }

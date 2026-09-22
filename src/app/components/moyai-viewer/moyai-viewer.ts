@@ -42,6 +42,14 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   readonly clicked = output<MouseEvent>();
 
   /**
+   * Rapport de rotation, appelé à chaque image avec le chemin parcouru depuis
+   * la précédente. C'est un simple rappel et non une sortie Angular : à
+   * soixante images par seconde, une sortie relancerait la détection de
+   * changements en continu.
+   */
+  readonly spinReporter = input<((yaw: number, pitch: number, dt: number) => void) | null>(null);
+
+  /**
    * Une statue manipulable reçoit un `click` à la fin de chaque rotation à la
    * souris. Sans ce filtre, faire tourner le moyai rapporterait de l'aura.
    */
@@ -71,6 +79,9 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   private resizeObserver?: ResizeObserver;
   private frameId?: number;
   private readonly clock = new THREE.Clock();
+  /** Orientation de la caméra à l'image précédente, pour mesurer la rotation. */
+  private readonly previousDirection = new THREE.Vector3();
+  private readonly currentDirection = new THREE.Vector3();
   private userInteracted = false;
   /** Position du pointeur à l'appui, pour distinguer un clic d'une rotation. */
   private pointerDownAt: { x: number; y: number } | null = null;
@@ -123,14 +134,45 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   private setupControls(canvas: HTMLCanvasElement): void {
     this.controls = new TrackballControls(this.camera!, canvas);
     this.controls.noPan = true;
-    this.controls.rotateSpeed = 3;
+    this.controls.rotateSpeed = 3.4;
     this.controls.zoomSpeed = 0.8;
     this.controls.minDistance = 4;
     this.controls.maxDistance = 10;
-    // Un peu d'inertie : la statue continue sur sa lancée après le relâchement.
+    // Inertie franche : lancée d'un geste, la statue continue longtemps avant
+    // de s'immobiliser. C'est ce qui rend les enchaînements possibles.
     this.controls.staticMoving = false;
-    this.controls.dynamicDampingFactor = 0.12;
+    this.controls.dynamicDampingFactor = 0.035;
     this.controls.addEventListener('start', () => (this.userInteracted = true));
+  }
+
+  /**
+   * Mesure la rotation parcourue depuis l'image précédente et la transmet.
+   * Le lacet et le tangage sont séparés pour qu'un tour horizontal et un tour
+   * vertical se comptent indépendamment.
+   */
+  private reportSpin(delta: number): void {
+    const report = this.spinReporter();
+    if (!report || !this.camera) return;
+
+    this.camera.getWorldDirection(this.currentDirection);
+
+    if (this.previousDirection.lengthSq() > 0) {
+      const previousYaw = Math.atan2(this.previousDirection.x, this.previousDirection.z);
+      const currentYaw = Math.atan2(this.currentDirection.x, this.currentDirection.z);
+      let yaw = currentYaw - previousYaw;
+      // Repli sur l'intervalle [-π, π] : sans ça, le passage par ±π
+      // compterait comme un demi-tour instantané.
+      if (yaw > Math.PI) yaw -= Math.PI * 2;
+      if (yaw < -Math.PI) yaw += Math.PI * 2;
+
+      const pitch =
+        Math.asin(THREE.MathUtils.clamp(this.currentDirection.y, -1, 1)) -
+        Math.asin(THREE.MathUtils.clamp(this.previousDirection.y, -1, 1));
+
+      report(yaw, pitch, delta);
+    }
+
+    this.previousDirection.copy(this.currentDirection);
   }
 
   private addLights(scene: THREE.Scene): void {
@@ -173,6 +215,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     }
 
     this.controls?.update();
+    this.reportSpin(delta);
     if (this.renderer && this.scene && this.camera) {
       this.renderer.render(this.scene, this.camera);
     }
