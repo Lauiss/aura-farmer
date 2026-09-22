@@ -12,7 +12,7 @@ Clicker incrémental Angular. Prototype : https://lauiss.itch.io/chad-aura-farme
 
 ## Architecture
 
-- `src/app/pages/` — `landing-page` (menu) et `game-page` (le jeu)
+- `src/app/pages/` — `landing-page` (menu), `game-page` (la statue, les compteurs et les trois accès) et `shop-map` (la boutique en carte navigable)
 - `src/app/components/` — briques UI, toutes standalone
 - `src/app/services/` — managers en singletons `providedIn: 'root'` (aura, shop, save, sound, settings, achievements, modal)
 - `src/app/three/` — tout le Three.js hors composants Angular
@@ -30,6 +30,8 @@ Clicker incrémental Angular. Prototype : https://lauiss.itch.io/chad-aura-farme
 - Un élément en `position: fixed` placé **dans** une modale se positionne par rapport à elle et non par rapport à l'écran : `.modal-content` porte un `transform`, qui devient son bloc conteneur. Ce qui doit se caler sur l'écran se monte au niveau de l'application, comme `<app-moyai-hint>`.
 - La sauvegarde est du localStorage via `SaveManager`; clé de partie `AURA_FARMER_SAVE`, clé d'options `SaveLocation.Settings`.
 - Toute boucle d'animation Three.js tourne dans `NgZone.runOutsideAngular` pour ne pas déclencher la détection de changements à 60 fps.
+- La boucle de jeu (production passive, succès, sauvegarde) vit dans [`GameLoop`](src/app/services/game-loop.ts), **pas dans une page**. Une boucle attachée à `game-page` s'arrêterait dès qu'on passe à la boutique, et se rabonnerait à chaque retour en multipliant les gains.
+- Les indications du moyai passent par [`HintManager`](src/app/services/hint-manager.ts) : `show('CLÉ_DE_TRADUCTION')` fait surgir la tête et sa bulle en bas de l'écran. C'est le point d'entrée pour tout message de ce genre.
 
 ## 3D
 
@@ -38,6 +40,7 @@ Clicker incrémental Angular. Prototype : https://lauiss.itch.io/chad-aura-farme
   - Bruit déterministe (seed) : même graine, même statue. `disposeObject()` libère le GPU.
 - [moyai-viewer.ts](src/app/components/moyai-viewer/moyai-viewer.ts) — scène autonome, `TrackballControls` (rotation libre sur tous les axes, pan désactivé), rotation lente automatique tant que l'utilisateur n'a pas touché à la statue.
 - [models/trophy.ts](src/app/three/models/trophy.ts) — `createTrophy({ unlocked })`, ambré ou gris, pour les succès. Ses anses passent par une `ExtrudeGeometry` : `loft` n'empile que selon Y et ne sait pas suivre une courbe.
+- [models/shop-bag.ts](src/app/three/models/shop-bag.ts) — `createShopBag()`, l'icône de la boutique.
 - [models/gear.ts](src/app/three/models/gear.ts) — `createGear()`, l'engrenage du bouton des options. Profil denté dessiné point par point puis extrudé ; garder le sommet de dent large devant les flancs, sinon la roue s'effile en étoile.
 - [snapshot.ts](src/app/three/snapshot.ts) — rend un modèle **une fois** en data URL. Les icônes passent par là plutôt que par un canvas vivant chacune : un navigateur ne tient qu'une poignée de contextes WebGL (~16) et la liste des succès en affiche des dizaines. Le cache est dans [ModelIcons](src/app/services/model-icons.ts), avec repli sur les anciens PNG si WebGL manque.
 - Tout composant Three.js doit appeler `forceContextLoss()` en plus de `dispose()` s'il peut être monté et démonté plusieurs fois.
@@ -59,6 +62,10 @@ Les tailles passent toutes par l'échelle de `menu-theme.scss` (`$menu-size-titl
 L'écran d'accueil est fixé : pas de logo, menu en texte seul, avec un chevron `>` qui apparaît au survol et au focus clavier pour marquer la ligne courante (variante `ghost` de `app-action-btn` ; la variante `solid` conserve le style d'origine utilisé dans le jeu).
 
 Les modales suivent le même thème, **toutes** — y compris celles du jeu (progression hors-ligne, succès). `app-modal-host` porte la couleur de texte du panneau, ce dont héritent les composants qu'il héberge.
+
+## Restes à nettoyer
+
+`shop-list` n'est plus utilisé depuis que la boutique est passée en carte. `aura-btn` ne sert plus comme composant mais **son fichier porte les interfaces** `MoyaiUpgrades`, `Effect` et `MoyaiUpgradeSave`, dont dépendent `shop-manager` et `save-manager` : le supprimer casserait le modèle de données. Déplacer ces types avant toute suppression.
 
 ## Vérifier une modification 3D sans navigateur
 

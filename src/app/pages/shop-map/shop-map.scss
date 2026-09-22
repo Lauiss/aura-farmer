@@ -1,0 +1,199 @@
+@use '../../../menu-theme' as *;
+@use '../../../variables' as *;
+
+.shop-map {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  background-color: $menu-bg;
+  color: $menu-text;
+}
+
+/* --- Barre supérieure --- */
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-200;
+  padding: $spacing-150 $spacing-300;
+  border-bottom: 1px solid $menu-border;
+}
+
+.aura {
+  font-size: $menu-size-title;
+  font-weight: $menu-weight-strong;
+  font-variant-numeric: tabular-nums;
+
+  span {
+    font-size: $menu-size-small;
+    font-weight: $menu-weight;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: $menu-text-dim;
+  }
+}
+
+.tools {
+  display: flex;
+  gap: $spacing-100;
+}
+
+.back,
+.tool {
+  padding: $spacing-100 $spacing-150;
+  min-width: 2.25rem;
+  font-size: $menu-size-small;
+  font-weight: $menu-weight;
+  color: $menu-text-dim;
+  background: $menu-surface-raised;
+  border: 1px solid $menu-border;
+  border-radius: $radius-100;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.tool.wide {
+  min-width: 5rem;
+}
+
+.back:hover, .back:focus-visible,
+.tool:hover, .tool:focus-visible {
+  color: $menu-accent;
+  border-color: $menu-accent-border;
+  outline: none;
+}
+
+/* --- Surface navigable --- */
+.viewport {
+  position: relative;
+  overflow: hidden;
+  // Le navigateur ne doit pas s'emparer du geste : la carte gère elle-même
+  // le déplacement et le zoom.
+  touch-action: none;
+  cursor: grab;
+  // Trame discrète, qui rend le déplacement perceptible.
+  background-image:
+    radial-gradient(circle, rgba(237, 230, 214, 0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.viewport:active {
+  cursor: grabbing;
+}
+
+.world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+.links {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.links line {
+  stroke: $menu-border-strong;
+  stroke-width: 2;
+}
+
+.links line.dim {
+  stroke: $menu-border;
+  stroke-dasharray: 6 8;
+}
+
+/* --- Nœuds --- */
+.node {
+  position: absolute;
+  // `left` et `top` désignent le centre du nœud, d'où le recentrage.
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-50;
+  width: 9.5rem;
+  padding: $spacing-150;
+  text-align: center;
+  color: $menu-text;
+  background-color: $menu-surface;
+  border: 1px solid $menu-border;
+  border-radius: $radius-100;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.node:hover,
+.node:focus-visible {
+  border-color: $menu-accent-border;
+  outline: none;
+}
+
+.node.kind-upgrade,
+.node.kind-moyai {
+  width: 7.5rem;
+  padding: $spacing-100;
+}
+
+.node.owned {
+  background-color: $menu-accent-soft;
+  border-color: $menu-accent-border;
+  cursor: default;
+}
+
+.node.locked {
+  color: $menu-text-faint;
+  background-color: transparent;
+  border-style: dashed;
+}
+
+// Achetable mais hors budget : lisible, sans être présenté comme disponible.
+.node.poor .cost {
+  color: $menu-text-faint;
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  font-size: 1.5rem;
+  font-weight: $menu-weight-strong;
+  color: $menu-text-faint;
+}
+
+.mark.image {
+  object-fit: contain;
+}
+
+.mark.image.small {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.name {
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  line-height: 1.25;
+  // Deux lignes au maximum : tous les nœuds gardent la même hauteur.
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.meta,
+.cost {
+  font-size: 0.8rem;
+  font-weight: $menu-weight;
+  color: $menu-text-dim;
+  font-variant-numeric: tabular-nums;
+}
+
+.cost {
+  color: $menu-accent;
+}

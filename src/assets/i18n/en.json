@@ -30,5 +30,12 @@
     "CREDITS_PROTOTYPE": "See the prototype on itch.io",
     "LOCKED": "Not unlocked yet",
     "ACHIEVEMENT_LOCKED_HINT": "Keep aura farming to unlock this achievement!",
-    "CLOSE": "Close"
+    "CLOSE": "Close",
+    "SHOP": "Shop",
+    "BACK": "Back",
+    "RECENTER": "Recenter",
+    "ZOOM_IN": "Zoom in",
+    "ZOOM_OUT": "Zoom out",
+    "SHOP_LOCKED_HINT": "Keep aura farming to unlock this!",
+    "SHOP_TOO_EXPENSIVE_HINT": "You don't have enough aura for this one!"
 }

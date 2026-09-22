@@ -1,0 +1,81 @@
+<div class="shop-map">
+  <header class="bar">
+    <button type="button" class="back" (click)="back()">&larr; {{ 'BACK' | translate }}</button>
+
+    <p class="aura">
+      {{ auraManager.auraCount() | formatAura }} <span>{{ 'AURA' | translate }}</span>
+    </p>
+
+    <div class="tools">
+      <button type="button" class="tool wide" (click)="cycleBuyAmount()">
+        {{ 'BUY' | translate }} {{ buyAmount() }}
+      </button>
+      <button type="button" class="tool" [attr.aria-label]="'ZOOM_OUT' | translate" (click)="zoomBy(1 / 1.25)">&minus;</button>
+      <button type="button" class="tool" [attr.aria-label]="'ZOOM_IN' | translate" (click)="zoomBy(1.25)">+</button>
+      <button type="button" class="tool wide" (click)="recenter()">{{ 'RECENTER' | translate }}</button>
+    </div>
+  </header>
+
+  <div
+    #viewport
+    class="viewport"
+    (pointerdown)="onPointerDown($event)"
+    (pointermove)="onPointerMove($event)"
+    (pointerup)="onPointerUp()"
+    (pointercancel)="onPointerUp()"
+    (wheel)="onWheel($event)"
+  >
+    <div class="world" [style.transform]="transform()" [style.width.px]="world.width" [style.height.px]="world.height">
+      <!-- Liens tracés sous les nœuds. -->
+      <svg class="links" [attr.viewBox]="'0 0 ' + world.width + ' ' + world.height" aria-hidden="true">
+        @for (node of nodes(); track node.key) {
+          @if (node.parent) {
+            <line
+              [attr.x1]="node.parent.x"
+              [attr.y1]="node.parent.y"
+              [attr.x2]="node.x"
+              [attr.y2]="node.y"
+              [class.dim]="!isRevealed(node)"
+            />
+          }
+        }
+      </svg>
+
+      @for (node of nodes(); track node.key) {
+        <button
+          type="button"
+          class="node"
+          [class]="'node kind-' + node.kind"
+          [class.locked]="!isRevealed(node)"
+          [class.owned]="isOwned(node)"
+          [class.poor]="isRevealed(node) && !isOwned(node) && !affordable(node)"
+          [style.left.px]="node.x"
+          [style.top.px]="node.y"
+          (click)="activate(node)"
+        >
+          @if (!isRevealed(node)) {
+            <span class="mark">?</span>
+            <span class="name">?????</span>
+          } @else if (node.kind === 'item') {
+            <img [src]="node.item!.icon" alt="" class="mark image">
+            <span class="name">{{ node.item!.name() }}</span>
+            <span class="meta">{{ 'LEVEL' | translate }} {{ node.item!.level() | number:'1.0-0' }}</span>
+            <span class="cost">{{ price(node) | formatAura }}</span>
+          } @else if (node.kind === 'upgrade') {
+            <img src="assets/imgs/upgrades/upgrade_generic.png" alt="" class="mark image small">
+            <span class="name">{{ node.upgrade!.name | translate }}</span>
+            <span class="cost">
+              {{ isOwned(node) ? ('UNLOCKED' | translate) : (price(node) | formatAura) }}
+            </span>
+          } @else {
+            <img [src]="gearIcon" alt="" class="mark image small">
+            <span class="name">{{ node.moyaiUpgrade!.name | translate }}</span>
+            <span class="cost">
+              {{ isOwned(node) ? ('UNLOCKED' | translate) : (price(node) | formatAura) }}
+            </span>
+          }
+        </button>
+      }
+    </div>
+  </div>
+</div>

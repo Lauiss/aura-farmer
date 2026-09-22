@@ -7,6 +7,7 @@ import {
   AfterViewInit,
   inject,
   input,
+  output,
   viewChild
 } from '@angular/core';
 import * as THREE from 'three';
@@ -36,6 +37,9 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   readonly distance = input(5.8);
   /** Orientation de départ, en radians. Avec `idleSpin` à 0, elle ne bouge plus. */
   readonly rotation = input<[number, number, number]>([0, 0, 0]);
+
+  /** Émis au clic sur la statue, pour l'utiliser comme cible de jeu. */
+  readonly clicked = output<MouseEvent>();
 
   private readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private readonly host = inject(ElementRef<HTMLElement>);

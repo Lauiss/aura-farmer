@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { createGear } from '../three/models/gear';
+import { createShopBag } from '../three/models/shop-bag';
 import { createTrophy } from '../three/models/trophy';
 import { renderToDataUrl } from '../three/snapshot';
 
@@ -17,7 +18,8 @@ export class ModelIcons {
   private static readonly FALLBACK: Record<string, string> = {
     'trophy-true': 'assets/imgs/achievements/trophy_achievement.png',
     'trophy-false': 'assets/imgs/achievements/locked_achievement.png',
-    gear: 'assets/imgs/upgrades/upgrade_generic.png'
+    gear: 'assets/imgs/upgrades/upgrade_generic.png',
+    shop: 'assets/imgs/upgrades/monetize_aura.png'
   };
 
   private cache = new Map<string, string>();
@@ -33,6 +35,13 @@ export class ModelIcons {
   gear(): string {
     return this.render('gear', () =>
       renderToDataUrl(createGear(), { size: 192, distance: 3.9, rotation: [0.25, 0.3, 0.1] })
+    );
+  }
+
+  /** Sac de courses, pour l'accès à la boutique. */
+  shop(): string {
+    return this.render('shop', () =>
+      renderToDataUrl(createShopBag(), { size: 192, distance: 4.4, rotation: [0.16, 0.5, 0] })
     );
   }
 

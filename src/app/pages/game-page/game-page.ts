@@ -1,18 +1,19 @@
 import { Component, computed, Pipe, PipeTransform, signal, forwardRef, ViewChild, ElementRef, inject, ChangeDetectionStrategy } from '@angular/core';
 import { AuraManager } from '../../services/aura-manager';
-import { ItemSave, ShopManager } from '../../services/shop-manager';
-import { interval } from 'rxjs';
-import { AuraBtn } from "../../components/aura-btn/aura-btn";
-import { ShopList } from "../../components/shop-list/shop-list";
-import { SaveData, SaveManager } from '../../services/save-manager';
+import { ShopManager } from '../../services/shop-manager';
+import { MoyaiViewer } from '../../components/moyai-viewer/moyai-viewer';
+import { IconBtn } from '../../components/icon-btn/icon-btn';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Sound, SoundManager } from '../../services/sound-manager';
-import { OfflineProgressAnnouncer } from '../../components/offline-progress-announcer/offline-progress-announcer';
 import { ModalManager } from '../../services/modal-manager';
 import { Settings } from '../../components/settings/settings';
 import { SettingsManager } from '../../services/settings-manager';
 import { AchievementsManager } from '../../services/achievements-manager';
 import { createAchievements } from '../../../assets/static/achievements';
+import { GameLoop } from '../../services/game-loop';
+import { AchievementsList } from '../../components/achievements-list/achievements-list';
+import { ModelIcons } from '../../services/model-icons';
+import { Router } from '@angular/router';
 
 @Component({
   standalone: true,
@@ -20,11 +21,10 @@ import { createAchievements } from '../../../assets/static/achievements';
   templateUrl: './game-page.html',
   styleUrls: ['./game-page.scss'],
   changeDetection: ChangeDetectionStrategy.Eager,
-  imports: [AuraBtn, ShopList, TranslatePipe, forwardRef(() => FormatAuraPipe)]
+  imports: [MoyaiViewer, IconBtn, TranslatePipe, forwardRef(() => FormatAuraPipe)]
 })
 export class GamePage {
 
-  saveLocation = "AURA_FARMER_SAVE";
   @ViewChild('btn', { read: ElementRef, static: true })
   private btnRef!: ElementRef<HTMLElement>;
 
@@ -32,10 +32,31 @@ export class GamePage {
   public readonly translate = inject(TranslateService);
   public readonly auraManager = inject(AuraManager);
   public readonly shopManager = inject(ShopManager);
-  public readonly saveManager = inject(SaveManager);
   public readonly modalManager = inject(ModalManager);
   public readonly settingsManager = inject(SettingsManager);
   public readonly achievementsManager = inject(AchievementsManager);
+  private readonly modelIcons = inject(ModelIcons);
+  private readonly router = inject(Router);
+  private readonly gameLoop = inject(GameLoop);
+
+  readonly shopIcon = this.modelIcons.shop();
+  readonly trophyIcon = this.modelIcons.trophy(true);
+  readonly gearIcon = this.modelIcons.gear();
+
+  openShop() {
+    this.soundManager.playFX(Sound.Plop);
+    this.router.navigate(['/shop']);
+  }
+
+  openAchievements() {
+    this.soundManager.playFX(Sound.Plop);
+    this.modalManager.open(AchievementsList, undefined, 'xl');
+  }
+
+  openSettings() {
+    this.soundManager.playFX(Sound.Plop);
+    this.modalManager.open(Settings);
+  }
 
 
   ngOnInit() {
@@ -49,12 +70,10 @@ export class GamePage {
     );
     this.achievementsManager.setAchievements(achievements);
 
-    this.loadSave();
+    // La boucle vit dans un service, pas dans la page : la production d'aura
+    // doit continuer pendant qu'on parcourt la carte de la boutique.
+    this.gameLoop.start();
 
-    // Vérifier rétroactivement les achievements (sans notification)
-    this.achievementsManager.checkAchievementsSilently();
-
-    this.startAuraGain();
     this.soundManager.changeMusic(Sound.Game);
   }
 
@@ -73,112 +92,6 @@ export class GamePage {
     }
 
     this.soundManager.playFX(Sound.Plop);
-  }
-
-  startAuraGain() {
-    interval(1000).subscribe(() => {
-      if(this.shopManager.getTotalValue() > 0){
-        this.auraManager.auraCount.update(current => current + this.shopManager.getTotalValue());
-        this.auraManager.allTimeAura.update(total => total + this.shopManager.getTotalValue());
-      }
-      // Vérifier les achievements toutes les secondes
-      this.achievementsManager.checkAchievements();
-    });
-
-    interval(10000).subscribe(() => {
-        this.createSave();
-    })
-  }
-
-  createSave() {
-    const plainItems: ItemSave[] = this.shopManager.getAllItems().map(item => ({
-      id: item.id,
-      value: item.value(),
-      quantity: item.level(),
-      price: item.price(),
-      factor: item.factor,
-      upgrades: item.upgrades?.map(u => ({ id: u.id, unlocked: u.unlocked })),
-      unlocked: item.unlocked
-    }));
-
-    const moyaiUpgrades = this.shopManager.moyaiUpgrades().map(upgrade => ({
-      id: upgrade.id,
-      unlocked: upgrade.unlocked
-    }));
-
-    const saveData: SaveData = {
-      auraCount: parseInt(this.auraManager.auraCount().toFixed(2)),
-      allTimeAura: parseInt(this.auraManager.totalAllTime.toFixed(2)),
-      shopItems: plainItems,
-      moyaiUpgrades: moyaiUpgrades,
-      counters: this.shopManager.getCountersValue(),
-      achievements: this.achievementsManager.getAchievementsForSave(),
-      totalClicks: this.achievementsManager.totalClicks()
-    }
-
-    if (moyaiUpgrades[0].unlocked){
-      saveData.lastSaveTime = Date.now();
-    }
-
-    this.saveManager.saveProgress(this.saveLocation,saveData);
-  }
-
-  loadSave(){
-    const saveData = this.saveManager.loadProgress(this.saveLocation);
-    if(!saveData){ return}
-
-    if (saveData.auraCount) {
-      this.auraManager.auraCount.set(saveData.auraCount);
-    }
-
-    if (saveData.allTimeAura) {
-      this.auraManager.defineAllTimeAura(saveData.allTimeAura);
-    }
-
-    if (saveData.shopItems) {
-      this.shopManager.restoreItemsFromSave(saveData.shopItems);
-    }
-
-    if (saveData.moyaiUpgrades) {
-      this.shopManager.restoreMoyaiUpgradesFromSave(saveData.moyaiUpgrades);
-    }
-
-    if (saveData.counters) {
-      this.shopManager.restoreCountersFromSave(saveData.counters);
-    }
-
-    if (saveData.achievements) {
-      this.achievementsManager.restoreFromSave(saveData.achievements);
-    }
-
-    if (saveData.totalClicks) {
-      this.achievementsManager.totalClicks.set(saveData.totalClicks);
-    }
-
-    if (saveData.lastSaveTime) {
-      const now = Date.now();
-      const elapsedSeconds = Math.floor((now - saveData.lastSaveTime) / 1000);
-
-      if (elapsedSeconds < 60) {
-        return;
-      }
-
-      const maxOfflineSeconds = 8 * 60 * 60; // 8 heures
-      const offlineSeconds = Math.min(elapsedSeconds, maxOfflineSeconds);
-
-      const totalValue = this.shopManager.getTotalValue();
-      if (totalValue > 0 && offlineSeconds > 0) {
-        const offlineGain = totalValue * offlineSeconds;
-        this.auraManager.auraCount.update(current => current + offlineGain);
-        this.auraManager.allTimeAura.update(total => total + offlineGain);
-        this.modalManager.open(OfflineProgressAnnouncer, {
-          data: {
-            offlineProgression: offlineGain,
-            offlineTime: offlineSeconds
-          }
-        });
-      }
-    }
   }
 
   // Animation pour les clicks

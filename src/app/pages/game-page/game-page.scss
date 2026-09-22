@@ -1,59 +1,81 @@
+@use '../../../menu-theme' as *;
 @use '../../../variables' as *;
-.game-container {
+
+.game-screen {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+  padding: $spacing-400 $spacing-300;
+  gap: $spacing-300;
+  background-color: $menu-bg;
+  color: $menu-text;
+}
+
+/* --- Compteurs --- */
+.counters {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: $spacing-50;
+  text-align: center;
+}
+
+.counter h2 {
+  font-size: 2.6rem;
+  font-weight: $menu-weight-strong;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.counter h3 {
+  font-size: 1.3rem;
+  font-weight: $menu-weight;
+  color: $menu-text-dim;
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-100;
+  font-size: $menu-size-small;
+  font-weight: $menu-weight;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $menu-text-dim;
+}
+
+// La statue remplace l'ancien logo d'aura : elle tourne en continu.
+.aura-mark {
+  display: block;
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+.aura-mark.small {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* --- La statue, cible de clic --- */
+.stage {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+}
+
+.hero {
+  display: block;
+  width: min(34rem, 80vw);
+  height: 100%;
+  max-height: 100%;
+  cursor: pointer;
+  will-change: transform;
+}
+
+/* --- Accès boutique, succès et options --- */
+.actions {
+  display: flex;
   justify-content: center;
-  height: 100vh;
-}
-
-.body {
-    margin: 0;
-    padding: 0;
-}
-
-.app-container {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    height: 100%;
-}
-
-.main-button {
-    width: 30%;
-    height: 100%;
-    background-color: $primary;
-}
-
-.counter-container {
-    width: 100%;
-    background-color: $text-color;
-}
-
-.shop {
-    background-color: $bg-color;
-    overflow: scroll;
-    width: 100%;
-}
-
-.white-text {
-    color: $on-dark-bg-text;
-}
-
-.big-title {
-    font-size: 2rem;
-}
-
-.subtitle {
-    font-size: 1rem;
-}
-
-.aura-logo {
-    width: 50px;
-    height: 50px;
-    margin-top: 15px;
-}
-
-.aura-logo-small {
-    width: 25px;
+  gap: $spacing-400;
 }

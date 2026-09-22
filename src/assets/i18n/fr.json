@@ -30,5 +30,12 @@
     "CREDITS_BUILT_WITH": "Réalisé avec",
     "CREDITS_PROTOTYPE": "Voir le prototype sur itch.io",
     "ACHIEVEMENT_LOCKED_HINT": "Continue à aura farmer pour débloquer ce succès !",
-    "CLOSE": "Fermer"
+    "CLOSE": "Fermer",
+    "SHOP": "Boutique",
+    "BACK": "Retour",
+    "RECENTER": "Recentrer",
+    "ZOOM_IN": "Zoomer",
+    "ZOOM_OUT": "Dézoomer",
+    "SHOP_LOCKED_HINT": "Continue à aura farmer pour débloquer ça !",
+    "SHOP_TOO_EXPENSIVE_HINT": "Il te manque de l'aura pour te l'offrir !"
 }

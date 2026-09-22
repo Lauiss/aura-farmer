@@ -1,19 +1,47 @@
-<div class="app-container">
-  <div class="main-button">
-    <div class="counter-container">
-      <div class="flex-row center-items gap-100 white-text big-title">
-        <h3>{{ auraManager.auraCount() | formatAura }}</h3>
-        <span tooltip="Aura"><img class="aura-logo" src="assets/imgs/aura.png"/></span>
-      </div>
-      <div class="flex-row center-items gap-100 white-text subtitle">
-        <h3>{{ this.shopManager.getTotalValue() | formatAura }}</h3>
-        <span><img class="aura-logo-small" src="assets/imgs/aura.png"/>{{ 'AURA_PER_SECOND' | translate }}</span>
-      </div>
+<div class="game-screen">
+  <header class="counters">
+    <div class="counter total">
+      <h2>{{ auraManager.auraCount() | formatAura }}</h2>
+      <span class="unit">
+        <app-moyai-viewer
+          class="aura-mark"
+          [interactive]="false"
+          [idleSpin]="0.9"
+          [distance]="4.4"
+          aria-hidden="true"
+        ></app-moyai-viewer>
+        {{ 'AURA' | translate }}
+      </span>
     </div>
-    <app-aura-btn #btn (click)="increment($event)"></app-aura-btn>
-  </div>
 
-  <div class="shop">
-    <app-shop-list></app-shop-list>
-  </div>
+    <div class="counter rate">
+      <h3>{{ shopManager.getTotalValue() | formatAura }}</h3>
+      <span class="unit">
+        <app-moyai-viewer
+          class="aura-mark small"
+          [interactive]="false"
+          [idleSpin]="0.9"
+          [distance]="4.4"
+          aria-hidden="true"
+        ></app-moyai-viewer>
+        {{ 'AURA_PER_SECOND' | translate }}
+      </span>
+    </div>
+  </header>
+
+  <main class="stage">
+    <app-moyai-viewer
+      #btn
+      class="hero"
+      [interactive]="false"
+      [idleSpin]="0.3"
+      (clicked)="increment($event)"
+    ></app-moyai-viewer>
+  </main>
+
+  <nav class="actions">
+    <app-icon-btn [icon]="shopIcon" label="SHOP" (activate)="openShop()"></app-icon-btn>
+    <app-icon-btn [icon]="trophyIcon" label="ACHIEVEMENTS" (activate)="openAchievements()"></app-icon-btn>
+    <app-icon-btn [icon]="gearIcon" label="SETTINGS" (activate)="openSettings()"></app-icon-btn>
+  </nav>
 </div>
