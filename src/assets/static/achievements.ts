@@ -1,4 +1,4 @@
-import { FormatAuraPipe } from "../../app/pages/game-page/game-page";
+import { FormatAuraPipe } from "../../app/pipes/format-aura";
 import { Achievement } from "../../app/services/achievements-manager";
 
 export function createAchievements(

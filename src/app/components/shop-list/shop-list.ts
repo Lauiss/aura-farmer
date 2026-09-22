@@ -8,7 +8,7 @@ import { ModalManager } from '../../services/modal-manager';
 import { Settings } from '../settings/settings';
 import { TranslatePipe } from '@ngx-translate/core';
 import { MoyaiUpgradesShop } from '../moyai-upgrades/moyai-upgrades';
-import { FormatAuraPipe } from '../../pages/game-page/game-page';
+import { FormatAuraPipe } from '../../pipes/format-aura';
 import { ItemUpgradesShop } from '../item-upgrades/item-upgrades';
 import { AchievementsList } from '../achievements-list/achievements-list';
 import { IconBtn } from '../icon-btn/icon-btn';

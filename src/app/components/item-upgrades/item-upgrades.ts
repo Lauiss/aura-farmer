@@ -4,7 +4,7 @@ import { ModalManager } from '../../services/modal-manager';
 import { ShopManager } from '../../services/shop-manager';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ActionBtn } from '../action-btn/action-btn';
-import { FormatAuraPipe } from '../../pages/game-page/game-page';
+import { FormatAuraPipe } from '../../pipes/format-aura';
 import { AuraManager } from '../../services/aura-manager';
 
 @Component({

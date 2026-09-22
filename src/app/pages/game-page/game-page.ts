@@ -1,4 +1,5 @@
-import { Component, computed, Pipe, PipeTransform, signal, forwardRef, ViewChild, ElementRef, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, forwardRef, ViewChild, ElementRef, inject, ChangeDetectionStrategy } from '@angular/core';
+import { FormatAuraPipe } from '../../pipes/format-aura';
 import { AuraManager } from '../../services/aura-manager';
 import { ShopManager } from '../../services/shop-manager';
 import { MoyaiViewer } from '../../components/moyai-viewer/moyai-viewer';
@@ -9,10 +10,9 @@ import { ModalManager } from '../../services/modal-manager';
 import { Settings } from '../../components/settings/settings';
 import { SettingsManager } from '../../services/settings-manager';
 import { AchievementsManager } from '../../services/achievements-manager';
-import { createAchievements } from '../../../assets/static/achievements';
-import { GameLoop } from '../../services/game-loop';
 import { AchievementsList } from '../../components/achievements-list/achievements-list';
 import { ModelIcons } from '../../services/model-icons';
+import { GameLoop } from '../../services/game-loop';
 import { SpinCombo } from '../../services/spin-combo';
 import { WardrobeManager } from '../../services/wardrobe-manager';
 import { Wardrobe } from '../../components/wardrobe/wardrobe';
@@ -47,8 +47,8 @@ export class GamePage {
   public readonly achievementsManager = inject(AchievementsManager);
   private readonly modelIcons = inject(ModelIcons);
   private readonly router = inject(Router);
-  private readonly gameLoop = inject(GameLoop);
   private readonly spinCombo = inject(SpinCombo);
+  private readonly gameLoop = inject(GameLoop);
   readonly wardrobeManager = inject(WardrobeManager);
 
   readonly hangerIcon = this.modelIcons.hanger();
@@ -98,25 +98,9 @@ export class GamePage {
   ngOnInit() {
     this.settingsManager.getSettingsConfig();
 
-    // Une seule fois par session. Recréer la liste à chaque montage la
-    // remettait à l'état verrouillé, et le contrôle périodique les
-    // redébloquait tous en annonçant chacun d'eux à nouveau.
-    if (this.achievementsManager.achievements().length === 0) {
-      this.achievementsManager.setAchievements(
-        createAchievements(
-          () => this.shopManager.getAllItems(),
-          () => this.achievementsManager.totalClicks(),
-          () => this.auraManager.allTimeAura(),
-          () => this.shopManager.moyaiUpgrades(),
-          () => this.shopManager.maxedSkillCount()
-        )
-      );
-    }
-
-    // La boucle vit dans un service, pas dans la page : la production d'aura
-    // doit continuer pendant qu'on parcourt la carte de la boutique.
+    // Idempotent : la partie se charge au premier écran de jeu atteint, que
+    // ce soit celui-ci ou la carte de la boutique.
     this.gameLoop.start();
-
     this.soundManager.changeMusic(Sound.Game);
   }
 
@@ -238,31 +222,5 @@ export class GamePage {
     );
 
     anim.onfinish = () => span.remove();
-  }
-}
-
-  @Pipe({
-    name: 'formatAura',
-    standalone: true
-  })
-  export class FormatAuraPipe implements PipeTransform {
-  transform(value: number): string {
-    const absValue = Math.abs(value);
-
-    if (absValue >= 1e12) {
-      return (value / 1e12).toFixed(2).replace(/\.00$/, '') + ' T';
-    } else if (absValue >= 1e9) {
-      return (value / 1e9).toFixed(2).replace(/\.00$/, '') + ' B';
-    } else if (absValue >= 1e6) {
-      return (value / 1e6).toFixed(2).replace(/\.00$/, '') + ' M';
-    } else if (absValue >= 1e3) {
-      return (value / 1e3).toFixed(2).replace(/\.00$/, '') + ' k';
-    } else if (absValue >= 1000) {
-      return Math.round(value).toString();
-    } else if (absValue >= 1) {
-      return value.toFixed(2).replace(/\.00$/, '');
-    } else {
-      return value.toFixed(2);
-    }
   }
 }

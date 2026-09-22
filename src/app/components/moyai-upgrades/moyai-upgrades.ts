@@ -4,7 +4,7 @@ import { MoyaiUpgrades } from '../aura-btn/aura-btn';
 import { AuraManager } from '../../services/aura-manager';
 import { ShopManager } from '../../services/shop-manager';
 import { TranslatePipe } from '@ngx-translate/core';
-import { FormatAuraPipe } from '../../pages/game-page/game-page';
+import { FormatAuraPipe } from '../../pipes/format-aura';
 import { ActionBtn } from "../action-btn/action-btn";
 
 @Component({

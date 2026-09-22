@@ -282,6 +282,9 @@ export class ShopManager {
   unlockMoyaiUpgrade(index: number) {
     this.applyEffect(this.moyaiUpgrades()[index].effect);
     this.moyaiUpgrades()[index].unlocked = true;
+    // Le tableau était muté sur place sans que le signal soit réémis : la
+    // garde-robe, qui en dérive, ne voyait jamais la nouvelle pièce.
+    this.moyaiUpgrades.set([...this.moyaiUpgrades()]);
   }
 
   /**

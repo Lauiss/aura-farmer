@@ -15,7 +15,7 @@ import * as THREE from 'three';
 import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
 import { disposeObject } from '../../three/geometry';
 import { createMoyai } from '../../three/models/moyai';
-import { createFinger, setFingerOpacity } from '../../three/models/finger';
+import { createCursor, setCursorOpacity } from '../../three/models/cursor';
 import { CosmeticId, createCosmetic } from '../../three/models/cosmetics';
 
 /**
@@ -88,7 +88,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   private readonly previousDirection = new THREE.Vector3();
   private readonly currentDirection = new THREE.Vector3();
 
-  /** Geste du « chut ». Créé au premier appel, puis réutilisé. */
+  /** Curseur du geste de mewing. Créé au premier appel, puis réutilisé. */
   private shush?: THREE.Group;
   private shushElapsed = 0;
 
@@ -215,8 +215,8 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     if (!this.moyai) return;
 
     if (!this.shush) {
-      this.shush = createFinger();
-      this.shush.scale.setScalar(0.5);
+      this.shush = createCursor();
+      this.shush.scale.setScalar(0.55);
       this.moyai.add(this.shush);
     }
 
@@ -269,7 +269,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
 
     const fadeIn = THREE.MathUtils.clamp(t / 0.1, 0, 1);
     const fadeOut = THREE.MathUtils.clamp((1 - t) / 0.18, 0, 1);
-    setFingerOpacity(finger, Math.min(fadeIn, fadeOut));
+    setCursorOpacity(finger, Math.min(fadeIn, fadeOut));
   }
 
   /** Ajoute et retire les accessoires pour coller à la liste demandée. */

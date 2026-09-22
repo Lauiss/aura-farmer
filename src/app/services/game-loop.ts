@@ -6,6 +6,7 @@ import { SaveData, SaveManager } from './save-manager';
 import { AchievementsManager } from './achievements-manager';
 import { ModalManager } from './modal-manager';
 import { OfflineProgressAnnouncer } from '../components/offline-progress-announcer/offline-progress-announcer';
+import { createAchievements } from '../../assets/static/achievements';
 
 /**
  * Boucle de jeu : production d'aura passive, vérification des succès et
@@ -32,12 +33,26 @@ export class GameLoop {
   private started = false;
 
   /**
-   * Charge la sauvegarde puis démarre la boucle. Sans effet si elle tourne
-   * déjà : les succès doivent avoir été déclarés avant l'appel.
+   * Déclare les succès, charge la sauvegarde puis démarre la boucle. Sans
+   * effet si elle tourne déjà.
+   *
+   * L'appel vient de l'application et non d'une page : ouvrir directement la
+   * carte de la boutique laissait sinon la partie non chargée, avec le compte
+   * d'aura à sa valeur initiale.
    */
   start(): void {
     if (this.started) return;
     this.started = true;
+
+    this.achievementsManager.setAchievements(
+      createAchievements(
+        () => this.shopManager.getAllItems(),
+        () => this.achievementsManager.totalClicks(),
+        () => this.auraManager.allTimeAura(),
+        () => this.shopManager.moyaiUpgrades(),
+        () => this.shopManager.maxedSkillCount()
+      )
+    );
 
     this.loadSave();
     // Rattrape les succès déjà remplis, sans notification.

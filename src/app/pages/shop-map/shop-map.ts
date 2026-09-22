@@ -15,8 +15,9 @@ import { HintManager } from '../../services/hint-manager';
 import { Item, ItemUpgrade, ShopManager } from '../../services/shop-manager';
 import { MoyaiUpgrades } from '../../components/aura-btn/aura-btn';
 import { Sound, SoundManager } from '../../services/sound-manager';
-import { FormatAuraPipe } from '../game-page/game-page';
+import { FormatAuraPipe } from '../../pipes/format-aura';
 import { ModelIcons } from '../../services/model-icons';
+import { GameLoop } from '../../services/game-loop';
 
 type NodeKind = 'root' | 'category' | 'item' | 'upgrade' | 'outfit' | 'outfit-upgrade';
 
@@ -70,6 +71,7 @@ export class ShopMap {
   private readonly modelIcons = inject(ModelIcons);
   private readonly translate = inject(TranslateService);
   private readonly router = inject(Router);
+  private readonly gameLoop = inject(GameLoop);
 
   readonly world = WORLD;
   readonly moyaiIcon = this.modelIcons.moyai();
@@ -422,6 +424,12 @@ export class ShopMap {
     // On revient toujours sur la racine, point d'entrée de la carte.
     this.panX.set(rect.width / 2 - 600 * 0.7);
     this.panY.set(rect.height / 2 - 400 * 0.7);
+  }
+
+  ngOnInit(): void {
+    // Arriver directement ici doit charger la partie : sans cet appel, la
+    // carte s'ouvrait sur le compte d'aura initial.
+    this.gameLoop.start();
   }
 
   ngAfterViewInit(): void {

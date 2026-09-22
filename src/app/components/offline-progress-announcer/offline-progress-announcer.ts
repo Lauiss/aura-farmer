@@ -1,6 +1,6 @@
 import { Component, inject, computed, forwardRef, ChangeDetectionStrategy } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
-import { FormatAuraPipe } from '../../pages/game-page/game-page';
+import { FormatAuraPipe } from '../../pipes/format-aura';
 import { DecimalPipe } from '@angular/common';
 import { ModalManager } from '../../services/modal-manager';
 

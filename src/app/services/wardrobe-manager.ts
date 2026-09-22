@@ -18,11 +18,17 @@ export class WardrobeManager {
   private readonly shopManager = inject(ShopManager);
   private readonly saveManager = inject(SaveManager);
 
-  private readonly worn = signal<Set<CosmeticId>>(new Set());
+  /**
+   * Pièces que le joueur a explicitement retirées.
+   *
+   * C'est le retrait qui est mémorisé, pas le port : une pièce fraîchement
+   * achetée doit apparaître sur la statue sans qu'on ait à l'activer.
+   */
+  private readonly removed = signal<Set<CosmeticId>>(new Set());
 
   constructor() {
     const saved: CosmeticId[] | null = this.saveManager.loadProgress(SaveLocation.Wardrobe);
-    if (saved) this.worn.set(new Set(saved));
+    if (saved) this.removed.set(new Set(saved));
   }
 
   /**
@@ -39,22 +45,22 @@ export class WardrobeManager {
 
   /** Accessoires effectivement portés, donc affichés sur la statue. */
   readonly equipped = computed<CosmeticId[]>(() => {
-    const worn = this.worn();
-    return this.unlocked().filter(id => worn.has(id));
+    const removed = this.removed();
+    return this.unlocked().filter(id => !removed.has(id));
   });
 
   /** La garde-robe n'apparaît qu'une fois un premier accessoire acquis. */
   readonly hasAny = computed(() => this.unlocked().length > 0);
 
   isWorn(id: CosmeticId): boolean {
-    return this.worn().has(id);
+    return !this.removed().has(id);
   }
 
   toggle(id: CosmeticId): void {
-    const next = new Set(this.worn());
+    const next = new Set(this.removed());
     if (next.has(id)) next.delete(id);
     else next.add(id);
-    this.worn.set(next);
+    this.removed.set(next);
     this.saveManager.saveProgress(SaveLocation.Wardrobe, [...next]);
   }
 }
