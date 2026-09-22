@@ -114,9 +114,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: $spacing-50;
-  width: 9.5rem;
-  padding: $spacing-150;
+  gap: $spacing-100;
+  width: 17rem;
+  padding: $spacing-250 $spacing-200;
   text-align: center;
   color: $menu-text;
   background-color: $menu-surface;
@@ -132,10 +132,9 @@
   outline: none;
 }
 
-.node.kind-upgrade,
-.node.kind-moyai {
-  width: 7.5rem;
-  padding: $spacing-100;
+.node.kind-upgrade {
+  width: 14rem;
+  padding: $spacing-200 $spacing-150;
 }
 
 .node.owned {
@@ -150,32 +149,20 @@
   border-style: dashed;
 }
 
-// Achetable mais hors budget : lisible, sans être présenté comme disponible.
-.node.poor .cost {
-  color: $menu-text-faint;
-}
-
 .mark {
-  display: grid;
-  place-items: center;
-  width: 3rem;
-  height: 3rem;
-  font-size: 1.5rem;
-  font-weight: $menu-weight-strong;
-  color: $menu-text-faint;
-}
-
-.mark.image {
+  display: block;
+  width: 4.5rem;
+  height: 4.5rem;
   object-fit: contain;
 }
 
-.mark.image.small {
-  width: 2.25rem;
-  height: 2.25rem;
+.node.kind-upgrade .mark {
+  width: 3.25rem;
+  height: 3.25rem;
 }
 
 .name {
-  font-size: $menu-size-small;
+  font-size: $menu-size-subtitle;
   font-weight: $menu-weight-strong;
   line-height: 1.25;
   // Deux lignes au maximum : tous les nœuds gardent la même hauteur.
@@ -186,14 +173,48 @@
   overflow: hidden;
 }
 
-.meta,
-.cost {
-  font-size: 0.8rem;
+.meta {
+  font-size: $menu-size-small;
   font-weight: $menu-weight;
   color: $menu-text-dim;
   font-variant-numeric: tabular-nums;
 }
 
+// Le coût est l'information qui décide de l'achat : il doit se lire d'un coup
+// d'œil, même carte dézoomée.
 .cost {
+  display: inline-flex;
+  align-items: baseline;
+  gap: $spacing-50;
+  margin-top: $spacing-50;
+  padding: $spacing-50 $spacing-150;
+  font-size: 1.25rem;
+  font-weight: $menu-weight-strong;
   color: $menu-accent;
+  background-color: $menu-accent-soft;
+  border: 1px solid $menu-accent-border;
+  border-radius: $radius-100;
+  font-variant-numeric: tabular-nums;
+
+  small {
+    font-size: 0.7rem;
+    font-weight: $menu-weight;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+}
+
+// Hors budget : le prix reste lisible mais ne se présente plus comme une offre.
+.node.poor .cost {
+  color: $menu-text-dim;
+  background-color: transparent;
+  border-color: $menu-border;
+}
+
+.cost.maxed,
+.cost.owned-label {
+  font-size: $menu-size-small;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }

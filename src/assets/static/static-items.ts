@@ -10,6 +10,7 @@ export const shopItems: Item[] = [
     level: signal(0),
     price: signal(10),
     factor: 1.12,
+    maxLevel: 200,
     displayCondition: signal(true),
     unlocked: true,
     upgrades: jawlineUpgrades,
@@ -22,6 +23,7 @@ export const shopItems: Item[] = [
     level: signal(0),
     price: signal(100),
     factor: 1.13,
+    maxLevel: 200,
     displayCondition: computed(() => {
         if(shopItems[0].level() >= 10){
           return true;
@@ -39,6 +41,7 @@ export const shopItems: Item[] = [
     level: signal(0),
     price: signal(500),
     factor: 1.14,
+    maxLevel: 200,
     displayCondition: computed(() => {
         if(shopItems[1].level() >= 20){
           return true;
@@ -56,6 +59,7 @@ export const shopItems: Item[] = [
     level: signal(0),
     price: signal(3000),
     factor: 1.16,
+    maxLevel: 200,
     displayCondition: computed(() => {
         if(shopItems[2].level() >= 20){
           return true;
@@ -73,6 +77,7 @@ export const shopItems: Item[] = [
     level: signal(0),
     price: signal(20000),
     factor: 1.18,
+    maxLevel: 200,
     displayCondition: computed(() => {
         if(shopItems[3].level() >= 20){
           return true;
@@ -90,6 +95,7 @@ export const shopItems: Item[] = [
     level: signal(0),
     price: signal(120000),
     factor: 1.19,
+    maxLevel: 200,
     displayCondition: computed(() => {
         if(shopItems[4].level() >= 20){
           return true;
@@ -107,6 +113,7 @@ export const shopItems: Item[] = [
     level: signal(0),
     price: signal(1000000),
     factor: 1.21,
+    maxLevel: 200,
     displayCondition: computed(() => {
         if(shopItems[5].level() >= 20){
           return true;
@@ -124,6 +131,7 @@ export const shopItems: Item[] = [
     level: signal(0),
     price: signal(15000000),
     factor: 1.22,
+    maxLevel: 200,
     displayCondition: computed(() => {
         if(shopItems[6].level() >= 20){
           return true;

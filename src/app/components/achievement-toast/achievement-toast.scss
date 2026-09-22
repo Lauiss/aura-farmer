@@ -1,42 +1,43 @@
+@use '../../../../src/menu-theme' as *;
 @use '../../../../src/variables' as *;
 
 .toast-container {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 9999;
+  top: $spacing-300;
+  right: $spacing-300;
+  // Au-dessus des modales, qui s'arrêtent bien plus bas.
+  z-index: 1200;
   display: flex;
   flex-direction: column;
-  gap: $spacing-100;
+  gap: $spacing-150;
   pointer-events: none;
 }
 
 .achievement-toast {
-  background: $bg-color;
-  border-radius: $radius-100;
-  padding: $spacing-200;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   gap: $spacing-200;
-  min-width: 320px;
-  max-width: 400px;
-  animation: slideIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  border: 2px solid $primary;
+  min-width: 20rem;
+  max-width: 25rem;
+  padding: $spacing-200;
+  color: $menu-text;
+  background-color: $menu-surface;
+  border: 1px solid $menu-accent-border;
+  border-radius: $radius-100;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+  animation: slideIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .toast-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 8px;
-  object-fit: cover;
-  background-color: $primary;
-  border: 2px solid $text-color;
+  width: 3.5rem;
+  height: 3.5rem;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 .toast-content {
   flex: 1;
-  color: $text-color;
+  min-width: 0;
 }
 
 .toast-header {
@@ -44,27 +45,30 @@
 }
 
 .toast-badge {
-  background: $primary;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 700;
+  display: inline-block;
+  padding: 2px $spacing-100;
+  font-size: 0.75rem;
+  font-weight: $menu-weight;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
+  color: $menu-accent;
+  background-color: $menu-accent-soft;
+  border: 1px solid $menu-accent-border;
+  border-radius: $radius-100;
 }
 
 .toast-title {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 700;
   margin-bottom: $spacing-50;
+  font-size: $menu-size-subtitle;
+  font-weight: $menu-weight-strong;
+  color: $menu-text;
 }
 
 .toast-description {
-  margin: 0;
-  font-size: 13px;
-  opacity: 0.9;
-  line-height: 1.4;
+  font-size: $menu-size-small;
+  font-weight: $menu-weight;
+  color: $menu-text-dim;
+  line-height: 1.45;
 }
 
 @keyframes slideIn {
@@ -72,8 +76,10 @@
     transform: translateX(120%);
     opacity: 0;
   }
-  to {
-    transform: translateX(0);
-    opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .achievement-toast {
+    animation: none;
   }
 }

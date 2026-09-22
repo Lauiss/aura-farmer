@@ -41,6 +41,24 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   /** Émis au clic sur la statue, pour l'utiliser comme cible de jeu. */
   readonly clicked = output<MouseEvent>();
 
+  /**
+   * Une statue manipulable reçoit un `click` à la fin de chaque rotation à la
+   * souris. Sans ce filtre, faire tourner le moyai rapporterait de l'aura.
+   */
+  onPointerDown(event: PointerEvent): void {
+    this.pointerDownAt = { x: event.clientX, y: event.clientY };
+  }
+
+  onClick(event: MouseEvent): void {
+    const start = this.pointerDownAt;
+    this.pointerDownAt = null;
+    if (start) {
+      const travel = Math.abs(event.clientX - start.x) + Math.abs(event.clientY - start.y);
+      if (travel > 5) return;
+    }
+    this.clicked.emit(event);
+  }
+
   private readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly zone = inject(NgZone);
@@ -54,6 +72,8 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   private frameId?: number;
   private readonly clock = new THREE.Clock();
   private userInteracted = false;
+  /** Position du pointeur à l'appui, pour distinguer un clic d'une rotation. */
+  private pointerDownAt: { x: number; y: number } | null = null;
 
   ngAfterViewInit(): void {
     // Toute la boucle de rendu vit hors d'Angular : aucun cycle de détection

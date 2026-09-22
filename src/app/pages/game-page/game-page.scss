@@ -5,44 +5,56 @@
   display: grid;
   grid-template-rows: auto 1fr auto;
   height: 100vh;
+  // L'écran de clic ne défile pas : tout doit tenir dans la fenêtre.
+  overflow: hidden;
   padding: $spacing-400 $spacing-300;
   gap: $spacing-300;
   background-color: $menu-bg;
   color: $menu-text;
 }
 
-/* --- Compteurs --- */
+/* --- Compteurs : valeur, statue et unité sur une seule ligne --- */
 .counters {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: $spacing-50;
-  text-align: center;
 }
 
-.counter h2 {
-  font-size: 2.6rem;
-  font-weight: $menu-weight-strong;
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-}
-
-.counter h3 {
-  font-size: 1.3rem;
-  font-weight: $menu-weight;
-  color: $menu-text-dim;
-  font-variant-numeric: tabular-nums;
-}
-
-.unit {
-  display: inline-flex;
+.counter {
+  display: flex;
   align-items: center;
-  gap: $spacing-100;
-  font-size: $menu-size-small;
-  font-weight: $menu-weight;
+  gap: $spacing-150;
+}
+
+.counter .value {
+  font-variant-numeric: tabular-nums;
+}
+
+.counter .unit {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: $menu-text-dim;
+}
+
+.counter.total {
+  font-size: 2.4rem;
+  font-weight: $menu-weight-strong;
+  line-height: 1.1;
+}
+
+.counter.total .unit {
+  font-size: $menu-size-body;
+}
+
+.counter.rate {
+  font-size: 1.2rem;
+  font-weight: $menu-weight;
+  color: $menu-text-dim;
+}
+
+.counter.rate .unit {
+  font-size: $menu-size-small;
 }
 
 // La statue remplace l'ancien logo d'aura : elle tourne en continu.
@@ -69,7 +81,6 @@
   width: min(34rem, 80vw);
   height: 100%;
   max-height: 100%;
-  cursor: pointer;
   will-change: transform;
 }
 

@@ -41,6 +41,7 @@ Clicker incrémental Angular. Prototype : https://lauiss.itch.io/chad-aura-farme
 - [moyai-viewer.ts](src/app/components/moyai-viewer/moyai-viewer.ts) — scène autonome, `TrackballControls` (rotation libre sur tous les axes, pan désactivé), rotation lente automatique tant que l'utilisateur n'a pas touché à la statue.
 - [models/trophy.ts](src/app/three/models/trophy.ts) — `createTrophy({ unlocked })`, ambré ou gris, pour les succès. Ses anses passent par une `ExtrudeGeometry` : `loft` n'empile que selon Y et ne sait pas suivre une courbe.
 - [models/shop-bag.ts](src/app/three/models/shop-bag.ts) — `createShopBag()`, l'icône de la boutique.
+- [models/question-mark.ts](src/app/three/models/question-mark.ts) et [models/arrow.ts](src/app/three/models/arrow.ts) — le « ? » de ce qui n'est pas dévoilé et la flèche verte des améliorations. Plus aucune icône 2D dans la carte : tout passe par `ModelIcons`.
 - [models/gear.ts](src/app/three/models/gear.ts) — `createGear()`, l'engrenage du bouton des options. Profil denté dessiné point par point puis extrudé ; garder le sommet de dent large devant les flancs, sinon la roue s'effile en étoile.
 - [snapshot.ts](src/app/three/snapshot.ts) — rend un modèle **une fois** en data URL. Les icônes passent par là plutôt que par un canvas vivant chacune : un navigateur ne tient qu'une poignée de contextes WebGL (~16) et la liste des succès en affiche des dizaines. Le cache est dans [ModelIcons](src/app/services/model-icons.ts), avec repli sur les anciens PNG si WebGL manque.
 - Tout composant Three.js doit appeler `forceContextLoss()` en plus de `dispose()` s'il peut être monté et démonté plusieurs fois.
@@ -62,6 +63,11 @@ Les tailles passent toutes par l'échelle de `menu-theme.scss` (`$menu-size-titl
 L'écran d'accueil est fixé : pas de logo, menu en texte seul, avec un chevron `>` qui apparaît au survol et au focus clavier pour marquer la ligne courante (variante `ghost` de `app-action-btn` ; la variante `solid` conserve le style d'origine utilisé dans le jeu).
 
 Les modales suivent le même thème, **toutes** — y compris celles du jeu (progression hors-ligne, succès). `app-modal-host` porte la couleur de texte du panneau, ce dont héritent les composants qu'il héberge.
+
+## Règles de jeu à connaître
+
+- Chaque article de la boutique a un `maxLevel` (200 pour l'instant, dans [static-items.ts](src/assets/static/static-items.ts)). `ShopManager.getAmountToBuy` plafonne la quantité et `buyItem` s'arrête au plafond : demander 100 exemplaires à deux niveaux de la fin n'en achète que deux.
+- Les améliorations cosmétiques du moyai (habits, lunettes, couronne…) sont **retirées de l'affichage** de la carte, en attendant d'être modelées en accessoires 3D. Les données et le moteur restent en place dans `moyai-upgrades.ts` et `ShopManager`.
 
 ## Restes à nettoyer
 

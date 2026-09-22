@@ -37,5 +37,6 @@
     "ZOOM_IN": "Zoom in",
     "ZOOM_OUT": "Zoom out",
     "SHOP_LOCKED_HINT": "Keep aura farming to unlock this!",
-    "SHOP_TOO_EXPENSIVE_HINT": "You don't have enough aura for this one!"
+    "SHOP_TOO_EXPENSIVE_HINT": "You don't have enough aura for this one!",
+    "MAXED": "Maxed"
 }

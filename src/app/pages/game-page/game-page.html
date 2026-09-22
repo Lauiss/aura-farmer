@@ -1,40 +1,38 @@
 <div class="game-screen">
   <header class="counters">
-    <div class="counter total">
-      <h2>{{ auraManager.auraCount() | formatAura }}</h2>
-      <span class="unit">
-        <app-moyai-viewer
-          class="aura-mark"
-          [interactive]="false"
-          [idleSpin]="0.9"
-          [distance]="4.4"
-          aria-hidden="true"
-        ></app-moyai-viewer>
-        {{ 'AURA' | translate }}
-      </span>
-    </div>
+    <p class="counter total">
+      <span class="value">{{ auraManager.auraCount() | formatAura }}</span>
+      <app-moyai-viewer
+        class="aura-mark"
+        [interactive]="false"
+        [idleSpin]="0.9"
+        [distance]="4.4"
+        aria-hidden="true"
+      ></app-moyai-viewer>
+      <span class="unit">{{ 'AURA' | translate }}</span>
+    </p>
 
-    <div class="counter rate">
-      <h3>{{ shopManager.getTotalValue() | formatAura }}</h3>
-      <span class="unit">
-        <app-moyai-viewer
-          class="aura-mark small"
-          [interactive]="false"
-          [idleSpin]="0.9"
-          [distance]="4.4"
-          aria-hidden="true"
-        ></app-moyai-viewer>
-        {{ 'AURA_PER_SECOND' | translate }}
-      </span>
-    </div>
+    <p class="counter rate">
+      <span class="value">{{ shopManager.getTotalValue() | formatAura }}</span>
+      <app-moyai-viewer
+        class="aura-mark small"
+        [interactive]="false"
+        [idleSpin]="0.9"
+        [distance]="4.4"
+        aria-hidden="true"
+      ></app-moyai-viewer>
+      <span class="unit">{{ 'AURA_PER_SECOND' | translate }}</span>
+    </p>
   </header>
 
   <main class="stage">
+    <!-- Manipulable comme sur l'écran titre, et immobile tant qu'on n'y
+         touche pas : c'est le joueur qui l'oriente. -->
     <app-moyai-viewer
       #btn
       class="hero"
-      [interactive]="false"
-      [idleSpin]="0.3"
+      [interactive]="true"
+      [idleSpin]="0"
       (clicked)="increment($event)"
     ></app-moyai-viewer>
   </main>

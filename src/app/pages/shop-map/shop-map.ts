@@ -14,11 +14,10 @@ import { AuraManager } from '../../services/aura-manager';
 import { HintManager } from '../../services/hint-manager';
 import { Item, ItemUpgrade, ShopManager } from '../../services/shop-manager';
 import { Sound, SoundManager } from '../../services/sound-manager';
-import { MoyaiUpgrades } from '../../components/aura-btn/aura-btn';
 import { FormatAuraPipe } from '../game-page/game-page';
 import { ModelIcons } from '../../services/model-icons';
 
-type NodeKind = 'item' | 'upgrade' | 'moyai';
+type NodeKind = 'item' | 'upgrade';
 
 export interface MapNode {
   key: string;
@@ -29,11 +28,10 @@ export interface MapNode {
   parent: { x: number; y: number } | null;
   item?: Item;
   upgrade?: ItemUpgrade;
-  moyaiUpgrade?: MoyaiUpgrades;
 }
 
 /** Dimensions du monde. Les nœuds sont placés dans ce repère, pas en pixels écran. */
-const WORLD = { width: 3200, height: 1800 };
+const WORLD = { width: 4600, height: 2400 };
 const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 1.8;
 
@@ -65,7 +63,9 @@ export class ShopMap {
   private readonly router = inject(Router);
 
   readonly world = WORLD;
-  readonly gearIcon = this.modelIcons.gear();
+  readonly moyaiIcon = this.modelIcons.moyai();
+  readonly questionIcon = this.modelIcons.question();
+  readonly arrowIcon = this.modelIcons.arrow();
 
   readonly buyAmount = signal<'1' | '10' | '100' | 'MAX'>('1');
 
@@ -90,15 +90,18 @@ export class ShopMap {
     // Les articles serpentent horizontalement, pour que la carte se parcoure
     // de gauche à droite en suivant la progression.
     items.forEach((item, index) => {
-      const x = 360 + index * 340;
-      const y = 900 + (index % 2 === 0 ? -170 : 170);
-      const previous = index === 0 ? null : { x: 360 + (index - 1) * 340, y: 900 + ((index - 1) % 2 === 0 ? -170 : 170) };
+      const x = 420 + index * 520;
+      const y = 1200 + (index % 2 === 0 ? -260 : 260);
+      const previous =
+        index === 0
+          ? null
+          : { x: 420 + (index - 1) * 520, y: 1200 + ((index - 1) % 2 === 0 ? -260 : 260) };
 
       nodes.push({ key: `item-${item.id}`, kind: 'item', x, y, parent: previous, item });
 
       // Améliorations en éventail sous l'article, hors de l'axe principal.
       const upgrades = item.upgrades ?? [];
-      const spread = 108;
+      const spread = 190;
       const direction = index % 2 === 0 ? -1 : 1;
       upgrades.forEach((upgrade, u) => {
         const offset = (u - (upgrades.length - 1) / 2) * spread;
@@ -106,7 +109,7 @@ export class ShopMap {
           key: `upgrade-${item.id}-${upgrade.id}`,
           kind: 'upgrade',
           x: x + offset,
-          y: y + direction * 250,
+          y: y + direction * 400,
           parent: { x, y },
           item,
           upgrade
@@ -114,18 +117,10 @@ export class ShopMap {
       });
     });
 
-    // Grappe du moyai, détachée de la chaîne des articles.
-    const moyaiOrigin = { x: 180, y: 900 };
-    this.shopManager.moyaiUpgrades().forEach((upgrade, index) => {
-      nodes.push({
-        key: `moyai-${upgrade.id}`,
-        kind: 'moyai',
-        x: moyaiOrigin.x - 40 + (index % 2) * 170,
-        y: 480 + Math.floor(index / 2) * 200,
-        parent: moyaiOrigin,
-        moyaiUpgrade: upgrade
-      });
-    });
+    // Les améliorations cosmétiques du moyai (habits, lunettes, couronne…) ne
+    // figurent volontairement pas ici : elles reposaient sur des sprites 2D
+    // qui n'ont plus cours depuis que la statue est en 3D. Les données et le
+    // moteur restent en place, seul l'affichage attend d'être repensé.
 
     return nodes;
   });
@@ -133,23 +128,23 @@ export class ShopMap {
   // --- Lecture d'un nœud -------------------------------------------------
 
   /** Un article non dévoilé reste anonyme, comme dans la liste d'origine. */
+  /** Un article non dévoilé reste anonyme ; ses améliorations le suivent. */
   isRevealed(node: MapNode): boolean {
-    if (node.kind === 'item') return node.item!.displayCondition();
-    if (node.kind === 'moyai') return node.moyaiUpgrade!.displayCondition();
-    // Une amélioration d'article suit le dévoilement de son article.
     return node.item!.displayCondition();
   }
 
   isOwned(node: MapNode): boolean {
     if (node.kind === 'upgrade') return node.upgrade!.unlocked;
-    if (node.kind === 'moyai') return node.moyaiUpgrade!.unlocked;
-    return false;
+    return this.shopManager.isMaxed(node.item!);
+  }
+
+  isMaxed(node: MapNode): boolean {
+    return node.kind === 'item' && this.shopManager.isMaxed(node.item!);
   }
 
   price(node: MapNode): number {
-    if (node.kind === 'item') return node.item!.price() * this.amountFor(node.item!);
     if (node.kind === 'upgrade') return node.upgrade!.price;
-    return node.moyaiUpgrade!.price;
+    return node.item!.price() * this.amountFor(node.item!);
   }
 
   affordable(node: MapNode): boolean {
@@ -182,12 +177,8 @@ export class ShopMap {
 
     if (node.kind === 'item') {
       this.shopManager.buyItem(node.item!.id, this.buyAmount());
-    } else if (node.kind === 'upgrade') {
-      this.shopManager.unlockUpgrade(node.item!.id, node.upgrade!.id);
     } else {
-      const index = this.shopManager.moyaiUpgrades().indexOf(node.moyaiUpgrade!);
-      this.auraManager.auraCount.update(c => c - node.moyaiUpgrade!.price);
-      this.shopManager.unlockMoyaiUpgrade(index);
+      this.shopManager.unlockUpgrade(node.item!.id, node.upgrade!.id);
     }
 
     this.soundManager.playFX(Sound.Buy);
@@ -257,8 +248,8 @@ export class ShopMap {
   recenter(): void {
     const rect = this.viewport().nativeElement.getBoundingClientRect();
     this.zoom.set(0.7);
-    this.panX.set(rect.width / 2 - 360 * 0.7);
-    this.panY.set(rect.height / 2 - 900 * 0.7);
+    this.panX.set(rect.width / 2 - 420 * 0.7);
+    this.panY.set(rect.height / 2 - 1200 * 0.7);
   }
 
   ngAfterViewInit(): void {

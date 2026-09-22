@@ -13,6 +13,8 @@ export interface Item {
   level: WritableSignal<number>;
   price: WritableSignal<number>;
   factor: number;
+  /** Niveau maximal achetable. Au-delà, l'article est « maxxé ». */
+  maxLevel: number;
   displayCondition: Signal<boolean>;
   unlocked: boolean;
   upgrades?: ItemUpgrade[];
@@ -55,6 +57,7 @@ export class ShopManager {
     const item = this.items().find(i => i.id === itemId);
     if (!item) return;
     let amountToBuy = this.getAmountToBuy(amount, item);
+    if (amountToBuy <= 0) return;
 
     // Pour les achats multiples (10, 100), vérifier le coût total
     if (amount === '10' || amount === '100') {
@@ -68,6 +71,7 @@ export class ShopManager {
     }
 
     for (let i = 0; i < amountToBuy; i++) {
+      if (item.level() >= item.maxLevel) break;
       if (this.auraService.auraCount() >= item.price()) {
         this.auraService.auraCount.update(c => c - item.price());
         item.level.update(q => q + 1);
@@ -105,7 +109,18 @@ export class ShopManager {
         break;
     }
 
-    return Math.max(1, amountToBuy);
+    // Jamais au-delà du plafond : demander 100 exemplaires à deux niveaux de
+    // la fin ne doit en acheter que deux.
+    return Math.max(0, Math.min(Math.max(1, amountToBuy), this.remainingLevels(item)));
+  }
+
+  /** Niveaux encore achetables avant le plafond. */
+  remainingLevels(item: Item): number {
+    return Math.max(0, item.maxLevel - item.level());
+  }
+
+  isMaxed(item: Item): boolean {
+    return this.remainingLevels(item) === 0;
   }
 
   calculateMaxAffordable(item: Item): number {
