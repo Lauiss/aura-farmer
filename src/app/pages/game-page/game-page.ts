@@ -14,6 +14,8 @@ import { GameLoop } from '../../services/game-loop';
 import { AchievementsList } from '../../components/achievements-list/achievements-list';
 import { ModelIcons } from '../../services/model-icons';
 import { SpinCombo } from '../../services/spin-combo';
+import { WardrobeManager } from '../../services/wardrobe-manager';
+import { Wardrobe } from '../../components/wardrobe/wardrobe';
 import { ComboMeter } from '../../components/combo-meter/combo-meter';
 import { Router } from '@angular/router';
 
@@ -47,6 +49,9 @@ export class GamePage {
   private readonly router = inject(Router);
   private readonly gameLoop = inject(GameLoop);
   private readonly spinCombo = inject(SpinCombo);
+  readonly wardrobeManager = inject(WardrobeManager);
+
+  readonly hangerIcon = this.modelIcons.hanger();
 
   /**
    * Passé tel quel à la statue, qui l'appelle à chaque image hors de la zone
@@ -63,6 +68,11 @@ export class GamePage {
   openShop() {
     this.soundManager.playFX(Sound.Plop);
     this.router.navigate(['/shop']);
+  }
+
+  openWardrobe() {
+    this.soundManager.playFX(Sound.Plop);
+    this.modalManager.open(Wardrobe);
   }
 
   openAchievements() {
@@ -123,10 +133,13 @@ export class GamePage {
     this.soundManager.playFX(Sound.Plop);
   }
 
-  /** Le geste n'apparaît qu'une fois le Mewing possédé. */
+  /**
+   * Le geste apparaît dès que le Mewing est débloqué dans la boutique, sans
+   * attendre un premier achat : « débloqué » se lit ici comme « révélé ».
+   */
   private hasMewing(): boolean {
     const mewing = this.shopManager.getAllItems().find(item => item.id === this.mewingItemId);
-    return (mewing?.level() ?? 0) > 0;
+    return mewing?.displayCondition() ?? false;
   }
 
   // Animation pour les clicks

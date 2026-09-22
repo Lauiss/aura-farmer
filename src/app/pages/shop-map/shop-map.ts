@@ -160,23 +160,11 @@ export class ShopMap {
     return nodes;
   });
 
-  /** Avancement de la boutique : ce qui est acquis sur ce qui peut l'être. */
-  readonly progress = computed(() => {
-    const items = this.shopManager.getAllItems();
-    let owned = 0;
-    let total = 0;
+  /** Avancement de la boutique, compté en niveaux et exemplaires. */
+  readonly progress = computed(() => this.shopManager.progress());
 
-    for (const item of items) {
-      total++;
-      if (item.level() > 0) owned++;
-      for (const upgrade of item.upgrades ?? []) {
-        total++;
-        if (upgrade.unlocked) owned++;
-      }
-    }
-
-    return { owned, total };
-  });
+  /** Nœud qui vient d'être acheté, pour lui donner son à-coup. */
+  readonly burst = signal<{ key: string; first: boolean } | null>(null);
 
   // --- Lecture d'un nœud -------------------------------------------------
 
@@ -191,8 +179,13 @@ export class ShopMap {
     // La racine est acquise d'entrée : c'est le point de départ.
     if (node.kind === 'root') return true;
     if (node.kind === 'category') return !node.comingSoon;
-    if (node.kind === 'upgrade') return node.upgrade!.unlocked;
+    if (node.kind === 'upgrade') return this.shopManager.isUpgradeMaxed(node.upgrade!);
     return this.shopManager.isMaxed(node.item!);
+  }
+
+  /** Exemplaires achetés sur exemplaires possibles, pour une amélioration. */
+  upgradeCount(node: MapNode): string {
+    return `${this.shopManager.upgradePurchases(node.upgrade!)} / ${this.shopManager.upgradeMaxPurchases(node.upgrade!)}`;
   }
 
   /** Une amélioration dont les prérequis manquent n'est pas encore achetable. */
@@ -209,7 +202,7 @@ export class ShopMap {
     // La racine et les catégories ne s'achètent pas : elles n'ont pas
     // d'article derrière elles, et le gabarit lit quand même leur prix.
     if (node.kind === 'root' || node.kind === 'category') return 0;
-    if (node.kind === 'upgrade') return node.upgrade!.price;
+    if (node.kind === 'upgrade') return this.shopManager.upgradePrice(node.upgrade!);
     return node.item!.price() * this.amountFor(node.item!);
   }
 
@@ -250,13 +243,45 @@ export class ShopMap {
       return;
     }
 
+    // Un premier achat se fête plus fort qu'un renfort : on note lequel des
+    // deux avant de toucher aux données.
+    const first =
+      node.kind === 'upgrade'
+        ? this.shopManager.upgradePurchases(node.upgrade!) === 0
+        : node.item!.level() === 0;
+
     if (node.kind === 'item') {
       this.shopManager.buyItem(node.item!.id, this.buyAmount());
     } else {
       this.shopManager.unlockUpgrade(node.item!.id, node.upgrade!.id);
     }
 
+    this.celebrate(node, first);
     this.soundManager.playFX(Sound.Buy);
+  }
+
+  /**
+   * Déclenche l'à-coup visuel du nœud. La classe est retirée puis remise pour
+   * que l'animation reparte même sur deux achats consécutifs.
+   */
+  private celebrate(node: MapNode, first: boolean): void {
+    this.burst.set(null);
+    // Une image d'écart suffit à ce que le navigateur reparte de zéro.
+    requestAnimationFrame(() => this.burst.set({ key: node.key, first }));
+    setTimeout(() => {
+      if (this.burst()?.key === node.key) this.burst.set(null);
+    }, first ? 1100 : 550);
+
+    if (first) {
+      const name = node.kind === 'upgrade' ? node.upgrade!.name : node.item!.name();
+      this.hintManager.announce({ titleKey: 'SHOP_FIRST_UNLOCK', body: name }, 3200);
+    }
+  }
+
+  burstState(node: MapNode): 'none' | 'buy' | 'first' {
+    const burst = this.burst();
+    if (burst?.key !== node.key) return 'none';
+    return burst.first ? 'first' : 'buy';
   }
 
   back(): void {

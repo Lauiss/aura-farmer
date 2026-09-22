@@ -50,5 +50,14 @@
     "SHOP_CATEGORY_PASSIVE": "Gains passifs d'aura",
     "SHOP_COMING_SOON": "Bientôt",
     "SHOP_COMING_SOON_HINT": "Cette branche n'est pas encore ouverte, reviens plus tard !",
-    "SHOP_PROGRESS": "débloqués"
+    "SHOP_PROGRESS": "débloqués",
+    "SHOP_FIRST_UNLOCK": "Première fois !",
+    "WARDROBE": "Garde-robe",
+    "WARDROBE_EMPTY": "Aucun accessoire pour l'instant.",
+    "WARDROBE_WORN": "Porté",
+    "WARDROBE_STORED": "Rangé",
+    "COSMETIC_EARINGS": "Boucles d'oreilles",
+    "COSMETIC_SUNGLASSES": "Lunettes de soleil",
+    "COSMETIC_TATOOS": "Tatouages",
+    "COSMETIC_CROWN": "Couronne"
 }

@@ -281,3 +281,65 @@
   background-color: transparent;
   border-color: $menu-border;
 }
+
+/* --- À-coup d'achat ---------------------------------------------------- */
+// Deux intensités : un achat ordinaire fait tressaillir le nœud, un premier
+// déblocage y ajoute une onde et un éclat d'ambre.
+.node.burst-buy {
+  animation: buy-pop 0.5s cubic-bezier(0.2, 1.5, 0.35, 1);
+}
+
+.node.burst-first {
+  animation: first-pop 1s cubic-bezier(0.2, 1.4, 0.3, 1);
+  z-index: 2;
+}
+
+.node.burst-first::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 2px solid $menu-accent;
+  border-radius: $radius-100;
+  animation: ring 1s cubic-bezier(0.1, 0.8, 0.3, 1);
+  pointer-events: none;
+}
+
+@keyframes buy-pop {
+  40% {
+    transform: translate(-50%, -50%) scale(1.09);
+    border-color: $menu-accent;
+  }
+}
+
+@keyframes first-pop {
+  0% {
+    box-shadow: 0 0 0 rgba(232, 184, 75, 0);
+  }
+  30% {
+    transform: translate(-50%, -50%) scale(1.16);
+    border-color: $menu-accent;
+    box-shadow: 0 0 60px rgba(232, 184, 75, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(232, 184, 75, 0);
+  }
+}
+
+@keyframes ring {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node.burst-buy,
+  .node.burst-first,
+  .node.burst-first::after {
+    animation: none;
+  }
+}

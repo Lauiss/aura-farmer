@@ -67,7 +67,7 @@ export class GameLoop {
       quantity: item.level(),
       price: item.price(),
       factor: item.factor,
-      upgrades: item.upgrades?.map(u => ({ id: u.id, unlocked: u.unlocked })),
+      upgrades: item.upgrades?.map(u => ({ id: u.id, unlocked: u.unlocked, purchases: u.purchases ?? 0 })),
       unlocked: item.unlocked
     }));
 

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { createArrow } from '../three/models/arrow';
 import { createGear } from '../three/models/gear';
+import { createHanger } from '../three/models/hanger';
 import { createMoyai } from '../three/models/moyai';
 import { createQuestionMark } from '../three/models/question-mark';
 import { createBuilding } from '../three/models/building';
@@ -25,7 +26,8 @@ export class ModelIcons {
     shop: 'assets/imgs/upgrades/monetize_aura.png',
     moyai: 'assets/imgs/moyai/moyai_base.png',
     question: 'assets/imgs/upgrades/unknown_upgrade.png',
-    arrow: 'assets/imgs/upgrades/upgrade_generic.png'
+    arrow: 'assets/imgs/upgrades/upgrade_generic.png',
+    hanger: 'assets/imgs/moyai/moyai_tuxedo.png'
   };
 
   private cache = new Map<string, string>();
@@ -69,6 +71,13 @@ export class ModelIcons {
   arrow(): string {
     return this.render('arrow', () =>
       renderToDataUrl(createArrow(), { size: 192, distance: 4.6, rotation: [0.12, 0.4, 0] })
+    );
+  }
+
+  /** Cintre, enseigne de la garde-robe. */
+  hanger(): string {
+    return this.render('hanger', () =>
+      renderToDataUrl(createHanger(), { size: 192, distance: 4.8, rotation: [0.1, 0.35, 0] })
     );
   }
 

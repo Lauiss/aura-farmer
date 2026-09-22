@@ -1,0 +1,71 @@
+@use '../../../menu-theme' as *;
+@use '../../../variables' as *;
+
+.wardrobe {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-300;
+
+  h2 {
+    font-size: $menu-size-title;
+    font-weight: $menu-weight-strong;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: $menu-text;
+  }
+}
+
+.empty {
+  font-size: $menu-size-body;
+  color: $menu-text-dim;
+}
+
+.pieces {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-100;
+  list-style: none;
+}
+
+.piece {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-200;
+  width: 100%;
+  padding: $spacing-150 $spacing-200;
+  color: $menu-text;
+  background-color: $menu-surface-raised;
+  border: 1px solid $menu-border;
+  border-radius: $radius-100;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.piece:hover,
+.piece:focus-visible {
+  border-color: $menu-border-strong;
+  outline: none;
+}
+
+.piece.worn {
+  background-color: $menu-accent-soft;
+  border-color: $menu-accent-border;
+}
+
+.name {
+  font-size: $menu-size-body;
+  font-weight: $menu-weight;
+}
+
+.state {
+  font-size: $menu-size-small;
+  font-weight: $menu-weight;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $menu-text-dim;
+}
+
+.piece.worn .state {
+  color: $menu-accent;
+}

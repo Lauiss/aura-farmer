@@ -15,6 +15,8 @@ export interface Item {
   factor: number;
   /** Niveau maximal achetable. Au-delà, l'article est « maxxé ». */
   maxLevel: number;
+  /** Prix au niveau zéro. Sert à recalculer la courbe après rééquilibrage. */
+  basePrice: number;
   displayCondition: Signal<boolean>;
   unlocked: boolean;
   upgrades?: ItemUpgrade[];
@@ -35,7 +37,16 @@ export interface ItemUpgrade {
    * suivante de sa liste.
    */
   requires?: number[];
+  /** Nombre d'exemplaires déjà achetés. */
+  purchases?: number;
+  /** Exemplaires achetables ; cinq par défaut. */
+  maxPurchases?: number;
 }
+
+/** Palier d'achat maximal d'une amélioration, quand rien n'est précisé. */
+export const DEFAULT_UPGRADE_PURCHASES = 5;
+/** Renchérissement d'un exemplaire d'amélioration au suivant. */
+const UPGRADE_PRICE_FACTOR = 1.6;
 
 export interface ItemSave {
   id: number;
@@ -44,7 +55,7 @@ export interface ItemSave {
   price: number;
   factor: number;
   unlocked: boolean;
-  upgrades?: { id: number; unlocked: boolean }[];
+  upgrades?: { id: number; unlocked: boolean; purchases?: number }[];
 }
 
 @Injectable({
@@ -120,6 +131,29 @@ export class ShopManager {
     return Math.max(0, Math.min(Math.max(1, amountToBuy), this.remainingLevels(item)));
   }
 
+  /** Prix d'un article à un niveau donné, recalculé depuis son prix de base. */
+  priceAtLevel(item: Item, level: number): number {
+    return Math.round(item.basePrice * Math.pow(item.factor, level));
+  }
+
+  /** Exemplaires achetés d'une amélioration. */
+  upgradePurchases(upgrade: ItemUpgrade): number {
+    return upgrade.purchases ?? (upgrade.unlocked ? 1 : 0);
+  }
+
+  upgradeMaxPurchases(upgrade: ItemUpgrade): number {
+    return upgrade.maxPurchases ?? DEFAULT_UPGRADE_PURCHASES;
+  }
+
+  /** Prix du prochain exemplaire : chaque achat renchérit le suivant. */
+  upgradePrice(upgrade: ItemUpgrade): number {
+    return Math.round(upgrade.price * Math.pow(UPGRADE_PRICE_FACTOR, this.upgradePurchases(upgrade)));
+  }
+
+  isUpgradeMaxed(upgrade: ItemUpgrade): boolean {
+    return this.upgradePurchases(upgrade) >= this.upgradeMaxPurchases(upgrade);
+  }
+
   /** Niveaux encore achetables avant le plafond. */
   remainingLevels(item: Item): number {
     return Math.max(0, item.maxLevel - item.level());
@@ -149,9 +183,12 @@ export class ShopManager {
       for (const saved of savedItems) {
         const existing = items.find(i => i.id === saved.id);
         if (existing) {
-          existing.value.set(saved.value);
-          existing.level.set(saved.quantity);
-          existing.price.set(saved.price);
+          // La valeur, le facteur et le prix ne sont pas de la progression
+          // mais de l'équilibrage : les restaurer figeait chaque partie sur
+          // les réglages en vigueur le jour de sa création. Seul le niveau
+          // est rechargé, le prix est recalculé depuis la courbe courante.
+          existing.level.set(Math.min(saved.quantity, existing.maxLevel));
+          existing.price.set(this.priceAtLevel(existing, existing.level()));
           existing.unlocked = saved.unlocked;
 
           // Restaurer les upgrades
@@ -160,6 +197,8 @@ export class ShopManager {
               const existingUpgrade = existing.upgrades.find(u => u.id === savedUpgrade.id);
               if (existingUpgrade) {
                 existingUpgrade.unlocked = savedUpgrade.unlocked;
+                existingUpgrade.purchases =
+                  savedUpgrade.purchases ?? (savedUpgrade.unlocked ? 1 : 0);
               }
             }
           }
@@ -217,15 +256,42 @@ export class ShopManager {
     return this.upgradeRequirements(item, upgrade).every(required => required.unlocked);
   }
 
+  /**
+   * Avancement de la boutique, en niveaux et non en objets : un article
+   * compte pour ses vingt-cinq niveaux, une amélioration pour ses cinq
+   * exemplaires.
+   */
+  progress(): { owned: number; total: number } {
+    let owned = 0;
+    let total = 0;
+
+    for (const item of this.items()) {
+      owned += item.level();
+      total += item.maxLevel;
+      for (const upgrade of item.upgrades ?? []) {
+        owned += this.upgradePurchases(upgrade);
+        total += this.upgradeMaxPurchases(upgrade);
+      }
+    }
+
+    return { owned, total };
+  }
+
   unlockUpgrade(itemId: number, upgradeId: number) {
     const item = this.items().find(i => i.id === itemId);
     if(!item || !item.upgrades){ return; }
     const upgrade = item.upgrades.find(u => u.id === upgradeId);
-    if(!upgrade || upgrade.unlocked){ return; }
+    if(!upgrade){ return; }
+    if(this.isUpgradeMaxed(upgrade)){ return; }
     if(!this.isUpgradeAvailable(item, upgrade)){ return; }
-    if(this.auraService.auraCount() < upgrade.price){ return; }
 
-    this.auraService.auraCount.update(c => c - upgrade.price);
+    const price = this.upgradePrice(upgrade);
+    if(this.auraService.auraCount() < price){ return; }
+
+    this.auraService.auraCount.update(c => c - price);
+    // Chaque exemplaire applique l'effet à nouveau : cinq achats valent cinq
+    // fois le bonus.
+    upgrade.purchases = this.upgradePurchases(upgrade) + 1;
     upgrade.unlocked = true;
     this.applyEffect(upgrade.effect);
   }

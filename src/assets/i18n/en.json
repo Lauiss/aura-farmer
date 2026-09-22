@@ -50,5 +50,14 @@
     "SHOP_CATEGORY_PASSIVE": "Passive aura gains",
     "SHOP_COMING_SOON": "Soon",
     "SHOP_COMING_SOON_HINT": "This branch isn't open yet, come back later!",
-    "SHOP_PROGRESS": "unlocked"
+    "SHOP_PROGRESS": "unlocked",
+    "SHOP_FIRST_UNLOCK": "First unlock!",
+    "WARDROBE": "Wardrobe",
+    "WARDROBE_EMPTY": "No cosmetics yet.",
+    "WARDROBE_WORN": "Worn",
+    "WARDROBE_STORED": "Stored",
+    "COSMETIC_EARINGS": "Earrings",
+    "COSMETIC_SUNGLASSES": "Sunglasses",
+    "COSMETIC_TATOOS": "Tattoos",
+    "COSMETIC_CROWN": "Crown"
 }

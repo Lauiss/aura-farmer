@@ -34,6 +34,7 @@
       [interactive]="true"
       [idleSpin]="0"
       [spinReporter]="reportSpin"
+      [cosmetics]="wardrobeManager.equipped()"
       (clicked)="increment($event)"
     ></app-moyai-viewer>
 
@@ -42,6 +43,9 @@
 
   <nav class="actions">
     <app-icon-btn [icon]="shopIcon" label="SHOP" (activate)="openShop()"></app-icon-btn>
+    @if (wardrobeManager.hasAny()) {
+      <app-icon-btn [icon]="hangerIcon" label="WARDROBE" (activate)="openWardrobe()"></app-icon-btn>
+    }
     <app-icon-btn [icon]="trophyIcon" label="ACHIEVEMENTS" (activate)="openAchievements()"></app-icon-btn>
     <app-icon-btn [icon]="gearIcon" label="SETTINGS" (activate)="openSettings()"></app-icon-btn>
   </nav>

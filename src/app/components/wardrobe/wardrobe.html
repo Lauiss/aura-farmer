@@ -1,0 +1,26 @@
+<div class="wardrobe">
+  <h2>{{ 'WARDROBE' | translate }}</h2>
+
+  @if (wardrobe.unlocked().length === 0) {
+    <p class="empty">{{ 'WARDROBE_EMPTY' | translate }}</p>
+  } @else {
+    <ul class="pieces">
+      @for (id of wardrobe.unlocked(); track id) {
+        <li>
+          <button
+            type="button"
+            class="piece"
+            [class.worn]="wardrobe.isWorn(id)"
+            [attr.aria-pressed]="wardrobe.isWorn(id)"
+            (click)="toggle(id)"
+          >
+            <span class="name">{{ labelKey(id) | translate }}</span>
+            <span class="state">
+              {{ (wardrobe.isWorn(id) ? 'WARDROBE_WORN' : 'WARDROBE_STORED') | translate }}
+            </span>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</div>

@@ -48,6 +48,8 @@
           [class.locked]="!isRevealed(node)"
           [class.owned]="isOwned(node)"
           [class.poor]="isRevealed(node) && !isOwned(node) && !affordable(node)"
+          [class.burst-buy]="burstState(node) === 'buy'"
+          [class.burst-first]="burstState(node) === 'first'"
           [style.left.px]="node.x"
           [style.top.px]="node.y"
           (click)="activate(node)"
@@ -79,8 +81,9 @@
           } @else {
             <img [src]="arrowIcon" alt="" class="mark">
             <span class="name">{{ node.upgrade!.name | translate }}</span>
+            <span class="meta">{{ upgradeCount(node) }}</span>
             @if (isOwned(node)) {
-              <span class="cost owned-label">{{ 'UNLOCKED' | translate }}</span>
+              <span class="cost owned-label">{{ 'MAXED' | translate }}</span>
             } @else {
               <span class="cost">
                 {{ price(node) | formatAura }}

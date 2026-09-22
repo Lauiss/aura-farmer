@@ -17,14 +17,17 @@ export interface SaveData {
 
 export enum SaveLocation {
   GameSave = "AURA_FARMER_SAVE",
-  Settings = "AURA_FARMER_SETTINGS"
+  Settings = "AURA_FARMER_SETTINGS",
+  Wardrobe = "AURA_FARMER_WARDROBE"
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class SaveManager {
-  saveProgress(key: string, data: SaveData | SettingsConfig): void {
+  // Le type reste ouvert : ce service ne fait que sérialiser sous une clé, et
+  // l'énumérer figerait la liste de ce qu'on a le droit de conserver.
+  saveProgress(key: string, data: unknown): void {
     try {
       const json = JSON.stringify(data);
       localStorage.setItem(key, json);

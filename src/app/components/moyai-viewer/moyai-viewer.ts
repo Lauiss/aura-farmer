@@ -5,6 +5,7 @@ import {
   NgZone,
   OnDestroy,
   AfterViewInit,
+  effect,
   inject,
   input,
   output,
@@ -15,6 +16,7 @@ import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
 import { disposeObject } from '../../three/geometry';
 import { createMoyai } from '../../three/models/moyai';
 import { createFinger, setFingerOpacity } from '../../three/models/finger';
+import { CosmeticId, createCosmetic } from '../../three/models/cosmetics';
 
 /**
  * Scène Three.js autonome affichant la statue moyai en low poly.
@@ -38,6 +40,8 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   readonly distance = input(5.8);
   /** Orientation de départ, en radians. Avec `idleSpin` à 0, elle ne bouge plus. */
   readonly rotation = input<[number, number, number]>([0, 0, 0]);
+  /** Accessoires portés par la statue. */
+  readonly cosmetics = input<readonly CosmeticId[]>([]);
 
   /** Émis au clic sur la statue, pour l'utiliser comme cible de jeu. */
   readonly clicked = output<MouseEvent>();
@@ -87,6 +91,19 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   /** Geste du « chut ». Créé au premier appel, puis réutilisé. */
   private shush?: THREE.Group;
   private shushElapsed = 0;
+
+  /** Accessoires actuellement greffés, par identifiant. */
+  private readonly worn = new Map<CosmeticId, THREE.Group>();
+
+  constructor() {
+    // La scène n'existe qu'après le premier rendu : l'effet se contente de
+    // sortir tant que la statue n'est pas prête, et repassera au changement
+    // suivant de la liste.
+    effect(() => {
+      const wanted = this.cosmetics();
+      this.zone.runOutsideAngular(() => this.syncCosmetics(wanted));
+    });
+  }
   private userInteracted = false;
   /** Position du pointeur à l'appui, pour distinguer un clic d'une rotation. */
   private pointerDownAt: { x: number; y: number } | null = null;
@@ -124,6 +141,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.moyai = createMoyai();
     this.moyai.rotation.set(...this.rotation());
     this.scene.add(this.moyai);
+    this.syncCosmetics(this.cosmetics());
 
     this.addLights(this.scene);
 
@@ -227,6 +245,26 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     const fadeIn = THREE.MathUtils.clamp(t / 0.1, 0, 1);
     const fadeOut = THREE.MathUtils.clamp((1 - t) / 0.18, 0, 1);
     setFingerOpacity(finger, Math.min(fadeIn, fadeOut));
+  }
+
+  /** Ajoute et retire les accessoires pour coller à la liste demandée. */
+  private syncCosmetics(wanted: readonly CosmeticId[]): void {
+    if (!this.moyai) return;
+
+    for (const [id, group] of this.worn) {
+      if (wanted.includes(id)) continue;
+      this.moyai.remove(group);
+      disposeObject(group);
+      this.worn.delete(id);
+    }
+
+    for (const id of wanted) {
+      if (this.worn.has(id)) continue;
+      const piece = createCosmetic(id);
+      if (!piece) continue;
+      this.moyai.add(piece);
+      this.worn.set(id, piece);
+    }
   }
 
   private addLights(scene: THREE.Scene): void {
