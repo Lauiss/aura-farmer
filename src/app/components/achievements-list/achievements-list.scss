@@ -40,6 +40,10 @@
   align-items: center;
   gap: $spacing-200;
   width: 100%;
+  // Hauteur fixe : toutes les cartes sont identiques, qu'un succès soit
+  // débloqué (titre et description) ou non (titre, description et pastille).
+  height: 7rem;
+  overflow: hidden;
   padding: $spacing-150;
   text-align: left;
   color: inherit;
@@ -83,6 +87,10 @@
   font-size: $menu-size-subtitle;
   font-weight: $menu-weight-strong;
   color: $menu-text;
+  // Un titre trop long est coupé plutôt que de déformer la carte.
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .achievement-description {
@@ -90,6 +98,12 @@
   font-weight: $menu-weight;
   color: $menu-text-dim;
   line-height: 1.45;
+  // Deux lignes au maximum, puis points de suspension.
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 
 .locked-badge {

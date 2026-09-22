@@ -1,0 +1,57 @@
+@use '../../../menu-theme' as *;
+@use '../../../variables' as *;
+
+.detail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-200;
+  padding-top: $spacing-200;
+  text-align: center;
+}
+
+.close {
+  position: absolute;
+  top: -#{$spacing-150};
+  right: -#{$spacing-150};
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: $menu-text-dim;
+  background: none;
+  border: none;
+  border-radius: $radius-100;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.close:hover,
+.close:focus-visible {
+  color: $menu-accent;
+  background-color: $menu-surface-raised;
+  outline: none;
+}
+
+.trophy {
+  display: block;
+  width: 9rem;
+  height: 9rem;
+}
+
+.title {
+  font-size: $menu-size-title;
+  font-weight: $menu-weight-strong;
+  color: $menu-text;
+  text-wrap: balance;
+}
+
+.description {
+  max-width: 26rem;
+  font-size: $menu-size-body;
+  font-weight: $menu-weight;
+  color: $menu-text-dim;
+  text-wrap: pretty;
+}

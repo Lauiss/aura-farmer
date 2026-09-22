@@ -6,7 +6,6 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.78);
   backdrop-filter: blur(2px);
-  z-index: 1000;
 }
 
 .modal-content {
@@ -14,7 +13,6 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 1001;
   max-height: 85vh;
   overflow: auto;
   padding: $spacing-400;

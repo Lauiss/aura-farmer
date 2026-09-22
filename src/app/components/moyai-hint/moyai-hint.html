@@ -1,7 +1,14 @@
 @if (hintManager.message(); as message) {
   <div class="hint" role="status" aria-live="polite">
     <div class="statue">
-      <app-moyai-viewer [interactive]="false" [idleSpin]="0.5" [distance]="4.6"></app-moyai-viewer>
+      <!-- Orientation de trois quarts, figée : l'indication ne doit pas
+           attirer l'œil plus que le message qu'elle porte. -->
+      <app-moyai-viewer
+        [interactive]="false"
+        [idleSpin]="0"
+        [rotation]="[0.05, 0.55, 0]"
+        [distance]="4.4"
+      ></app-moyai-viewer>
     </div>
     <p class="bubble">{{ message | translate }}</p>
   </div>

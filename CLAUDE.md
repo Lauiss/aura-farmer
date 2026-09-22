@@ -24,6 +24,7 @@ Clicker incrémental Angular. Prototype : https://lauiss.itch.io/chad-aura-farme
 ### Conventions
 
 - Les modales passent par `ModalManager.open(Component, data?, size?)` + `<app-modal-host>` (monté dans [app.html](src/app/app.html)). La taille est normalisée (`sm` 24rem, `md` 34rem — le défaut, `lg` 48rem, `xl` 66rem) pour que deux panneaux de même nature s'affichent à la même largeur.
+- `ModalManager` est une **pile** : `open()` empile par-dessus ce qui est affiché et `close()` ne retire que le panneau du dessus (`closeAll()` vide tout). `modalData()` et `currentComponent()` renvoient le sommet de la pile. Le `z-index` est calculé par le gabarit à partir du rang, il n'est pas en dur dans le SCSS.
 - Un élément en `position: fixed` placé **dans** une modale se positionne par rapport à elle et non par rapport à l'écran : `.modal-content` porte un `transform`, qui devient son bloc conteneur. Ce qui doit se caler sur l'écran se monte au niveau de l'application, comme `<app-moyai-hint>`.
 - La sauvegarde est du localStorage via `SaveManager`; clé de partie `AURA_FARMER_SAVE`, clé d'options `SaveLocation.Settings`.
 - Toute boucle d'animation Three.js tourne dans `NgZone.runOutsideAngular` pour ne pas déclencher la détection de changements à 60 fps.

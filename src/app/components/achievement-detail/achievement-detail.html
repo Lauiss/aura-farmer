@@ -1,0 +1,11 @@
+@if (achievement(); as achievement) {
+  <div class="detail">
+    <button type="button" class="close" [attr.aria-label]="'CLOSE' | translate" (click)="close()">
+      &times;
+    </button>
+
+    <img [src]="trophyIcon" alt="" class="trophy">
+    <h2 class="title">{{ achievement.title | translate }}</h2>
+    <p class="description">{{ achievement.description | translate }}</p>
+  </div>
+}

@@ -1,7 +1,16 @@
 
-@if (modalManager.currentComponent()) {
-  <div class="modal-backdrop" (click)="modalManager.close()"></div>
-  <div class="modal-content" [class]="'size-' + modalManager.size()" (click)="$event.stopPropagation()">
-    <ng-container *ngComponentOutlet="modalManager.currentComponent()!"></ng-container>
+@for (entry of modalManager.entries(); track $index) {
+  <div
+    class="modal-backdrop"
+    [style.z-index]="1000 + $index * 2"
+    (click)="modalManager.close()"
+  ></div>
+  <div
+    class="modal-content"
+    [class]="'size-' + entry.size"
+    [style.z-index]="1001 + $index * 2"
+    (click)="$event.stopPropagation()"
+  >
+    <ng-container *ngComponentOutlet="entry.component"></ng-container>
   </div>
 }

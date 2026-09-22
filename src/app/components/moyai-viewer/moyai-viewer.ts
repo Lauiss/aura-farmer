@@ -34,6 +34,8 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   readonly interactive = input(true);
   /** Distance de la caméra ; à réduire pour un affichage en petit. */
   readonly distance = input(5.8);
+  /** Orientation de départ, en radians. Avec `idleSpin` à 0, elle ne bouge plus. */
+  readonly rotation = input<[number, number, number]>([0, 0, 0]);
 
   private readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private readonly host = inject(ElementRef<HTMLElement>);
@@ -80,6 +82,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.camera.position.set(0, 0.1, this.distance());
 
     this.moyai = createMoyai();
+    this.moyai.rotation.set(...this.rotation());
     this.scene.add(this.moyai);
 
     this.addLights(this.scene);
