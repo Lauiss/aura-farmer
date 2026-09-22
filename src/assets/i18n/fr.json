@@ -44,5 +44,11 @@
     "COMBO_CRACKED": "Cracked",
     "COMBO_ASCENDED": "Ascended",
     "COMBO_TURNS": "tours",
-    "COMBO_CLICK": "Combo click"
+    "COMBO_CLICK": "Combo click",
+    "SHOP_ROOT": "Moyai",
+    "SHOP_CATEGORY_TEACHINGS": "Enseignements",
+    "SHOP_CATEGORY_PASSIVE": "Gains passifs d'aura",
+    "SHOP_COMING_SOON": "Bientôt",
+    "SHOP_COMING_SOON_HINT": "Cette branche n'est pas encore ouverte, reviens plus tard !",
+    "SHOP_PROGRESS": "débloqués"
 }

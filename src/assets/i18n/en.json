@@ -44,5 +44,11 @@
     "COMBO_CRACKED": "Cracked",
     "COMBO_ASCENDED": "Ascended",
     "COMBO_TURNS": "spins",
-    "COMBO_CLICK": "Combo click"
+    "COMBO_CLICK": "Combo click",
+    "SHOP_ROOT": "Moyai",
+    "SHOP_CATEGORY_TEACHINGS": "Teachings",
+    "SHOP_CATEGORY_PASSIVE": "Passive aura gains",
+    "SHOP_COMING_SOON": "Soon",
+    "SHOP_COMING_SOON_HINT": "This branch isn't open yet, come back later!",
+    "SHOP_PROGRESS": "unlocked"
 }

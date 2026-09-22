@@ -52,7 +52,13 @@
           [style.top.px]="node.y"
           (click)="activate(node)"
         >
-          @if (!isRevealed(node)) {
+          @if (node.kind === 'root' || node.kind === 'category') {
+            <img [src]="node.kind === 'root' ? moyaiIcon : buildingIcon" alt="" class="mark">
+            <span class="name">{{ node.labelKey! | translate }}</span>
+            @if (node.comingSoon) {
+              <span class="cost soon">{{ 'SHOP_COMING_SOON' | translate }}</span>
+            }
+          } @else if (!isRevealed(node)) {
             <img [src]="questionIcon" alt="" class="mark">
             <span class="name">?????</span>
           } @else if (node.kind === 'item') {
@@ -85,5 +91,10 @@
         </button>
       }
     </div>
+
+    <p class="progress">
+      <span class="count">{{ progress().owned }}/{{ progress().total }}</span>
+      <span class="caption">{{ 'SHOP_PROGRESS' | translate }}</span>
+    </p>
   </div>
 </div>

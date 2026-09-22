@@ -17,21 +17,25 @@ import { Sound, SoundManager } from '../../services/sound-manager';
 import { FormatAuraPipe } from '../game-page/game-page';
 import { ModelIcons } from '../../services/model-icons';
 
-type NodeKind = 'item' | 'upgrade';
+type NodeKind = 'root' | 'category' | 'item' | 'upgrade';
 
 export interface MapNode {
   key: string;
   kind: NodeKind;
   x: number;
   y: number;
-  /** Nœud parent, pour tracer le lien. `null` pour les têtes de branche. */
+  /** Nœud parent, pour tracer le lien. `null` pour la racine. */
   parent: { x: number; y: number } | null;
+  /** Clé de traduction du libellé, pour la racine et les catégories. */
+  labelKey?: string;
+  /** Branche annoncée mais pas encore ouverte. */
+  comingSoon?: boolean;
   item?: Item;
   upgrade?: ItemUpgrade;
 }
 
 /** Dimensions du monde. Les nœuds sont placés dans ce repère, pas en pixels écran. */
-const WORLD = { width: 8800, height: 2900 };
+const WORLD = { width: 10400, height: 4100 };
 const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 1.8;
 
@@ -66,6 +70,7 @@ export class ShopMap {
   readonly moyaiIcon = this.modelIcons.moyai();
   readonly questionIcon = this.modelIcons.question();
   readonly arrowIcon = this.modelIcons.arrow();
+  readonly buildingIcon = this.modelIcons.shop();
 
   readonly buyAmount = signal<'1' | '10' | '100' | 'MAX'>('1');
 
@@ -85,27 +90,59 @@ export class ShopMap {
 
   readonly nodes = computed<MapNode[]>(() => {
     const nodes: MapNode[] = [];
-    const items = this.shopManager.getAllItems();
 
+    // La carte part du moyai : c'est le seul nœud acquis d'entrée, et tout se
+    // ramifie à partir de lui.
+    const root = { x: 600, y: 400 };
+    nodes.push({
+      key: 'root',
+      kind: 'root',
+      x: root.x,
+      y: root.y,
+      parent: null,
+      labelKey: 'SHOP_ROOT'
+    });
+
+    // Première branche : les enseignements, où vivent les articles.
+    const teachings = { x: 1450, y: 400 };
+    nodes.push({
+      key: 'category-teachings',
+      kind: 'category',
+      x: teachings.x,
+      y: teachings.y,
+      parent: root,
+      labelKey: 'SHOP_CATEGORY_TEACHINGS'
+    });
+
+    // Seconde branche : les gains passifs, qui accueilleront les vêtements du
+    // moyai. Elle est annoncée mais close tant qu'ils n'ont pas de modèle 3D.
+    nodes.push({
+      key: 'category-passive',
+      kind: 'category',
+      x: 600,
+      y: 1250,
+      parent: root,
+      labelKey: 'SHOP_CATEGORY_PASSIVE',
+      comingSoon: true
+    });
+
+    const items = this.shopManager.getAllItems();
     for (const [index, item] of items.entries()) {
-      const revealed = item.displayCondition();
-      const x = 700 + index * 1000;
-      const y = 640;
-      const previous = index === 0 ? null : { x: 700 + (index - 1) * 1000, y };
+      const x = 2350 + index * 1000;
+      const y = 400;
+      const previous = index === 0 ? teachings : { x: 2350 + (index - 1) * 1000, y };
 
       nodes.push({ key: `item-${item.id}`, kind: 'item', x, y, parent: previous, item });
 
       // Dévoilement d'un cran à la fois : on s'arrête au premier article non
-      // dévoilé, qui reste anonyme et cache tout ce qui le suit. Le joueur ne
-      // voit donc jamais plus loin que sa prochaine étape.
-      if (!revealed) break;
+      // dévoilé, qui reste anonyme et cache tout ce qui le suit.
+      if (!item.displayCondition()) break;
 
       // Les améliorations descendent en chaîne sous leur article : chacune
       // ouvre la suivante, et le lien vertical donne à voir cet ordre.
-      const upgrades = item.upgrades ?? [];
       let previousUpgrade = { x, y };
-      for (const [u, upgrade] of upgrades.entries()) {
-        const position = { x, y: 1060 + u * 300 };
+      for (const [u, upgrade] of (item.upgrades ?? []).entries()) {
+        const position = { x, y: 800 + u * 300 };
         nodes.push({
           key: `upgrade-${item.id}-${upgrade.id}`,
           kind: 'upgrade',
@@ -116,9 +153,6 @@ export class ShopMap {
           upgrade
         });
         previousUpgrade = position;
-
-        // On s'arrête à la première amélioration encore fermée : comme pour
-        // les articles, le joueur ne voit qu'un cran devant lui.
         if (!upgrade.unlocked) break;
       }
     }
@@ -126,15 +160,37 @@ export class ShopMap {
     return nodes;
   });
 
+  /** Avancement de la boutique : ce qui est acquis sur ce qui peut l'être. */
+  readonly progress = computed(() => {
+    const items = this.shopManager.getAllItems();
+    let owned = 0;
+    let total = 0;
+
+    for (const item of items) {
+      total++;
+      if (item.level() > 0) owned++;
+      for (const upgrade of item.upgrades ?? []) {
+        total++;
+        if (upgrade.unlocked) owned++;
+      }
+    }
+
+    return { owned, total };
+  });
+
   // --- Lecture d'un nœud -------------------------------------------------
 
   /** Un article non dévoilé reste anonyme, comme dans la liste d'origine. */
   /** Un article non dévoilé reste anonyme ; ses améliorations le suivent. */
   isRevealed(node: MapNode): boolean {
+    if (node.kind === 'root' || node.kind === 'category') return true;
     return node.item!.displayCondition();
   }
 
   isOwned(node: MapNode): boolean {
+    // La racine est acquise d'entrée : c'est le point de départ.
+    if (node.kind === 'root') return true;
+    if (node.kind === 'category') return !node.comingSoon;
     if (node.kind === 'upgrade') return node.upgrade!.unlocked;
     return this.shopManager.isMaxed(node.item!);
   }
@@ -150,6 +206,9 @@ export class ShopMap {
   }
 
   price(node: MapNode): number {
+    // La racine et les catégories ne s'achètent pas : elles n'ont pas
+    // d'article derrière elles, et le gabarit lit quand même leur prix.
+    if (node.kind === 'root' || node.kind === 'category') return 0;
     if (node.kind === 'upgrade') return node.upgrade!.price;
     return node.item!.price() * this.amountFor(node.item!);
   }
@@ -171,6 +230,11 @@ export class ShopMap {
 
   activate(node: MapNode): void {
     if (this.moved) return;
+
+    if (node.kind === 'root' || node.kind === 'category') {
+      if (node.comingSoon) this.hintManager.show('SHOP_COMING_SOON_HINT');
+      return;
+    }
 
     if (!this.isRevealed(node)) {
       this.hintManager.show('SHOP_LOCKED_HINT');
@@ -259,8 +323,9 @@ export class ShopMap {
   recenter(): void {
     const rect = this.viewport().nativeElement.getBoundingClientRect();
     this.zoom.set(0.7);
-    this.panX.set(rect.width / 2 - 700 * 0.7);
-    this.panY.set(rect.height / 2 - 900 * 0.7);
+    // On revient toujours sur la racine, point d'entrée de la carte.
+    this.panX.set(rect.width / 2 - 600 * 0.7);
+    this.panY.set(rect.height / 2 - 400 * 0.7);
   }
 
   ngAfterViewInit(): void {

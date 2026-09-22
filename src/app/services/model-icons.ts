@@ -3,7 +3,7 @@ import { createArrow } from '../three/models/arrow';
 import { createGear } from '../three/models/gear';
 import { createMoyai } from '../three/models/moyai';
 import { createQuestionMark } from '../three/models/question-mark';
-import { createShopBag } from '../three/models/shop-bag';
+import { createBuilding } from '../three/models/building';
 import { createTrophy } from '../three/models/trophy';
 import { renderToDataUrl } from '../three/snapshot';
 
@@ -44,10 +44,10 @@ export class ModelIcons {
     );
   }
 
-  /** Sac de courses, pour l'accès à la boutique. */
+  /** Bâtiment, pour l'accès à la boutique. */
   shop(): string {
     return this.render('shop', () =>
-      renderToDataUrl(createShopBag(), { size: 192, distance: 4.4, rotation: [0.16, 0.5, 0] })
+      renderToDataUrl(createBuilding(), { size: 192, distance: 5.4, rotation: [0.22, 0.6, 0] })
     );
   }
 

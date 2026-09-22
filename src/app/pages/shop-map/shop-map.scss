@@ -106,6 +106,36 @@
   stroke-dasharray: 6 8;
 }
 
+/* --- Avancement, épinglé sur la surface navigable --- */
+.progress {
+  position: absolute;
+  left: $spacing-300;
+  bottom: $spacing-300;
+  display: flex;
+  align-items: baseline;
+  gap: $spacing-100;
+  padding: $spacing-100 $spacing-200;
+  background-color: $menu-surface;
+  border: 1px solid $menu-border;
+  border-radius: $radius-100;
+  pointer-events: none;
+
+  .count {
+    font-size: $menu-size-subtitle;
+    font-weight: $menu-weight-strong;
+    color: $menu-accent;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .caption {
+    font-size: 0.8rem;
+    font-weight: $menu-weight;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: $menu-text-dim;
+  }
+}
+
 /* --- Nœuds --- */
 .node {
   position: absolute;
@@ -217,4 +247,37 @@
   font-size: $menu-size-small;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+/* --- Racine et catégories : plus larges, elles structurent la carte --- */
+.node.kind-root,
+.node.kind-category {
+  width: 22rem;
+  padding: $spacing-400 $spacing-300;
+}
+
+.node.kind-root {
+  border-color: $menu-accent-border;
+  background-color: $menu-accent-soft;
+}
+
+.node.kind-root .name,
+.node.kind-category .name {
+  font-size: $menu-size-title;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.node.kind-root .mark {
+  width: 7rem;
+  height: 7rem;
+}
+
+.cost.soon {
+  font-size: $menu-size-small;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $menu-text-dim;
+  background-color: transparent;
+  border-color: $menu-border;
 }
