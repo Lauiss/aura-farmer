@@ -28,5 +28,6 @@
     "CREDITS_ART": "Art",
     "CREDITS_BUILT_WITH": "Built with",
     "CREDITS_PROTOTYPE": "See the prototype on itch.io",
-    "LOCKED": "Not unlocked yet"
+    "LOCKED": "Not unlocked yet",
+    "ACHIEVEMENT_LOCKED_HINT": "Keep aura farming to unlock this achievement!"
 }

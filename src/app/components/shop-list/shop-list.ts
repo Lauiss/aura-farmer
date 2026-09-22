@@ -54,7 +54,7 @@ export class ShopList {
   }
 
   openAchievementsModal(){
-    this.modalManager.open(AchievementsList);
+    this.modalManager.open(AchievementsList, undefined, 'xl');
   }
 
   openMoyaiUpgradesModal() {

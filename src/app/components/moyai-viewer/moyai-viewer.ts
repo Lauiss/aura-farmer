@@ -30,6 +30,10 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
 
   /** Rotation lente automatique, en radians par seconde, quand on ne touche à rien. */
   readonly idleSpin = input(0.25);
+  /** À `false`, la statue n'est plus manipulable : elle tourne seule. */
+  readonly interactive = input(true);
+  /** Distance de la caméra ; à réduire pour un affichage en petit. */
+  readonly distance = input(5.8);
 
   private readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private readonly host = inject(ElementRef<HTMLElement>);
@@ -57,6 +61,10 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.controls?.dispose();
     if (this.moyai) disposeObject(this.moyai);
     this.renderer?.dispose();
+    // Le composant d'indication est monté et démonté à répétition : sans
+    // rendre explicitement le contexte, le navigateur finit par refuser d'en
+    // ouvrir de nouveaux.
+    this.renderer?.forceContextLoss();
   }
 
   private setup(): void {
@@ -69,14 +77,24 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.scene = new THREE.Scene();
 
     this.camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
-    this.camera.position.set(0, 0.1, 5.8);
+    this.camera.position.set(0, 0.1, this.distance());
 
     this.moyai = createMoyai();
     this.scene.add(this.moyai);
 
     this.addLights(this.scene);
 
-    this.controls = new TrackballControls(this.camera, canvas);
+    if (this.interactive()) this.setupControls(canvas);
+
+    this.resize();
+    this.resizeObserver = new ResizeObserver(() => this.resize());
+    this.resizeObserver.observe(container);
+
+    this.renderFrame();
+  }
+
+  private setupControls(canvas: HTMLCanvasElement): void {
+    this.controls = new TrackballControls(this.camera!, canvas);
     this.controls.noPan = true;
     this.controls.rotateSpeed = 3;
     this.controls.zoomSpeed = 0.8;
@@ -86,12 +104,6 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.controls.staticMoving = false;
     this.controls.dynamicDampingFactor = 0.12;
     this.controls.addEventListener('start', () => (this.userInteracted = true));
-
-    this.resize();
-    this.resizeObserver = new ResizeObserver(() => this.resize());
-    this.resizeObserver.observe(container);
-
-    this.renderFrame();
   }
 
   private addLights(scene: THREE.Scene): void {

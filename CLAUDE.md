@@ -23,7 +23,8 @@ Clicker incrémental Angular. Prototype : https://lauiss.itch.io/chad-aura-farme
 
 ### Conventions
 
-- Les modales passent par `ModalManager.open(Component)` + `<app-modal-host>` (monté dans [app.html](src/app/app.html)).
+- Les modales passent par `ModalManager.open(Component, data?, size?)` + `<app-modal-host>` (monté dans [app.html](src/app/app.html)). La taille est normalisée (`sm` 24rem, `md` 34rem — le défaut, `lg` 48rem, `xl` 66rem) pour que deux panneaux de même nature s'affichent à la même largeur.
+- Un élément en `position: fixed` placé **dans** une modale se positionne par rapport à elle et non par rapport à l'écran : `.modal-content` porte un `transform`, qui devient son bloc conteneur. Ce qui doit se caler sur l'écran se monte au niveau de l'application, comme `<app-moyai-hint>`.
 - La sauvegarde est du localStorage via `SaveManager`; clé de partie `AURA_FARMER_SAVE`, clé d'options `SaveLocation.Settings`.
 - Toute boucle d'animation Three.js tourne dans `NgZone.runOutsideAngular` pour ne pas déclencher la détection de changements à 60 fps.
 
@@ -33,6 +34,10 @@ Clicker incrémental Angular. Prototype : https://lauiss.itch.io/chad-aura-farme
   - L'enroulement des triangles compte : dans `loft`, l'ordre est anti-horaire vu de l'extérieur, sinon les normales rentrent et le modèle se rend à l'envers (les faces avant sont culled).
   - Bruit déterministe (seed) : même graine, même statue. `disposeObject()` libère le GPU.
 - [moyai-viewer.ts](src/app/components/moyai-viewer/moyai-viewer.ts) — scène autonome, `TrackballControls` (rotation libre sur tous les axes, pan désactivé), rotation lente automatique tant que l'utilisateur n'a pas touché à la statue.
+- [models/trophy.ts](src/app/three/models/trophy.ts) — `createTrophy({ unlocked })`, ambré ou gris, pour les succès. Ses anses passent par une `ExtrudeGeometry` : `loft` n'empile que selon Y et ne sait pas suivre une courbe.
+- [snapshot.ts](src/app/three/snapshot.ts) — rend un modèle **une fois** en data URL. Les icônes de succès passent par là plutôt que par un canvas vivant chacune : un navigateur ne tient qu'une poignée de contextes WebGL (~16) et la liste en affiche des dizaines. Le cache est dans [TrophyIcons](src/app/services/trophy-icons.ts).
+- Tout composant Three.js doit appeler `forceContextLoss()` en plus de `dispose()` s'il peut être monté et démonté plusieurs fois.
+- Piège matériau : un `metalness` élevé sans carte d'environnement rend presque noir — un métal ne renvoie que son environnement. Garder `metalness` bas et faire porter l'éclat par la couleur de base.
 - Toutes les générations 3D suivantes doivent rester **low poly** et `flatShading: true`.
 
 ## Direction artistique

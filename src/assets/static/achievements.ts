@@ -8,7 +8,7 @@ export function createAchievements(
 ): Achievement[] {
   const achievements: Achievement[] = [
     {
-      id: 0,
+      id: 1,
       title: "Aura Négative",
       description: "Frère ton aura est négative...",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -16,7 +16,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 2,
       title: "Le début de quelque chose",
       description: "C'est un bon début",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -24,7 +24,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 3,
       title: "Premiers Pas du Jawline Check",
       description: "Atteindre le niveau 5 avec Jawline Check.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -32,7 +32,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 4,
       title: "Habitué du Jawline Check",
       description: "Atteindre le niveau 10 avec Jawline Check.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -40,7 +40,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 5,
       title: "A l'aise avec le Jawline Check",
       description: "Atteindre le niveau 20 avec Jawline Check.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -48,7 +48,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 6,
       title: "Exécution parfaite du Jawline Check",
       description: "Atteindre le niveau 50 avec Jawline Check.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -56,7 +56,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 7,
       title: "Maîtrise incontestée du Jawline Check",
       description: "Atteindre le niveau 100 avec Jawline Check.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -64,7 +64,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 8,
       title: "Début du Rizz",
       description: "Débloquer le Rizz.",
       icon: "assets/imgs/achievements/unlocked_achievement.png",
@@ -72,7 +72,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 9,
       title: "Premiers Pas du Rizz",
       description: "Atteindre le niveau 5 avec Rizz.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -80,7 +80,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 10,
       title: "Habitué du Rizz",
       description: "Atteindre le niveau 10 avec Rizz.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -88,7 +88,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 11,
       title: "A l'aise avec le Rizz",
       description: "Atteindre le niveau 20 avec Rizz.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -96,7 +96,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 12,
       title: "Exécution parfaite du Rizz",
       description: "Atteindre le niveau 50 avec Rizz.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -104,7 +104,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 13,
       title: "Maîtrise incontestée du Rizz",
       description: "Atteindre le niveau 100 avec Rizz.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -112,7 +112,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 14,
       title: "Début du Flex",
       description: "Débloquer le Biceps Flexing.",
       icon: "assets/imgs/achievements/unlocked_achievement.png",
@@ -120,7 +120,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 15,
       title: "Premiers Pas du Biceps Flexing",
       description: "Atteindre le niveau 5 avec Biceps Flexing.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -128,7 +128,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 16,
       title: "Habitué du Biceps Flexing",
       description: "Atteindre le niveau 10 avec Biceps Flexing.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -136,7 +136,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 17,
       title: "A l'aise avec le Biceps Flexing",
       description: "Atteindre le niveau 20 avec Biceps Flexing.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -144,7 +144,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 18,
       title: "Exécution parfaite du Biceps Flexing",
       description: "Atteindre le niveau 50 avec Biceps Flexing.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -152,7 +152,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 19,
       title: "Maîtrise incontestée du Biceps Flexing",
       description: "Atteindre le niveau 100 avec Biceps Flexing.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -160,7 +160,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 20,
       title: "Début du Mewing",
       description: "Débloquer le Mewing.",
       icon: "assets/imgs/achievements/unlocked_achievement.png",
@@ -168,7 +168,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 21,
       title: "Premiers Pas du Mewing",
       description: "Atteindre le niveau 5 avec Mewing.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -176,7 +176,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 22,
       title: "Habitué du Mewing",
       description: "Atteindre le niveau 10 avec Mewing.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -184,7 +184,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 23,
       title: "A l'aise avec le Mewing",
       description: "Atteindre le niveau 20 avec Mewing.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -192,7 +192,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 24,
       title: "Exécution parfaite du Mewing",
       description: "Atteindre le niveau 50 avec Mewing.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -200,7 +200,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 25,
       title: "Maîtrise incontestée du Mewing",
       description: "Atteindre le niveau 100 avec Mewing.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -208,7 +208,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 26,
       title: "Début du Silence Farming",
       description: "Débloquer le Silence Farming.",
       icon: "assets/imgs/achievements/unlocked_achievement.png",
@@ -216,7 +216,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 27,
       title: "Premiers Pas du Silence Farming",
       description: "Atteindre le niveau 5 avec Silence Farming.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -224,7 +224,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 28,
       title: "Habitué du Silence Farming",
       description: "Atteindre le niveau 10 avec Silence Farming.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -232,7 +232,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 29,
       title: "A l'aise avec le Silence Farming",
       description: "Atteindre le niveau 20 avec Silence Farming.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -240,7 +240,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 30,
       title: "Exécution parfaite du Silence Farming",
       description: "Atteindre le niveau 50 avec Silence Farming.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -248,7 +248,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 31,
       title: "Maîtrise incontestée du Silence Farming",
       description: "Atteindre le niveau 100 avec Silence Farming.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -256,7 +256,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 32,
       title: "Début du Gaming",
       description: "Débloquer le Gaming.",
       icon: "assets/imgs/achievements/unlocked_achievement.png",
@@ -264,7 +264,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 33,
       title: "Premiers Pas du Gaming",
       description: "Atteindre le niveau 5 avec Gaming.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -272,7 +272,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 34,
       title: "Habitué du Gaming",
       description: "Atteindre le niveau 10 avec Gaming.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -280,7 +280,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 35,
       title: "A l'aise avec le Gaming",
       description: "Atteindre le niveau 20 avec Gaming.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -288,7 +288,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 36,
       title: "Exécution parfaite du Gaming",
       description: "Atteindre le niveau 50 avec Gaming.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -296,7 +296,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 37,
       title: "Maîtrise incontestée du Gaming",
       description: "Atteindre le niveau 100 avec Gaming.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -304,7 +304,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 38,
       title: "Début des pets en public",
       description: "Débloquer le pet en public.",
       icon: "assets/imgs/achievements/unlocked_achievement.png",
@@ -312,7 +312,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 39,
       title: "Premiers Pas des pets en public",
       description: "Atteindre le niveau 5 avec les pets en public.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -320,7 +320,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 40,
       title: "Habitué des pets en public",
       description: "Atteindre le niveau 10 avec les pets en public.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -328,7 +328,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 41,
       title: "A l'aise avec les pets en public",
       description: "Atteindre le niveau 20 avec les pets en public.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -336,7 +336,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 42,
       title: "Exécution parfaite des pets en public",
       description: "Atteindre le niveau 50 avec les pets en public.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -344,7 +344,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 43,
       title: "Maîtrise incontestée des pets en public",
       description: "Atteindre le niveau 100 avec les pets en public.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -352,7 +352,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 44,
       title: "Début de la richesse",
       description: "Débloquer la monétisation de l'aura.",
       icon: "assets/imgs/achievements/unlocked_achievement.png",
@@ -360,7 +360,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 45,
       title: "Premiers Pas de la richesse",
       description: "Atteindre le niveau 5 avec la monétisation de l'aura.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -368,7 +368,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 46,
       title: "Habitué de la richesse",
       description: "Atteindre le niveau 10 avec la monétisation de l'aura.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -376,7 +376,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 47,
       title: "A l'aise avec la richesse",
       description: "Atteindre le niveau 20 avec la monétisation de l'aura.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -384,7 +384,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 48,
       title: "Gros richou",
       description: "Atteindre le niveau 50 avec la monétisation de l'aura.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -392,7 +392,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 49,
       title: "Maîtrise incontestée de la richesse",
       description: "Atteindre le niveau 100 avec la monétisation de l'aura.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -400,7 +400,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 50,
       title: "Petit Bodybuilder",
       description: "Atteindre un total de 25 niveaux cumulés.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -408,7 +408,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 51,
       title: "début du scaling",
       description: "Atteindre un total de 50 niveaux cumulés.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -416,7 +416,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 52,
       title: "Scale acceptable",
       description: "Atteindre un total de 100 niveaux cumulés.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -424,7 +424,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 53,
       title: "Scale honorable",
       description: "Atteindre un total de 250 niveaux cumulés.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -432,7 +432,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 54,
       title: "Scale incroyable",
       description: "Atteindre un total de 500 niveaux cumulés.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -440,7 +440,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 55,
       title: "Scale monstrueux",
       description: `Atteindre un total de ${new FormatAuraPipe().transform(1000)} niveaux cumulés.`,
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -448,7 +448,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 56,
       title: "Noob Clicker",
       description: "Cliquer 10 fois au total.",
       icon: "assets/imgs/achievements/click_achievement.png",
@@ -456,7 +456,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 57,
       title: "Normal Clicker",
       description: "Cliquer 100 fois au total.",
       icon: "assets/imgs/achievements/click_achievement.png",
@@ -464,7 +464,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 58,
       title: "Click Machine",
       description: "Cliquer 500 fois au total.",
       icon: "assets/imgs/achievements/click_achievement.png",
@@ -472,7 +472,7 @@ export function createAchievements(
       unlocked: false,
     },
         {
-      id: 0,
+      id: 59,
       title: "Clickeur Fou",
       description: `Cliquer ${new FormatAuraPipe().transform(1500)} fois au total.`,
       icon: "assets/imgs/achievements/click_achievement.png",
@@ -480,7 +480,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 60,
       title: "Click God",
       description: `Cliquer ${new FormatAuraPipe().transform(3000)} fois au total.`,
       icon: "assets/imgs/achievements/click_achievement.png",
@@ -488,7 +488,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 61,
       title: "Capital d'Aura microscopique",
       description: `Générer ${new FormatAuraPipe().transform(1000)} d'aura au total.`,
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -496,7 +496,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 62,
       title: "Capital d'Aura en développement",
       description: `Générer ${new FormatAuraPipe().transform(10000)} d'aura au total.`,
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -504,7 +504,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 63,
       title: "Capital d'Aura en développement",
       description: `Générer ${new FormatAuraPipe().transform(100000)} d'aura au total.`,
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -512,7 +512,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 64,
       title: "Aura Millionaire",
       description: `Générer ${new FormatAuraPipe().transform(1000000)} d'aura au total.`,
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -520,7 +520,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 65,
       title: "Aura Billionaire",
       description: `Générer ${new FormatAuraPipe().transform(1000000000)} d'aura au total.`,
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -528,7 +528,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 66,
       title: "Aura Trillionaire",
       description: `Générer ${new FormatAuraPipe().transform(1000000000000)} d'aura au total.`,
       icon: "assets/imgs/achievements/trophy_achievement.png",
@@ -536,7 +536,7 @@ export function createAchievements(
       unlocked: false,
     },
     {
-      id: 0,
+      id: 67,
       title: "Sigma Grindset",
       description: "Avoir tous les items débloqués.",
       icon: "assets/imgs/achievements/trophy_achievement.png",

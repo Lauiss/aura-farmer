@@ -16,3 +16,7 @@ canvas {
 canvas:active {
   cursor: grabbing;
 }
+
+canvas.static {
+  cursor: default;
+}

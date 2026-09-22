@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Achievement, AchievementsManager } from '../../services/achievements-manager';
+import { TrophyIcons } from '../../services/trophy-icons';
 
 import { TranslatePipe } from '@ngx-translate/core';
 
@@ -13,6 +14,13 @@ import { TranslatePipe } from '@ngx-translate/core';
 export class AchievementToast implements OnInit {
   private achievementsManager = inject(AchievementsManager);
   achievements = signal<Achievement[]>([]);
+
+  private readonly trophyIcons = inject(TrophyIcons);
+
+  /** Un bandeau n'apparaît que pour un succès débloqué : toujours le trophée ambré. */
+  get trophyIcon(): string {
+    return this.trophyIcons.get(true);
+  }
 
   ngOnInit() {
     // S'abonner aux nouveaux achievements débloqués

@@ -1,0 +1,8 @@
+@if (hintManager.message(); as message) {
+  <div class="hint" role="status" aria-live="polite">
+    <div class="statue">
+      <app-moyai-viewer [interactive]="false" [idleSpin]="0.5" [distance]="4.6"></app-moyai-viewer>
+    </div>
+    <p class="bubble">{{ message | translate }}</p>
+  </div>
+}

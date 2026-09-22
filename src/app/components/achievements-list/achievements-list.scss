@@ -2,26 +2,28 @@
 @use '../../../../src/variables' as *;
 
 .achievements-container {
-  padding: $spacing-200;
-  max-width: 1200px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-300;
 }
 
 .header {
-  margin-bottom: $spacing-300;
-  text-align: center;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: $spacing-200;
 
   h2 {
-    margin: 0;
     font-size: $menu-size-title;
     font-weight: $menu-weight-strong;
     letter-spacing: 0.12em;
     text-transform: uppercase;
+    color: $menu-text;
   }
 
   .progress {
-    margin-top: $spacing-100;
     font-size: $menu-size-subtitle;
+    font-weight: $menu-weight-strong;
     color: $menu-accent;
     font-variant-numeric: tabular-nums;
   }
@@ -29,82 +31,76 @@
 
 .achievements-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: $spacing-200;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: $spacing-150;
 }
 
 .achievement-card {
+  display: flex;
+  align-items: center;
+  gap: $spacing-200;
+  width: 100%;
+  padding: $spacing-150;
+  text-align: left;
+  color: inherit;
   background: $menu-surface-raised;
   border: 1px solid $menu-border;
   border-radius: $radius-100;
-  padding: $spacing-200;
-  display: flex;
-  gap: $spacing-200;
-  transition: all 0.3s ease;
-  position: relative;
-  opacity: 0.5;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background-color 0.18s ease;
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  &:hover,
+  &:focus-visible {
+    border-color: $menu-border-strong;
+    outline: none;
   }
 
   &.unlocked {
-    opacity: 1;
     background: $menu-accent-soft;
     border-color: $menu-accent-border;
   }
 }
 
 .achievement-icon-wrapper {
-  position: relative;
   flex-shrink: 0;
 }
 
 .achievement-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 8px;
-  object-fit: cover;
-  border: 1px solid $menu-border;
-  background-color: $menu-surface-raised;
-  filter: grayscale(100%);
-
-  .unlocked & {
-    filter: grayscale(0%);
-  }
+  display: block;
+  width: 3.25rem;
+  height: 3.25rem;
 }
 
 .achievement-info {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: $spacing-50;
 }
 
 .achievement-title {
-  margin: 0;
   font-size: $menu-size-subtitle;
   font-weight: $menu-weight-strong;
   color: $menu-text;
 }
 
 .achievement-description {
-  margin: 0;
   font-size: $menu-size-small;
+  font-weight: $menu-weight;
   color: $menu-text-dim;
   line-height: 1.45;
 }
 
 .locked-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  background: $menu-surface-raised;
-  border-radius: 4px;
+  align-self: flex-start;
+  margin-top: $spacing-50;
+  padding: 2px $spacing-100;
   font-size: $menu-size-small;
   font-weight: $menu-weight;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: $menu-text-faint;
-  width: fit-content;
+  border: 1px solid $menu-border;
+  border-radius: $radius-100;
 }

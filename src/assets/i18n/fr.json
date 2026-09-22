@@ -28,5 +28,6 @@
     "CREDITS_DEVELOPMENT": "Développement",
     "CREDITS_ART": "Graphismes",
     "CREDITS_BUILT_WITH": "Réalisé avec",
-    "CREDITS_PROTOTYPE": "Voir le prototype sur itch.io"
+    "CREDITS_PROTOTYPE": "Voir le prototype sur itch.io",
+    "ACHIEVEMENT_LOCKED_HINT": "Continue à aura farmer pour débloquer ce succès !"
 }

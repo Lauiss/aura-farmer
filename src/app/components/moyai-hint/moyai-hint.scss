@@ -1,0 +1,65 @@
+@use '../../../menu-theme' as *;
+@use '../../../variables' as *;
+
+:host {
+  position: fixed;
+  left: 50%;
+  bottom: $spacing-400;
+  transform: translateX(-50%);
+  // Au-dessus de la modale, qui monte jusqu'à 1001.
+  z-index: 1100;
+  pointer-events: none;
+}
+
+.hint {
+  display: flex;
+  align-items: center;
+  gap: $spacing-200;
+  animation: rise 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.statue {
+  width: 5.5rem;
+  height: 5.5rem;
+  flex-shrink: 0;
+}
+
+.bubble {
+  position: relative;
+  max-width: 20rem;
+  padding: $spacing-150 $spacing-250;
+  color: $menu-text;
+  background-color: $menu-surface;
+  border: 1px solid $menu-border;
+  border-radius: $radius-100;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  font-size: $menu-size-body;
+  font-weight: $menu-weight;
+}
+
+// Le bec de la bulle, pointé vers la statue.
+.bubble::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  transform: translateY(-50%) rotate(45deg);
+  background-color: $menu-surface;
+  border-left: 1px solid $menu-border;
+  border-bottom: 1px solid $menu-border;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY($spacing-200);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hint {
+    animation: none;
+  }
+}

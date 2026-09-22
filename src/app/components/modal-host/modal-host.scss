@@ -15,7 +15,6 @@
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1001;
-  max-width: min(90vw, 44rem);
   max-height: 85vh;
   overflow: auto;
   padding: $spacing-400;
@@ -27,3 +26,9 @@
   border-radius: $radius-100;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
 }
+
+/* --- Largeurs normalisées --- */
+.size-sm { width: min(24rem, 92vw); }
+.size-md { width: min(34rem, 92vw); }
+.size-lg { width: min(48rem, 92vw); }
+.size-xl { width: min(66rem, 92vw); }
