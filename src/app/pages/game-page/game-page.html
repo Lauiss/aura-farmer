@@ -1,4 +1,19 @@
 <div class="game-screen">
+  <!-- La scène est posée en fond, les informations par-dessus. -->
+  <app-moyai-viewer
+    #btn
+    class="hero"
+    [interactive]="true"
+    [idleSpin]="0"
+    [spinReporter]="reportSpin"
+    [backFacingReporter]="reportBackFacing"
+    [cosmetics]="wardrobeManager.equipped()"
+    [background]="backgroundManager.selected()"
+    [distance]="heroDistance()"
+    (clicked)="increment($event)"
+  ></app-moyai-viewer>
+
+  <div class="overlay">
   <header class="counters">
     <p class="counter total">
       <span class="value">{{ auraManager.auraCount() | formatAura }}</span>
@@ -25,29 +40,15 @@
     </p>
   </header>
 
-  <main class="stage">
-    <!-- Manipulable comme sur l'écran titre, et immobile tant qu'on n'y
-         touche pas : c'est le joueur qui l'oriente. -->
-    <app-moyai-viewer
-      #btn
-      class="hero"
-      [interactive]="true"
-      [idleSpin]="0"
-      [spinReporter]="reportSpin"
-      [cosmetics]="wardrobeManager.equipped()"
-      [distance]="heroDistance()"
-      (clicked)="increment($event)"
-    ></app-moyai-viewer>
-
     <app-combo-meter class="combo"></app-combo-meter>
-  </main>
 
   <nav class="actions">
     <app-icon-btn [icon]="shopIcon" label="SHOP" (activate)="openShop()"></app-icon-btn>
-    @if (wardrobeManager.hasAny()) {
+    @if (wardrobeManager.hasAny() || backgroundManager.hasAny()) {
       <app-icon-btn [icon]="hangerIcon" label="WARDROBE" (activate)="openWardrobe()"></app-icon-btn>
     }
     <app-icon-btn [icon]="trophyIcon" label="ACHIEVEMENTS" (activate)="openAchievements()"></app-icon-btn>
     <app-icon-btn [icon]="gearIcon" label="SETTINGS" (activate)="openSettings()"></app-icon-btn>
   </nav>
+  </div>
 </div>

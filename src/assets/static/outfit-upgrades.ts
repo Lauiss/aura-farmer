@@ -65,6 +65,12 @@ export const crownUpgrades: ItemUpgrade[] = buildUpgrades(250000, [
   { name: 'Couronne impériale', description: 'x2 sur la production globale.', type: UpgradeType.MULTIPLIER, value: 1 }
 ]);
 
+export const capeUpgrades: ItemUpgrade[] = buildUpgrades(1200000, [
+  { name: 'Doublure lourde', description: '+30% de production globale.', type: UpgradeType.MULTIPLIER, value: 0.3 },
+  { name: 'Broderie dorée', description: '+50% de production globale.', type: UpgradeType.MULTIPLIER, value: 0.5 },
+  { name: 'Traîne royale', description: '+90% de production globale.', type: UpgradeType.MULTIPLIER, value: 0.9 }
+]);
+
 /** Améliorations par nom de pièce, tel qu'il figure dans `moyai-upgrades.ts`. */
 export const outfitUpgrades: Record<string, ItemUpgrade[]> = {
   earings: earingsUpgrades,
@@ -72,5 +78,6 @@ export const outfitUpgrades: Record<string, ItemUpgrade[]> = {
   tatoos: tatoosUpgrades,
   tuxedo: tuxedoUpgrades,
   tie: tieUpgrades,
-  crown: crownUpgrades
+  crown: crownUpgrades,
+  cape: capeUpgrades
 };

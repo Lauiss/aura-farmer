@@ -23,4 +23,28 @@
       }
     </ul>
   }
+
+  @if (backgrounds.hasAny()) {
+    <section class="scenery">
+      <h3>{{ 'BACKGROUNDS' | translate }}</h3>
+      <ul class="pieces">
+        @for (id of backgrounds.owned(); track id) {
+          <li>
+            <button
+              type="button"
+              class="piece"
+              [class.worn]="backgrounds.selected() === id"
+              [attr.aria-pressed]="backgrounds.selected() === id"
+              (click)="selectBackground(id)"
+            >
+              <span class="name">{{ backgroundKey(id) | translate }}</span>
+              <span class="state">
+                {{ (backgrounds.selected() === id ? 'WARDROBE_WORN' : 'WARDROBE_STORED') | translate }}
+              </span>
+            </button>
+          </li>
+        }
+      </ul>
+    </section>
+  }
 </div>

@@ -11,7 +11,21 @@ import { chisel, createRandom, loft, mesh } from '../geometry';
  * oreilles vers x ±0.65.
  */
 
-export type CosmeticId = 'earings' | 'sunglasses' | 'tatoos' | 'crown' | 'tuxedo' | 'tie';
+export type CosmeticId = 'earings' | 'sunglasses' | 'tatoos' | 'crown' | 'tuxedo' | 'tie' | 'cape';
+
+/**
+ * Ce que rapporte chaque pièce **portée**, en fraction de la production. Les
+ * posséder ne suffit pas : il faut les afficher.
+ */
+export const COSMETIC_BONUS: Record<CosmeticId, number> = {
+  earings: 0.05,
+  sunglasses: 0.1,
+  tatoos: 0.08,
+  crown: 0.3,
+  tuxedo: 0.15,
+  tie: 0.12,
+  cape: 0.35
+};
 
 /** Accessoires réellement modélisés. */
 export const MODELLED_COSMETICS: readonly CosmeticId[] = [
@@ -20,7 +34,8 @@ export const MODELLED_COSMETICS: readonly CosmeticId[] = [
   'tatoos',
   'crown',
   'tuxedo',
-  'tie'
+  'tie',
+  'cape'
 ];
 
 const PALETTE = {
@@ -35,7 +50,9 @@ const PALETTE = {
   satin: 0x4d4d59,
   shirt: 0xe6e3da,
   tie: 0x8e2f3c,
-  tieDark: 0x6b2029
+  tieDark: 0x6b2029,
+  cape: 0x6d2440,
+  capeDark: 0x4a1a2c
 } as const;
 
 /**
@@ -236,13 +253,38 @@ function createTie(random: () => number): THREE.Group {
   return group;
 }
 
+/** Cape : elle part de la nuque et s'évase dans le dos, en trois pans. */
+function createCape(random: () => number): THREE.Group {
+  const cloth = material(PALETTE.cape, 0.9, 0);
+  const lining = material(PALETTE.capeDark, 0.95, 0);
+  const group = new THREE.Group();
+
+  // Col, qui retient la cape autour de la nuque.
+  const collar = loft([
+    { y: JAW_BASE - 0.1, halfWidth: 0.54, front: -0.34, back: -0.62, chamfer: 0.2 },
+    { y: JAW_BASE + 0.14, halfWidth: 0.58, front: -0.3, back: -0.66, chamfer: 0.2 }
+  ]);
+  group.add(mesh(chisel(collar, 0.008, random), lining));
+
+  // Pan principal, qui s'élargit vers le bas.
+  const panel = loft([
+    { y: -2.5, halfWidth: 1.15, front: -0.48, back: -0.78, chamfer: 0.14 },
+    { y: -1.9, halfWidth: 0.92, front: -0.44, back: -0.74, chamfer: 0.16 },
+    { y: JAW_BASE, halfWidth: 0.6, front: -0.36, back: -0.66, chamfer: 0.2 }
+  ]);
+  group.add(mesh(chisel(panel, 0.02, random), cloth));
+
+  return group;
+}
+
 const FACTORIES: Record<CosmeticId, (random: () => number) => THREE.Group> = {
   earings: createEarings,
   sunglasses: createSunglasses,
   tatoos: createTatoos,
   crown: createCrown,
   tuxedo: createTuxedo,
-  tie: createTie
+  tie: createTie,
+  cape: createCape
 };
 
 /** Construit un accessoire, prêt à être ajouté au groupe de la statue. */

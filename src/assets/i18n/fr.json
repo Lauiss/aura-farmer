@@ -62,5 +62,14 @@
     "COSMETIC_CROWN": "Couronne",
     "COSMETIC_TUXEDO": "Haut de costume",
     "COSMETIC_TIE": "Cravate",
-    "SHOP_CATEGORY_OUTFIT": "Outfit"
+    "SHOP_CATEGORY_OUTFIT": "Outfit",
+    "SHOP_CATEGORY_SCENERY": "Décors",
+    "SHOP_CATEGORY_UTILITIES": "Utilitaires",
+    "BACKGROUND_CITY": "Ville nocturne",
+    "BACKGROUND_MOUNTAINS": "Chaîne de montagnes",
+    "BACKGROUND_DUSK": "Crépuscule",
+    "UTILITY_TRICKSHOT": "Trickshot",
+    "COSMETIC_CAPE": "Cape",
+    "BACKGROUNDS": "Décors",
+    "BACKGROUND_NONE": "Aucun décor"
 }

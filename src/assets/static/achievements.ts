@@ -6,7 +6,8 @@ export function createAchievements(
   getTotalClicks: () => number,
   getTotalAura: () => number,
   getOutfitPieces: () => { unlocked: boolean }[] = () => [],
-  getMaxedSkillCount: () => number = () => 0
+  getMaxedSkillCount: () => number = () => 0,
+  getBackFacingReached: () => boolean = () => false
 ): Achievement[] {
   const achievements: Achievement[] = [
     {
@@ -570,6 +571,14 @@ export function createAchievements(
       description: "Porter une compétence à son niveau maximal.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
       condition: () => getMaxedSkillCount() >= 1,
+      unlocked: false,
+    },
+    {
+      id: 72,
+      title: "Face B",
+      description: "Contempler le dos du moyai pendant cinq secondes d'affilée.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getBackFacingReached(),
       unlocked: false,
     },
     {

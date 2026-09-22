@@ -14,12 +14,15 @@ import { AuraManager } from '../../services/aura-manager';
 import { HintManager } from '../../services/hint-manager';
 import { Item, ItemUpgrade, ShopManager } from '../../services/shop-manager';
 import { MoyaiUpgrades } from '../../components/aura-btn/aura-btn';
+import { BackgroundDefinition } from '../../three/models/backgrounds';
+import { BackgroundManager } from '../../services/background-manager';
+import { UtilityDefinition, UtilityManager } from '../../services/utility-manager';
 import { Sound, SoundManager } from '../../services/sound-manager';
 import { FormatAuraPipe } from '../../pipes/format-aura';
 import { ModelIcons } from '../../services/model-icons';
 import { GameLoop } from '../../services/game-loop';
 
-type NodeKind = 'root' | 'category' | 'item' | 'upgrade' | 'outfit' | 'outfit-upgrade';
+type NodeKind = 'root' | 'category' | 'item' | 'upgrade' | 'outfit' | 'outfit-upgrade' | 'background' | 'utility';
 
 export interface MapNode {
   key: string;
@@ -37,10 +40,12 @@ export interface MapNode {
   /** Pièce d'outfit, et son rang dans la liste des améliorations du moyai. */
   piece?: MoyaiUpgrades;
   pieceIndex?: number;
+  background?: BackgroundDefinition;
+  utility?: UtilityDefinition;
 }
 
 /** Dimensions du monde. Les nœuds sont placés dans ce repère, pas en pixels écran. */
-const WORLD = { width: 10400, height: 4400 };
+const WORLD = { width: 10400, height: 5200 };
 const MIN_ZOOM = 0.35;
 const MAX_ZOOM = 1.8;
 
@@ -72,6 +77,8 @@ export class ShopMap {
   private readonly translate = inject(TranslateService);
   private readonly router = inject(Router);
   private readonly gameLoop = inject(GameLoop);
+  readonly backgroundManager = inject(BackgroundManager);
+  readonly utilityManager = inject(UtilityManager);
 
   readonly world = WORLD;
   readonly moyaiIcon = this.modelIcons.moyai();
@@ -101,7 +108,7 @@ export class ShopMap {
 
     // La carte part du moyai : c'est le seul nœud acquis d'entrée, et tout se
     // ramifie à partir de lui.
-    const root = { x: 600, y: 400 };
+    const root = { x: 600, y: 1000 };
     nodes.push({
       key: 'root',
       kind: 'root',
@@ -112,7 +119,7 @@ export class ShopMap {
     });
 
     // Première branche : les enseignements, où vivent les articles.
-    const teachings = { x: 1450, y: 400 };
+    const teachings = { x: 1450, y: 1000 };
     nodes.push({
       key: 'category-teachings',
       kind: 'category',
@@ -123,7 +130,7 @@ export class ShopMap {
     });
 
     // Seconde branche : l'outfit, où l'on habille la statue.
-    const outfit = { x: 600, y: 1350 };
+    const outfit = { x: 600, y: 1950 };
     nodes.push({
       key: 'category-outfit',
       kind: 'category',
@@ -137,13 +144,13 @@ export class ShopMap {
     // sur sa droite. Elles ne se conditionnent pas l'une l'autre : ce sont des
     // achats indépendants, seul le prix les ordonne.
     this.shopManager.moyaiUpgrades().forEach((piece, index) => {
-      const position = { x: outfit.x, y: 2050 + index * 320 };
+      const position = { x: outfit.x, y: 2650 + index * 320 };
       nodes.push({
         key: `outfit-${piece.id}`,
         kind: 'outfit',
         x: position.x,
         y: position.y,
-        parent: index === 0 ? outfit : { x: outfit.x, y: 2050 + (index - 1) * 320 },
+        parent: index === 0 ? outfit : { x: outfit.x, y: 2650 + (index - 1) * 320 },
         piece,
         pieceIndex: index
       });
@@ -168,10 +175,52 @@ export class ShopMap {
       }
     });
 
+    // Troisième branche : les décors, qui habillent le fond de l'écran.
+    const scenery = { x: 600, y: 180 };
+    nodes.push({
+      key: 'category-scenery',
+      kind: 'category',
+      x: scenery.x,
+      y: scenery.y,
+      parent: root,
+      labelKey: 'SHOP_CATEGORY_SCENERY'
+    });
+    this.backgroundManager.catalogue.forEach((background, index) => {
+      nodes.push({
+        key: `background-${background.id}`,
+        kind: 'background',
+        x: scenery.x + 520 + index * 460,
+        y: scenery.y,
+        parent: index === 0 ? scenery : { x: scenery.x + 520 + (index - 1) * 460, y: scenery.y },
+        background
+      });
+    });
+
+    // Quatrième branche : les utilitaires, qui ajoutent une mécanique.
+    const tools = { x: 600, y: 1540 };
+    nodes.push({
+      key: 'category-utilities',
+      kind: 'category',
+      x: tools.x,
+      y: tools.y,
+      parent: root,
+      labelKey: 'SHOP_CATEGORY_UTILITIES'
+    });
+    this.utilityManager.catalogue.forEach((utility, index) => {
+      nodes.push({
+        key: `utility-${utility.id}`,
+        kind: 'utility',
+        x: tools.x + 520 + index * 460,
+        y: tools.y,
+        parent: tools,
+        utility
+      });
+    });
+
     const items = this.shopManager.getAllItems();
     for (const [index, item] of items.entries()) {
       const x = 2350 + index * 1000;
-      const y = 400;
+      const y = 1000;
       const previous = index === 0 ? teachings : { x: 2350 + (index - 1) * 1000, y };
 
       nodes.push({ key: `item-${item.id}`, kind: 'item', x, y, parent: previous, item });
@@ -184,7 +233,7 @@ export class ShopMap {
       // ouvre la suivante, et le lien vertical donne à voir cet ordre.
       let previousUpgrade = { x, y };
       for (const [u, upgrade] of (item.upgrades ?? []).entries()) {
-        const position = { x, y: 800 + u * 300 };
+        const position = { x, y: 1400 + u * 300 };
         nodes.push({
           key: `upgrade-${item.id}-${upgrade.id}`,
           kind: 'upgrade',
@@ -218,7 +267,9 @@ export class ShopMap {
   isRevealed(node: MapNode): boolean {
     if (node.kind === 'root' || node.kind === 'category') return true;
     if (node.kind === 'outfit') return node.piece!.displayCondition();
-    if (node.kind === 'outfit-upgrade') return true;
+    if (node.kind === 'outfit-upgrade' || node.kind === 'background' || node.kind === 'utility') {
+      return true;
+    }
     return node.item!.displayCondition();
   }
 
@@ -227,6 +278,8 @@ export class ShopMap {
     if (node.kind === 'root') return true;
     if (node.kind === 'category') return !node.comingSoon;
     if (node.kind === 'outfit') return node.piece!.unlocked;
+    if (node.kind === 'background') return this.backgroundManager.isOwned(node.background!.id);
+    if (node.kind === 'utility') return this.utilityManager.isOwned(node.utility!.id);
     if (node.kind === 'upgrade' || node.kind === 'outfit-upgrade') {
       return this.shopManager.isUpgradeMaxed(node.upgrade!);
     }
@@ -237,6 +290,8 @@ export class ShopMap {
   /** Nom affiché d'un nœud, qu'il s'agisse d'un article ou d'une pièce. */
   nodeName(node: MapNode): string {
     if (node.kind === 'outfit') return `COSMETIC_${node.piece!.name.toUpperCase()}`;
+    if (node.kind === 'background') return `BACKGROUND_${node.background!.id.toUpperCase()}`;
+    if (node.kind === 'utility') return `UTILITY_${node.utility!.id.toUpperCase()}`;
     return node.upgrade!.name;
   }
 
@@ -264,6 +319,8 @@ export class ShopMap {
     // d'article derrière elles, et le gabarit lit quand même leur prix.
     if (node.kind === 'root' || node.kind === 'category') return 0;
     if (node.kind === 'outfit') return node.piece!.price;
+    if (node.kind === 'background') return node.background!.price;
+    if (node.kind === 'utility') return node.utility!.price;
     if (node.kind === 'upgrade' || node.kind === 'outfit-upgrade') {
       return this.shopManager.upgradePrice(node.upgrade!);
     }
@@ -312,7 +369,7 @@ export class ShopMap {
     const first =
       node.kind === 'item'
         ? node.item!.level() === 0
-        : node.kind === 'outfit'
+        : node.kind === 'outfit' || node.kind === 'background' || node.kind === 'utility'
           ? true
           : this.shopManager.upgradePurchases(node.upgrade!) === 0;
 
@@ -320,6 +377,10 @@ export class ShopMap {
       this.shopManager.buyItem(node.item!.id, this.buyAmount());
     } else if (node.kind === 'outfit') {
       this.shopManager.buyMoyaiUpgrade(node.pieceIndex!);
+    } else if (node.kind === 'background') {
+      this.backgroundManager.buy(node.background!.id);
+    } else if (node.kind === 'utility') {
+      this.utilityManager.buy(node.utility!.id);
     } else if (node.kind === 'outfit-upgrade') {
       this.shopManager.buyOutfitUpgrade(node.pieceIndex!, node.upgrade!.id);
     } else {
@@ -423,7 +484,7 @@ export class ShopMap {
     this.zoom.set(0.7);
     // On revient toujours sur la racine, point d'entrée de la carte.
     this.panX.set(rect.width / 2 - 600 * 0.7);
-    this.panY.set(rect.height / 2 - 400 * 0.7);
+    this.panY.set(rect.height / 2 - 1000 * 0.7);
   }
 
   ngOnInit(): void {

@@ -69,3 +69,19 @@
 .piece.worn .state {
   color: $menu-accent;
 }
+
+.scenery {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-150;
+  padding-top: $spacing-200;
+  border-top: 1px solid $menu-border;
+
+  h3 {
+    font-size: $menu-size-small;
+    font-weight: $menu-weight-strong;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: $menu-text-dim;
+  }
+}

@@ -1,0 +1,38 @@
+import { Injectable, effect, inject } from '@angular/core';
+import { BackgroundManager } from './background-manager';
+import { ShopManager } from './shop-manager';
+import { WardrobeManager } from './wardrobe-manager';
+import { COSMETIC_BONUS } from '../three/models/cosmetics';
+
+/**
+ * Relie l'apparence à la production : porter une pièce et afficher un décor
+ * rapportent, ce qui donne une raison d'habiller la statue plutôt que de la
+ * laisser nue.
+ *
+ * Le calcul vit ici et non dans `ShopManager`, qui n'a pas à connaître la
+ * garde-robe ni les décors ; il ne reçoit que le facteur final.
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class StyleBonus {
+
+  private readonly shopManager = inject(ShopManager);
+  private readonly wardrobe = inject(WardrobeManager);
+  private readonly backgrounds = inject(BackgroundManager);
+
+  constructor() {
+    effect(() => {
+      const fromCosmetics = this.wardrobe
+        .equipped()
+        .reduce((total, id) => total + (COSMETIC_BONUS[id] ?? 0), 0);
+
+      this.shopManager.styleBonus.set((1 + fromCosmetics) * this.backgrounds.bonus());
+    });
+  }
+
+  /** Démarre l'observation. L'injection seule suffit, l'appel la rend explicite. */
+  start(): void {
+    // L'effet est déclaré dans le constructeur ; rien à faire de plus.
+  }
+}

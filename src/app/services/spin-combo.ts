@@ -19,6 +19,9 @@ const TURN_BONUS = 0.25;
 const TURN_BONUS_CAP = 1.5;
 /** Durée de grâce après l'arrêt, avant que le combo ne retombe. */
 const DECAY_PER_SECOND = 1.1;
+/** Bonus accordé par un trickshot réussi, et sa vitesse d'extinction. */
+const TRICKSHOT_BONUS = 8;
+const TRICKSHOT_DECAY = 0.8;
 
 @Injectable({
   providedIn: 'root'
@@ -31,9 +34,13 @@ export class SpinCombo {
   readonly turns = signal(0);
   /** Vrai tant que la statue tourne assez vite pour compter. */
   readonly spinning = signal(false);
+  /** Vrai tant qu'un trickshot porte encore. */
+  readonly trickshot = signal(false);
 
   private speed = 0;
   private turnBonus = 0;
+  /** Bonus de trickshot, hors norme et qui retombe lentement. */
+  private trickshotBonus = 0;
   private yawTravel = 0;
   private pitchTravel = 0;
   private turnCount = 0;
@@ -64,7 +71,12 @@ export class SpinCombo {
       this.addTurn();
     }
 
-    if (this.speed < 0.05) {
+    // Le trickshot s'éteint de lui-même, qu'on tourne ou non.
+    if (this.trickshotBonus > 0) {
+      this.trickshotBonus = Math.max(0, this.trickshotBonus - TRICKSHOT_DECAY * dt);
+    }
+
+    if (this.speed < 0.05 && this.trickshotBonus === 0) {
       this.turnBonus = Math.max(0, this.turnBonus - DECAY_PER_SECOND * dt);
       if (this.turnBonus === 0) this.reset();
     }
@@ -81,6 +93,7 @@ export class SpinCombo {
   reset(): void {
     this.speed = 0;
     this.turnBonus = 0;
+    this.trickshotBonus = 0;
     this.yawTravel = 0;
     this.pitchTravel = 0;
     this.turnCount = 0;
@@ -92,9 +105,15 @@ export class SpinCombo {
     this.turnBonus = Math.min(TURN_BONUS_CAP, this.turnBonus + TURN_BONUS);
   }
 
+  /** Un trickshot réussi fait s'envoler le multiplicateur. */
+  landTrickshot(): void {
+    this.trickshotBonus = TRICKSHOT_BONUS;
+    this.publish();
+  }
+
   private compute(): number {
     const fromSpeed = Math.min(this.speed, SPEED_CAP) / SPEED_CAP * SPEED_BONUS;
-    return 1 + fromSpeed + this.turnBonus;
+    return 1 + fromSpeed + this.turnBonus + this.trickshotBonus;
   }
 
   private publish(): void {
@@ -106,6 +125,8 @@ export class SpinCombo {
       this.multiplier.set(value);
     }
     if (spinning !== this.spinning()) this.spinning.set(spinning);
+    const landed = this.trickshotBonus > 0;
+    if (landed !== this.trickshot()) this.trickshot.set(landed);
     if (this.turnCount !== this.turns()) this.turns.set(this.turnCount);
   }
 }

@@ -7,6 +7,8 @@ import { AchievementsManager } from './achievements-manager';
 import { ModalManager } from './modal-manager';
 import { OfflineProgressAnnouncer } from '../components/offline-progress-announcer/offline-progress-announcer';
 import { createAchievements } from '../../assets/static/achievements';
+import { StyleBonus } from './style-bonus';
+import { SecretTracker } from './secret-tracker';
 
 /**
  * Boucle de jeu : production d'aura passive, vérification des succès et
@@ -29,6 +31,8 @@ export class GameLoop {
   private readonly saveManager = inject(SaveManager);
   private readonly achievementsManager = inject(AchievementsManager);
   private readonly modalManager = inject(ModalManager);
+  private readonly styleBonus = inject(StyleBonus);
+  private readonly secretTracker = inject(SecretTracker);
 
   private started = false;
 
@@ -50,9 +54,14 @@ export class GameLoop {
         () => this.achievementsManager.totalClicks(),
         () => this.auraManager.allTimeAura(),
         () => this.shopManager.moyaiUpgrades(),
-        () => this.shopManager.maxedSkillCount()
+        () => this.shopManager.maxedSkillCount(),
+        () => this.secretTracker.backFacingReached()
       )
     );
+
+    // L'apparence influe sur la production : le lien doit être établi avant
+    // que la boucle ne commence à créditer de l'aura.
+    this.styleBonus.start();
 
     this.loadSave();
     // Rattrape les succès déjà remplis, sans notification.

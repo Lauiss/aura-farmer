@@ -18,7 +18,9 @@ export interface SaveData {
 export enum SaveLocation {
   GameSave = "AURA_FARMER_SAVE",
   Settings = "AURA_FARMER_SETTINGS",
-  Wardrobe = "AURA_FARMER_WARDROBE"
+  Wardrobe = "AURA_FARMER_WARDROBE",
+  Backgrounds = "AURA_FARMER_BACKGROUNDS",
+  Utilities = "AURA_FARMER_UTILITIES"
 }
 
 @Injectable({

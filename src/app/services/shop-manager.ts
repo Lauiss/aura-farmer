@@ -99,12 +99,19 @@ export class ShopManager {
     }
   }
 
+  /**
+   * Bonus d'apparence : ce que rapportent les cosmétiques portés et le décor
+   * affiché. Il est fourni de l'extérieur, `ShopManager` n'ayant pas à
+   * connaître la garde-robe ni les décors.
+   */
+  readonly styleBonus = signal(1);
+
   getTotalValue(): number {
     const base = this.items().reduce((total, item) => {
       return total + item.value() * item.level();
     }, 0);
 
-    return base * this.finalMultiplier();
+    return base * this.finalMultiplier() * this.styleBonus();
   }
 
   getAllItems(): Item[] {

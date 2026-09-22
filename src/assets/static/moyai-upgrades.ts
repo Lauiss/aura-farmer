@@ -64,6 +64,16 @@ export const moyaiUpgrades: MoyaiUpgrades[] = [
         displayCondition: signal(true),
         upgrades: [],
     },
+        {
+        id: 6,
+        name: 'cape',
+        description: 'Global aura +25%',
+        unlocked: false,
+        price: 1200000,
+        effect: { type: UpgradeType.MULTIPLIER, value: 0.25 },
+        displayCondition: signal(true),
+        upgrades: [],
+    },
 ];
 
 // Rattachement par nom : les améliorations vivent dans leur propre fichier,

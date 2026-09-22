@@ -85,6 +85,17 @@
               </span>
               <span class="meta">&times;{{ amountFor(node.item!) }}</span>
             }
+          } @else if (node.kind === 'background' || node.kind === 'utility') {
+            <img [src]="node.kind === 'background' ? buildingIcon : arrowIcon" alt="" class="mark">
+            <span class="name">{{ nodeName(node) | translate }}</span>
+            @if (isOwned(node)) {
+              <span class="cost owned-label">{{ 'UNLOCKED' | translate }}</span>
+            } @else {
+              <span class="cost">
+                {{ price(node) | formatAura }}
+                <small>{{ 'AURA' | translate }}</small>
+              </span>
+            }
           } @else if (node.kind === 'outfit') {
             <img [src]="hangerIcon" alt="" class="mark">
             <span class="name">{{ nodeName(node) | translate }}</span>

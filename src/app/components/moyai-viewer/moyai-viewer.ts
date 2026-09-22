@@ -17,6 +17,8 @@ import { disposeObject } from '../../three/geometry';
 import { createMoyai } from '../../three/models/moyai';
 import { createCursor, setCursorOpacity } from '../../three/models/cursor';
 import { CosmeticId, createCosmetic } from '../../three/models/cosmetics';
+import { BackgroundId, createBackground } from '../../three/models/backgrounds';
+import { createBullet, createSniper, setSniperOpacity } from '../../three/models/sniper';
 
 /**
  * Scène Three.js autonome affichant la statue moyai en low poly.
@@ -42,6 +44,8 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   readonly rotation = input<[number, number, number]>([0, 0, 0]);
   /** Accessoires portés par la statue. */
   readonly cosmetics = input<readonly CosmeticId[]>([]);
+  /** Décor de fond, ou `null` pour le fond uni de la page. */
+  readonly background = input<BackgroundId | null>(null);
 
   /** Émis au clic sur la statue, pour l'utiliser comme cible de jeu. */
   readonly clicked = output<MouseEvent>();
@@ -53,6 +57,12 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
    * changements en continu.
    */
   readonly spinReporter = input<((yaw: number, pitch: number, dt: number) => void) | null>(null);
+
+  /**
+   * Signale, image par image, si la statue nous tourne le dos. Même raison
+   * qu'au-dessus : un rappel plutôt qu'une sortie Angular.
+   */
+  readonly backFacingReporter = input<((backFacing: boolean, dt: number) => void) | null>(null);
 
   /**
    * Une statue manipulable reçoit un `click` à la fin de chaque rotation à la
@@ -78,6 +88,16 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
 
   private renderer?: THREE.WebGLRenderer;
   private scene?: THREE.Scene;
+  /**
+   * Scène et caméra du décor, distinctes de celles de la statue.
+   *
+   * Ce sont les commandes qui font orbiter la **caméra** autour du moyai : un
+   * décor posé dans la même scène tournerait donc avec lui. Le rendre à part,
+   * avec une caméra fixe, le laisse immobile.
+   */
+  private backgroundScene?: THREE.Scene;
+  private backgroundCamera?: THREE.PerspectiveCamera;
+  private backgroundGroup?: THREE.Group;
   private camera?: THREE.PerspectiveCamera;
   private controls?: TrackballControls;
   private moyai?: THREE.Group;
@@ -91,6 +111,11 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   /** Curseur du geste de mewing. Créé au premier appel, puis réutilisé. */
   private shush?: THREE.Group;
   private shushElapsed = 0;
+
+  /** Trickshot : l'arme, sa balle, et l'avancement de la séquence. */
+  private sniper?: THREE.Group;
+  private bullet?: THREE.Mesh;
+  private trickshotElapsed = 0;
 
   /** Accessoires actuellement greffés, par identifiant. */
   private readonly worn = new Map<CosmeticId, THREE.Group>();
@@ -110,6 +135,11 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
       const distance = this.distance();
       if (this.camera) this.camera.position.z = distance;
     });
+
+    effect(() => {
+      const id = this.background();
+      this.zone.runOutsideAngular(() => this.syncBackground(id));
+    });
   }
   private userInteracted = false;
   /** Position du pointeur à l'appui, pour distinguer un clic d'une rotation. */
@@ -126,6 +156,9 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.resizeObserver?.disconnect();
     this.controls?.dispose();
     if (this.moyai) disposeObject(this.moyai);
+    if (this.sniper) disposeObject(this.sniper);
+    if (this.bullet) disposeObject(this.bullet);
+    if (this.backgroundGroup) disposeObject(this.backgroundGroup);
     this.renderer?.dispose();
     // Le composant d'indication est monté et démonté à répétition : sans
     // rendre explicitement le contexte, le navigateur finit par refuser d'en
@@ -141,6 +174,16 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     this.scene = new THREE.Scene();
+
+    this.backgroundScene = new THREE.Scene();
+    this.backgroundCamera = new THREE.PerspectiveCamera(52, 1, 0.1, 200);
+    this.backgroundCamera.position.set(0, 1.5, 16);
+    this.backgroundCamera.lookAt(0, 0, -10);
+    this.backgroundScene.add(new THREE.HemisphereLight(0xcfd8e4, 0x14181e, 1.5));
+    const backgroundKey = new THREE.DirectionalLight(0xffe9d2, 1.1);
+    backgroundKey.position.set(-6, 8, 4);
+    this.backgroundScene.add(backgroundKey);
+    this.syncBackground(this.background());
 
     this.camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
     this.camera.position.set(0, 0.1, this.distance());
@@ -206,6 +249,18 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   }
 
   /**
+   * La statue regarde vers +Z. La caméra la voit de dos lorsqu'elle se place
+   * derrière, c'est-à-dire quand sa direction de visée pointe vers +Z.
+   */
+  private reportBackFacing(delta: number): void {
+    const report = this.backFacingReporter();
+    if (!report || !this.camera) return;
+
+    this.camera.getWorldDirection(this.currentDirection);
+    report(this.currentDirection.z > 0.35, delta);
+  }
+
+  /**
    * Joue le geste du mewing : l'index se dresse devant la bouche, tient la
    * pose, puis file le long de la mâchoire avant de s'effacer.
    *
@@ -244,6 +299,11 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     0.4
   );
   private static readonly SHUSH_DURATION = 1.45;
+
+  /** Le tir part de loin, en haut à droite, et vise le front de la statue. */
+  private static readonly SHOT_FROM = new THREE.Vector3(4.6, 3.1, 2.6);
+  private static readonly SHOT_TO = new THREE.Vector3(0.1, 0.7, 0.6);
+  private static readonly TRICKSHOT_DURATION = 1.6;
 
   private animateShush(delta: number): void {
     const finger = this.shush;
@@ -292,6 +352,77 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     }
   }
 
+  /** Installe ou retire le décor de fond. */
+  private syncBackground(id: BackgroundId | null): void {
+    if (!this.backgroundScene) return;
+
+    if (this.backgroundGroup) {
+      this.backgroundScene.remove(this.backgroundGroup);
+      disposeObject(this.backgroundGroup);
+      this.backgroundGroup = undefined;
+    }
+
+    if (!id) return;
+    this.backgroundGroup = createBackground(id);
+    this.backgroundScene.add(this.backgroundGroup);
+  }
+
+  /**
+   * Joue le trickshot : le fusil apparaît en hauteur, la balle file vers le
+   * front de la statue, puis tout s'efface.
+   */
+  playTrickshot(): void {
+    if (!this.scene) return;
+
+    if (!this.sniper) {
+      this.sniper = createSniper();
+      this.sniper.scale.setScalar(0.55);
+      this.bullet = createBullet();
+      this.scene.add(this.sniper);
+      this.scene.add(this.bullet);
+    }
+
+    this.trickshotElapsed = 0;
+    this.sniper.visible = true;
+    if (this.bullet) this.bullet.visible = true;
+  }
+
+  private animateTrickshot(delta: number): void {
+    const sniper = this.sniper;
+    const bullet = this.bullet;
+    if (!sniper?.visible || !bullet) return;
+
+    this.trickshotElapsed += delta;
+    const t = this.trickshotElapsed / MoyaiViewer.TRICKSHOT_DURATION;
+
+    if (t >= 1) {
+      sniper.visible = false;
+      bullet.visible = false;
+      return;
+    }
+
+    const from = MoyaiViewer.SHOT_FROM;
+    const to = MoyaiViewer.SHOT_TO;
+
+    // L'arme reste en place, orientée vers la cible.
+    sniper.position.copy(from);
+    sniper.lookAt(to);
+    // `lookAt` aligne l'axe -Z ; le canon est selon +X, d'où le quart de tour.
+    sniper.rotateY(-Math.PI / 2);
+
+    // La balle ne part qu'après un temps de visée.
+    const flight = THREE.MathUtils.clamp((t - 0.35) / 0.3, 0, 1);
+    bullet.visible = flight > 0 && flight < 1;
+    if (bullet.visible) {
+      bullet.position.lerpVectors(from, to, flight);
+      bullet.lookAt(to);
+    }
+
+    const fadeIn = THREE.MathUtils.clamp(t / 0.08, 0, 1);
+    const fadeOut = THREE.MathUtils.clamp((1 - t) / 0.2, 0, 1);
+    setSniperOpacity(sniper, Math.min(fadeIn, fadeOut));
+  }
+
   private addLights(scene: THREE.Scene): void {
     // Sur fond noir, l'éclairage doit à la fois sculpter les facettes et
     // détacher la silhouette : une clé chaude, un remplissage froid discret et
@@ -320,6 +451,10 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.renderer.setSize(width, height, false);
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
+    if (this.backgroundCamera) {
+      this.backgroundCamera.aspect = width / height;
+      this.backgroundCamera.updateProjectionMatrix();
+    }
     this.controls?.handleResize();
   }
 
@@ -334,7 +469,20 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.controls?.update();
     this.reportSpin(delta);
     this.animateShush(delta);
-    if (this.renderer && this.scene && this.camera) {
+    this.animateTrickshot(delta);
+    this.reportBackFacing(delta);
+    if (!this.renderer || !this.scene || !this.camera) return;
+
+    if (this.backgroundGroup && this.backgroundScene && this.backgroundCamera) {
+      // Le décor est peint d'abord, puis la profondeur est remise à zéro pour
+      // que la statue se dessine devant quelle que soit sa distance.
+      this.renderer.autoClear = false;
+      this.renderer.clear();
+      this.renderer.render(this.backgroundScene, this.backgroundCamera);
+      this.renderer.clearDepth();
+      this.renderer.render(this.scene, this.camera);
+    } else {
+      this.renderer.autoClear = true;
       this.renderer.render(this.scene, this.camera);
     }
   };

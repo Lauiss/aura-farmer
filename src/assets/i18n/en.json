@@ -62,5 +62,14 @@
     "COSMETIC_CROWN": "Crown",
     "COSMETIC_TUXEDO": "Suit jacket",
     "COSMETIC_TIE": "Tie",
-    "SHOP_CATEGORY_OUTFIT": "Outfit"
+    "SHOP_CATEGORY_OUTFIT": "Outfit",
+    "SHOP_CATEGORY_SCENERY": "Scenery",
+    "SHOP_CATEGORY_UTILITIES": "Utilities",
+    "BACKGROUND_CITY": "Night city",
+    "BACKGROUND_MOUNTAINS": "Mountain range",
+    "BACKGROUND_DUSK": "Dusk",
+    "UTILITY_TRICKSHOT": "Trickshot",
+    "COSMETIC_CAPE": "Cape",
+    "BACKGROUNDS": "Scenery",
+    "BACKGROUND_NONE": "No scenery"
 }

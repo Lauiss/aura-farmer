@@ -15,6 +15,9 @@ import { ModelIcons } from '../../services/model-icons';
 import { GameLoop } from '../../services/game-loop';
 import { SpinCombo } from '../../services/spin-combo';
 import { WardrobeManager } from '../../services/wardrobe-manager';
+import { BackgroundManager } from '../../services/background-manager';
+import { UtilityManager } from '../../services/utility-manager';
+import { SecretTracker } from '../../services/secret-tracker';
 import { Wardrobe } from '../../components/wardrobe/wardrobe';
 import { ComboMeter } from '../../components/combo-meter/combo-meter';
 import { Router } from '@angular/router';
@@ -50,6 +53,9 @@ export class GamePage {
   private readonly spinCombo = inject(SpinCombo);
   private readonly gameLoop = inject(GameLoop);
   readonly wardrobeManager = inject(WardrobeManager);
+  readonly backgroundManager = inject(BackgroundManager);
+  private readonly utilityManager = inject(UtilityManager);
+  private readonly secretTracker = inject(SecretTracker);
 
   readonly hangerIcon = this.modelIcons.hanger();
 
@@ -59,7 +65,8 @@ export class GamePage {
    */
   readonly heroDistance = computed(() => {
     const worn = this.wardrobeManager.equipped();
-    return worn.includes('tuxedo') || worn.includes('tie') ? 6.9 : 5.8;
+    const hasBust = worn.includes('tuxedo') || worn.includes('tie') || worn.includes('cape');
+    return hasBust ? 7.4 : 5.8;
   });
 
   /**
@@ -69,6 +76,9 @@ export class GamePage {
    */
   readonly reportSpin = (yaw: number, pitch: number, dt: number) =>
     this.spinCombo.report(yaw, pitch, dt);
+
+  readonly reportBackFacing = (backFacing: boolean, dt: number) =>
+    this.secretTracker.reportBackFacing(backFacing, dt);
 
   readonly shopIcon = this.modelIcons.shop();
   readonly trophyIcon = this.modelIcons.trophy(true);
@@ -123,6 +133,12 @@ export class GamePage {
 
     if (this.hasMewing()) {
       this.viewer?.playShush();
+    }
+
+    // Le trickshot est rare : quand il part, il fait s'envoler le combo.
+    if (this.utilityManager.rollTrickshot()) {
+      this.viewer?.playTrickshot();
+      this.spinCombo.landTrickshot();
     }
 
     this.soundManager.playFX(Sound.Plop);
