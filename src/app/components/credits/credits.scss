@@ -1,0 +1,27 @@
+@use '../../../variables' as *;
+
+.credits-panel {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-300;
+  padding: $spacing-200;
+  min-width: 16rem;
+  color: $text-color;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: $spacing-100 $spacing-300;
+  font-size: 0.9rem;
+}
+
+dd {
+  text-align: right;
+}
+
+a {
+  font-size: 0.85rem;
+  color: $text-color;
+  text-underline-offset: 3px;
+}

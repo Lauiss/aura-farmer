@@ -22,5 +22,12 @@
     "CLICK_VALUE": "Click Value",
     "PRICE_REDUCTION": "Price Reduction %",
     "ACHIEVEMENTS": "Achievements",
-    "ACHIEVEMENT_UNLOCKED": "Achievement Unlocked"
+    "ACHIEVEMENT_UNLOCKED": "Achievement Unlocked",
+    "CREDITS": "Credits",
+    "CREDITS_DEVELOPMENT": "Development",
+    "CREDITS_ART": "Art",
+    "CREDITS_BUILT_WITH": "Built with",
+    "CREDITS_PROTOTYPE": "See the prototype on itch.io",
+    "DRAG_TO_ROTATE": "Click and drag to rotate the statue",
+    "LOCKED": "Not unlocked yet"
 }

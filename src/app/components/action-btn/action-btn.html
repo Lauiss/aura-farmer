@@ -1,6 +1,7 @@
 <button
   [type]="type"
   [disabled]="disabled"
+  [class.ghost]="variant === 'ghost'"
   (click)="onClick($event)"
 >
   <ng-content></ng-content>

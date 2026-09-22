@@ -1,4 +1,4 @@
-@import '../../../variables.scss';
+@use '../../../variables' as *;
 
 button {
 		cursor: pointer;
@@ -8,7 +8,6 @@ button {
 		background-color: $primary;
 		color: black;
 		border-radius: $radius-200;
-		font-family: "Fugaz One", system-ui;
 		transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 		will-change: transform;
 }
@@ -27,4 +26,56 @@ button:disabled, button.disabled {
 	cursor: not-allowed;
 	box-shadow: none;
 	transform: none;
+}
+
+/* Variante dépouillée : plus de cadre, juste le libellé. Un chevron apparaît
+   au survol et au focus clavier pour indiquer la ligne courante. */
+button.ghost {
+	position: relative;
+	width: 100%;
+	padding: $spacing-100 0 $spacing-100 $spacing-300;
+	text-align: left;
+	background: none;
+	border: none;
+	border-radius: 0;
+	color: rgba(255, 255, 255, 0.55);
+	font-size: 1.05rem;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	transition: color 0.15s ease;
+}
+
+button.ghost::before {
+	content: '>';
+	position: absolute;
+	left: 0;
+	opacity: 0;
+	transform: translateX(-0.35rem);
+	transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+button.ghost:hover,
+button.ghost:focus-visible {
+	color: #ffffff;
+	transform: none;
+}
+
+button.ghost:focus-visible {
+	outline: none;
+}
+
+button.ghost:hover::before,
+button.ghost:focus-visible::before {
+	opacity: 1;
+	transform: translateX(0);
+}
+
+button.ghost:active {
+	transform: none;
+}
+
+button.ghost:disabled {
+	background: none;
+	border: none;
+	color: rgba(255, 255, 255, 0.2);
 }

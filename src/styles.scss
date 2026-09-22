@@ -1,6 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=DynaPuff:wght@400..700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Fugaz+One&display=swap');
-
 *, *::before, *::after {  box-sizing: border-box;}
 
 * {
@@ -23,21 +20,17 @@ body {
     height: 100%;
     width: 100%;
     line-height: 1.5;
+    // Pile système en attendant que la typo du jeu soit choisie.
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+// Les contrôles de formulaire n'héritent pas de la police par défaut.
+button, input, select, textarea {
+    font: inherit;
 }
 
 h1, h2, h3, h4, h5, h6, .title {
     margin: 0;
     padding: 0;
-    font-family: "DynaPuff", system-ui;
-    font-optical-sizing: auto;
-    font-weight: 500;
-    font-style: normal;
-    font-variation-settings:
-        "wdth" 100;
-}
-
-p, span, a, li {
-    font-family: "Fugaz One", sans-serif;
-    font-weight: 400;
-    font-style: normal;
+    font-weight: 600;
 }
