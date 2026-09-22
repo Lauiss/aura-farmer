@@ -1,0 +1,23 @@
+// Thème du menu : gris très sombre, texte blanc crème, accent ambré.
+//
+// Volontairement séparé de `variables.scss`, qui reste gelé en attendant que la
+// direction artistique du jeu soit reprise. Tout ce qui habille l'écran
+// d'accueil et les modales pioche ici, et seulement ici.
+
+// Ni noir pur ni blanc pur : le contraste maximal fait vibrer les arêtes de la
+// statue et écrase ses facettes les plus sombres, qui se confondraient avec la
+// page. Un gris chaud très sombre laisse le modèle se détacher.
+$menu-bg: #121211;
+$menu-surface: #1c1c1a;
+$menu-surface-raised: rgba(255, 255, 255, 0.04);
+
+$menu-text: #ede6d6;
+$menu-text-dim: rgba(237, 230, 214, 0.55);
+$menu-text-faint: rgba(237, 230, 214, 0.28);
+
+$menu-border: rgba(237, 230, 214, 0.14);
+$menu-border-strong: rgba(237, 230, 214, 0.3);
+
+$menu-accent: #e8b84b;
+$menu-accent-soft: rgba(232, 184, 75, 0.16);
+$menu-accent-border: rgba(232, 184, 75, 0.45);

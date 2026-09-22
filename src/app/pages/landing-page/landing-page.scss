@@ -1,10 +1,11 @@
+@use '../../../menu-theme' as *;
 @use '../../../variables' as *;
 
 .landing-container {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   height: 100vh;
-  background-color: #000000;
+  background-color: $menu-bg;
 }
 
 /* --- Colonne gauche : la scène Three.js --- */
@@ -28,7 +29,7 @@ app-moyai-viewer {
   font-size: 0.7rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.25);
+  color: $menu-text-faint;
   white-space: nowrap;
   pointer-events: none;
 }

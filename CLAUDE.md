@@ -39,9 +39,13 @@ Clicker incrémental Angular. Prototype : https://lauiss.itch.io/chad-aura-farme
 
 **Le design system de `variables.scss` est en suspens** : l'utilisateur ne l'aime pas et veut le reprendre lui-même. Ne pas investir dedans, ne pas repeindre le jeu à partir de ces tokens tant qu'il n'a pas tranché.
 
+En attendant, [menu-theme.scss](src/menu-theme.scss) porte **à part** les tokens du menu et des modales : gris très sombre `#121211`, texte blanc crème `#ede6d6`, accent ambré `#e8b84b`. Ni noir pur ni blanc pur — le contraste maximal fait vibrer les arêtes de la statue. Tout ce qui habille l'accueil et les modales pioche là, et nulle part ailleurs.
+
 Les polices personnalisées (DynaPuff, Fugaz One) ont été retirées : elles ne collaient pas au jeu. `styles.scss` s'en tient à une pile système en attendant que la typo soit choisie.
 
-L'écran d'accueil, lui, est fixé : fond noir, pas de logo, menu en texte seul, avec un chevron `>` qui apparaît au survol et au focus clavier pour marquer la ligne courante (variante `ghost` de `app-action-btn`, la variante `solid` conserve le style d'origine utilisé dans le jeu).
+L'écran d'accueil est fixé : pas de logo, menu en texte seul, avec un chevron `>` qui apparaît au survol et au focus clavier pour marquer la ligne courante (variante `ghost` de `app-action-btn` ; la variante `solid` conserve le style d'origine utilisé dans le jeu).
+
+Les modales suivent le même thème, **toutes** — y compris celles du jeu (progression hors-ligne, succès). `app-modal-host` porte la couleur de texte du panneau, ce dont héritent les composants qu'il héberge.
 
 ## Vérifier une modification 3D sans navigateur
 

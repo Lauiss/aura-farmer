@@ -1,3 +1,5 @@
+@use '../../../menu-theme' as *;
+
 .container {
     display: flex;
     flex-direction: column;
@@ -11,8 +13,10 @@
 }
 
 .bold {
-    font-weight: bold;
-        font-size: 2rem;
+    font-weight: 600;
+    font-size: 2rem;
+    color: $menu-accent;
+    font-variant-numeric: tabular-nums;
 }
 
 .align-center {

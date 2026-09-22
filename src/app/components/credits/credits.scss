@@ -1,27 +1,50 @@
+@use '../../../menu-theme' as *;
 @use '../../../variables' as *;
 
 .credits-panel {
   display: flex;
   flex-direction: column;
   gap: $spacing-300;
-  padding: $spacing-200;
-  min-width: 16rem;
-  color: $text-color;
+  min-width: min(20rem, 80vw);
+
+  h2 {
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: $menu-text;
+  }
 }
 
 dl {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: $spacing-100 $spacing-300;
+  gap: $spacing-100 $spacing-400;
   font-size: 0.9rem;
+}
+
+dt {
+  color: $menu-text-dim;
 }
 
 dd {
   text-align: right;
+  color: $menu-text;
 }
 
 a {
+  align-self: flex-start;
   font-size: 0.85rem;
-  color: $text-color;
-  text-underline-offset: 3px;
+  color: $menu-text-dim;
+  text-decoration: none;
+  border-bottom: 1px solid $menu-border;
+  padding-bottom: 2px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+a:hover,
+a:focus-visible {
+  color: $menu-accent;
+  border-color: $menu-accent-border;
+  outline: none;
 }

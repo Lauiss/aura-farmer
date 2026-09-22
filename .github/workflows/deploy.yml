@@ -14,11 +14,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️. Installer Node.js (Angular 17 → Node 18+)
+      # 2️. Installer Node.js (Angular 22 exige Node ^22.22.3, ^24.15.0 ou >=26)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '24'
 
       # 3️. Installer les dépendances et builder
       - name: Install dependencies

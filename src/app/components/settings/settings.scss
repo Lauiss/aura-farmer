@@ -1,22 +1,110 @@
-@use '../../../../src/variables' as *;
+@use '../../../menu-theme' as *;
+@use '../../../variables' as *;
 
+// Le panneau porte lui-même la grille : les lignes étant en `display: contents`,
+// leurs colonnes s'alignent d'une ligne à l'autre, quelle que soit la longueur
+// des libellés traduits.
 .settings-panel {
-    background-color: $bg-color;
-}
-
-.align {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
-    gap: $spacing-200;
+    gap: $spacing-250 $spacing-300;
+    min-width: min(26rem, 80vw);
 
-    span {
-        display: inline-block;
-        min-width: 45px;
-        text-align: right;
+    h2 {
+        grid-column: 1 / -1;
+        font-size: 0.95rem;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: $menu-text;
     }
 }
 
-.margin-left-25 {
-    margin-left: 25px;
+.align {
+    display: contents;
+    color: $menu-text-dim;
+    font-size: 0.9rem;
+
+    span {
+        color: $menu-text-dim;
+    }
+
+    // Le pourcentage à droite du curseur : largeur fixe et chiffres à chasse
+    // constante, pour qu'il ne fasse pas bouger la grille en le manipulant.
+    span:last-child {
+        min-width: 3rem;
+        text-align: right;
+        color: $menu-text;
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+/* --- Curseurs de volume --- */
+input[type='range'] {
+    appearance: none;
+    -webkit-appearance: none;
+    height: 1rem;
+    background: transparent;
+    cursor: pointer;
+}
+
+input[type='range']:focus-visible {
+    outline: 1px solid $menu-accent-border;
+    outline-offset: 4px;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+    height: 2px;
+    background: $menu-border-strong;
+}
+
+input[type='range']::-moz-range-track {
+    height: 2px;
+    background: $menu-border-strong;
+}
+
+input[type='range']::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    margin-top: -5px;
+    border-radius: 50%;
+    background: $menu-accent;
+}
+
+input[type='range']::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border: none;
+    border-radius: 50%;
+    background: $menu-accent;
+}
+
+/* --- Sélecteur de langue --- */
+select {
+    // La ligne « langue » n'a pas de troisième cellule : sans ça le sélecteur
+    // s'étirerait sur toute la colonne du milieu.
+    justify-self: start;
+    padding: $spacing-100 $spacing-150;
+    color: $menu-text;
+    background-color: $menu-surface-raised;
+    border: 1px solid $menu-border;
+    border-radius: $radius-100;
+    cursor: pointer;
+}
+
+select:hover {
+    border-color: $menu-border-strong;
+}
+
+select:focus-visible {
+    outline: none;
+    border-color: $menu-accent-border;
+}
+
+// La liste déroulante est rendue par le système : sans ça elle reste claire.
+select option {
+    color: $menu-text;
+    background-color: $menu-surface;
 }

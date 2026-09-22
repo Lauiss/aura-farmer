@@ -1,3 +1,4 @@
+@use '../../../../src/menu-theme' as *;
 @use '../../../../src/variables' as *;
 
 .achievements-container {
@@ -12,14 +13,17 @@
 
   h2 {
     margin: 0;
-    font-size: 32px;
-    font-weight: 700;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
   }
 
   .progress {
     margin-top: $spacing-100;
     font-size: 18px;
-    opacity: 0.8;
+    color: $menu-accent;
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -30,8 +34,8 @@
 }
 
 .achievement-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: $menu-surface-raised;
+  border: 1px solid $menu-border;
   border-radius: $radius-100;
   padding: $spacing-200;
   display: flex;
@@ -47,8 +51,8 @@
 
   &.unlocked {
     opacity: 1;
-    background: $primary;
-    border-color: $text-color;
+    background: $menu-accent-soft;
+    border-color: $menu-accent-border;
   }
 }
 
@@ -62,8 +66,8 @@
   height: 60px;
   border-radius: 8px;
   object-fit: cover;
-  border: 2px solid $text-color;
-  background-color: $bg-color;
+  border: 1px solid $menu-border;
+  background-color: $menu-surface-raised;
   filter: grayscale(100%);
 
   .unlocked & {
@@ -82,7 +86,7 @@
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: $text-color;
+  color: $menu-text;
 }
 
 .achievement-description {
@@ -95,7 +99,7 @@
 .locked-badge {
   display: inline-block;
   padding: 4px 10px;
-  background: rgba(255, 255, 255, 0.1);
+  background: $menu-surface-raised;
   border-radius: 4px;
   font-size: 11px;
   font-weight: 700;
