@@ -1,4 +1,4 @@
-import { Component, inject, computed, forwardRef } from '@angular/core';
+import { Component, inject, computed, forwardRef, ChangeDetectionStrategy } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { FormatAuraPipe } from '../../pages/game-page/game-page';
 import { DecimalPipe } from '@angular/common';
@@ -8,6 +8,7 @@ import { ModalManager } from '../../services/modal-manager';
   selector: 'app-offline-progress-announcer',
   imports: [TranslatePipe, forwardRef(() => FormatAuraPipe)],
   templateUrl: './offline-progress-announcer.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './offline-progress-announcer.scss'
 })
 export class OfflineProgressAnnouncer {

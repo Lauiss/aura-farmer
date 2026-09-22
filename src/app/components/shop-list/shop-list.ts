@@ -1,4 +1,4 @@
-import { Component, computed, forwardRef, inject, signal } from '@angular/core';
+import { Component, computed, forwardRef, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Item, ShopManager } from '../../services/shop-manager';
 import { CommonModule } from '@angular/common';
 import { AuraManager } from '../../services/aura-manager';
@@ -16,6 +16,7 @@ import { AchievementsList } from '../achievements-list/achievements-list';
   selector: 'app-shop-list',
   imports: [CommonModule, ActionBtn, TranslatePipe, forwardRef(() => FormatAuraPipe)],
   templateUrl: './shop-list.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './shop-list.scss'
 })
 export class ShopList {

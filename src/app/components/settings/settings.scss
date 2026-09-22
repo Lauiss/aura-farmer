@@ -1,4 +1,4 @@
-@import '../../../../src/variables.scss';
+@use '../../../../src/variables' as *;
 
 .settings-panel {
     background-color: $bg-color;

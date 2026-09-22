@@ -1,4 +1,4 @@
-@import '../../../variables.scss';
+@use '../../../variables' as *;
 .game-container {
   display: flex;
   flex-direction: column;

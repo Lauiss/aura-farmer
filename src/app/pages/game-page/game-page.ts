@@ -1,4 +1,4 @@
-import { Component, computed, Pipe, PipeTransform, signal, forwardRef, ViewChild, ElementRef,  inject } from '@angular/core';
+import { Component, computed, Pipe, PipeTransform, signal, forwardRef, ViewChild, ElementRef, inject, ChangeDetectionStrategy } from '@angular/core';
 import { AuraManager } from '../../services/aura-manager';
 import { ItemSave, ShopManager } from '../../services/shop-manager';
 import { interval } from 'rxjs';
@@ -19,6 +19,7 @@ import { createAchievements } from '../../../assets/static/achievements';
   selector: 'app-game-page',
   templateUrl: './game-page.html',
   styleUrls: ['./game-page.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [AuraBtn, ShopList, TranslatePipe, forwardRef(() => FormatAuraPipe)]
 })
 export class GamePage {

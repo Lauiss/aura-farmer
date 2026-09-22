@@ -1,4 +1,4 @@
-import { Component, computed, forwardRef, inject, input } from '@angular/core';
+import { Component, computed, forwardRef, inject, input, ChangeDetectionStrategy } from '@angular/core';
 import { Upgrade } from '../../services/game-manager';
 import { ModalManager } from '../../services/modal-manager';
 import { ShopManager } from '../../services/shop-manager';
@@ -11,6 +11,7 @@ import { AuraManager } from '../../services/aura-manager';
   selector: 'app-item-upgrades',
   imports: [TranslatePipe, ActionBtn, forwardRef(() => FormatAuraPipe)],
   templateUrl: './item-upgrades.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './item-upgrades.scss'
 })
 export class ItemUpgradesShop {

@@ -1,4 +1,4 @@
-import { Component, forwardRef, inject, signal } from '@angular/core';
+import { Component, forwardRef, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { moyaiUpgrades } from '../../../assets/static/moyai-upgrades';
 import { MoyaiUpgrades } from '../aura-btn/aura-btn';
 import { AuraManager } from '../../services/aura-manager';
@@ -11,6 +11,7 @@ import { ActionBtn } from "../action-btn/action-btn";
   selector: 'app-moyai-upgrades',
   imports: [TranslatePipe, forwardRef(() => FormatAuraPipe), ActionBtn],
   templateUrl: './moyai-upgrades.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './moyai-upgrades.scss'
 })
 export class MoyaiUpgradesShop {

@@ -1,4 +1,4 @@
-@import '../../../../src/variables.scss';
+@use '../../../../src/variables' as *;
 
 .container {
     justify-content: space-between;

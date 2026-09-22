@@ -1,4 +1,4 @@
-import { Component, inject, signal, WritableSignal } from '@angular/core';
+import { Component, inject, signal, WritableSignal, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuraBtn } from './components/aura-btn/aura-btn';
 import { interval } from 'rxjs';
@@ -12,6 +12,7 @@ import { AchievementToast } from './components/achievement-toast/achievement-toa
   selector: 'app-root',
   imports: [RouterOutlet, ModalHost, AchievementToast],
   templateUrl: './app.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './app.scss'
 })
 export class App {

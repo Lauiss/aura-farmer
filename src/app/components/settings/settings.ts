@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { SoundManager } from '../../services/sound-manager';
 import { DecimalPipe } from '@angular/common';
@@ -10,6 +10,7 @@ import { SettingsConfig, SettingsManager } from '../../services/settings-manager
   standalone: true,
   imports: [TranslatePipe, DecimalPipe],
   templateUrl: './settings.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './settings.scss'
 })
 

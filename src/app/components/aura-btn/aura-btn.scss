@@ -1,4 +1,4 @@
-@import '../../../variables.scss';
+@use '../../../variables' as *;
 
 .stage { display:grid; place-items:center; min-height:60vh; }
 

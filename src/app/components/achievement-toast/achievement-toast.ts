@@ -1,12 +1,13 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { Achievement, AchievementsManager } from '../../services/achievements-manager';
-import { CommonModule } from '@angular/common';
+
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-achievement-toast',
-  imports: [CommonModule, TranslatePipe],
+  imports: [TranslatePipe],
   templateUrl: './achievement-toast.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './achievement-toast.scss'
 })
 export class AchievementToast implements OnInit {

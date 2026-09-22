@@ -1,12 +1,13 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { AchievementsManager } from '../../services/achievements-manager';
 import { TranslatePipe } from '@ngx-translate/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-achievements-list',
-  imports: [TranslatePipe, CommonModule],
+  imports: [TranslatePipe],
   templateUrl: './achievements-list.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './achievements-list.scss'
 })
 export class AchievementsList {

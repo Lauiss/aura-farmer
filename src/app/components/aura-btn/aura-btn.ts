@@ -1,4 +1,4 @@
-import { Component, ElementRef, Signal, ViewChild, WritableSignal } from '@angular/core';
+import { Component, ElementRef, Signal, ViewChild, WritableSignal, ChangeDetectionStrategy } from '@angular/core';
 import { moyaiUpgrades } from '../../../assets/static/moyai-upgrades';
 import { UpgradeType } from '../../services/shop-manager';
 
@@ -27,6 +27,7 @@ export interface MoyaiUpgradeSave {
   selector: 'app-aura-btn',
   imports: [],
   templateUrl: './aura-btn.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './aura-btn.scss'
 })
 export class AuraBtn {
