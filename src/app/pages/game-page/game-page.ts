@@ -54,6 +54,15 @@ export class GamePage {
   readonly hangerIcon = this.modelIcons.hanger();
 
   /**
+   * Le smoking et la cravate descendent sous la mâchoire : sans ce recul, le
+   * bas du buste sortirait du cadre.
+   */
+  readonly heroDistance = computed(() => {
+    const worn = this.wardrobeManager.equipped();
+    return worn.includes('tuxedo') || worn.includes('tie') ? 6.9 : 5.8;
+  });
+
+  /**
    * Passé tel quel à la statue, qui l'appelle à chaque image hors de la zone
    * Angular. Lié une fois pour toutes, sinon le gabarit en recréerait un à
    * chaque détection de changements.

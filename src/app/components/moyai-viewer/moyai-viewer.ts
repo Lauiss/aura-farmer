@@ -103,6 +103,13 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
       const wanted = this.cosmetics();
       this.zone.runOutsideAngular(() => this.syncCosmetics(wanted));
     });
+
+    // Le cadrage suit la distance demandée : un buste habillé descend plus bas
+    // que la tête seule et serait coupé sans recul.
+    effect(() => {
+      const distance = this.distance();
+      if (this.camera) this.camera.position.z = distance;
+    });
   }
   private userInteracted = false;
   /** Position du pointeur à l'appui, pour distinguer un clic d'une rotation. */

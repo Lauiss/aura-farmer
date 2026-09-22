@@ -59,5 +59,7 @@
     "COSMETIC_EARINGS": "Earrings",
     "COSMETIC_SUNGLASSES": "Sunglasses",
     "COSMETIC_TATOOS": "Tattoos",
-    "COSMETIC_CROWN": "Crown"
+    "COSMETIC_CROWN": "Crown",
+    "COSMETIC_TUXEDO": "Suit jacket",
+    "COSMETIC_TIE": "Tie"
 }

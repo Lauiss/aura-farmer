@@ -11,21 +11,40 @@ import { chisel, createRandom, loft, mesh } from '../geometry';
  * oreilles vers x ±0.65.
  */
 
-export type CosmeticId = 'earings' | 'sunglasses' | 'tatoos' | 'crown';
+export type CosmeticId = 'earings' | 'sunglasses' | 'tatoos' | 'crown' | 'tuxedo' | 'tie';
 
-/**
- * Accessoires réellement modélisés. Le smoking et la cravate en sont absents :
- * la statue s'arrête sous la mâchoire, ils n'auraient rien à habiller.
- */
-export const MODELLED_COSMETICS: readonly CosmeticId[] = ['earings', 'sunglasses', 'tatoos', 'crown'];
+/** Accessoires réellement modélisés. */
+export const MODELLED_COSMETICS: readonly CosmeticId[] = [
+  'earings',
+  'sunglasses',
+  'tatoos',
+  'crown',
+  'tuxedo',
+  'tie'
+];
 
 const PALETTE = {
   gold: 0xe0b44a,
   goldDark: 0xa87f2c,
   lens: 0x1b1b1f,
   frame: 0x2a2a2e,
-  ink: 0x3f4a5a
+  ink: 0x3f4a5a,
+  // Un noir franc se confondrait avec le fond de l'écran : le costume est un
+  // anthracite, et les revers plus clairs encore pour rester lisibles.
+  cloth: 0x35353e,
+  satin: 0x4d4d59,
+  shirt: 0xe6e3da,
+  tie: 0x8e2f3c,
+  tieDark: 0x6b2029
 } as const;
+
+/**
+ * Base du crâne dans le repère recentré : tout ce qui habille le buste part de
+ * là et descend. La statue n'ayant pas de corps, ce buste est rapporté.
+ */
+const JAW_BASE = -1.3;
+/** Le buste ne descend pas plus bas, sous peine de sortir du cadrage. */
+const BUST_BOTTOM = -1.98;
 
 function material(color: number, roughness = 0.6, metalness = 0.15): THREE.MeshStandardMaterial {
   return new THREE.MeshStandardMaterial({ color, flatShading: true, roughness, metalness });
@@ -153,11 +172,77 @@ function createCrown(random: () => number): THREE.Group {
   return group;
 }
 
+/** Haut de costume : épaules, revers en V et plastron de chemise. */
+function createTuxedo(random: () => number): THREE.Group {
+  const cloth = material(PALETTE.cloth, 0.9, 0.05);
+  const satin = material(PALETTE.satin, 0.45, 0.2);
+  const shirt = material(PALETTE.shirt, 0.85, 0);
+  const group = new THREE.Group();
+
+  // Buste : il s'évase sous la mâchoire puis reste droit.
+  const torso = loft([
+    { y: BUST_BOTTOM, halfWidth: 1.02, front: 0.5, back: -0.66, chamfer: 0.2 },
+    { y: -1.62, halfWidth: 0.98, front: 0.48, back: -0.64, chamfer: 0.2 },
+    { y: JAW_BASE, halfWidth: 0.62, front: 0.24, back: -0.52, chamfer: 0.26 }
+  ]);
+  group.add(mesh(chisel(torso, 0.01, random), cloth));
+
+  // Plastron clair entre les revers. Sa face avant reste à profondeur
+  // constante : la suivre sur celle du buste l'enfonçait sous la veste.
+  const front = loft([
+    { y: BUST_BOTTOM + 0.06, halfWidth: 0.26, front: 0.54, back: 0.36, chamfer: 0.18 },
+    { y: JAW_BASE - 0.04, halfWidth: 0.19, front: 0.54, back: 0.36, chamfer: 0.22 }
+  ]);
+  group.add(mesh(chisel(front, 0, random), shirt));
+
+  // Revers satinés, inclinés vers le col.
+  const lapel = (side: number) =>
+    mesh(
+      chisel(slab(0.13, 0.34, 0.03, 0.2), 0.006, random),
+      satin,
+      [side * 0.33, -1.62, 0.52],
+      [0, 0, side * 0.34]
+    );
+  group.add(lapel(-1));
+  group.add(lapel(1));
+
+  return group;
+}
+
+/** Cravate : un nœud sous la mâchoire et une lame qui pendouille. */
+function createTie(random: () => number): THREE.Group {
+  const silk = material(PALETTE.tie, 0.6, 0.1);
+  const knotMaterial = material(PALETTE.tieDark, 0.65, 0.1);
+  const group = new THREE.Group();
+
+  // Nœud, juste sous le menton.
+  const knot = loft([
+    { y: -1.44, halfWidth: 0.1, front: 0.1, back: -0.06, chamfer: 0.25 },
+    { y: -1.32, halfWidth: 0.13, front: 0.12, back: -0.06, chamfer: 0.25 },
+    { y: -1.24, halfWidth: 0.1, front: 0.1, back: -0.06, chamfer: 0.25 }
+  ]);
+  // Devant le plastron du smoking, dont la face avant est à 0.54.
+  group.add(mesh(chisel(knot, 0.006, random), knotMaterial, [0, 0, 0.5]));
+
+  // Lame : elle s'élargit en descendant, puis se referme en pointe.
+  const blade = loft([
+    { y: -1.96, halfWidth: 0.02, front: 0.05, back: -0.05, chamfer: 0.3 },
+    { y: -1.88, halfWidth: 0.16, front: 0.06, back: -0.06, chamfer: 0.22 },
+    { y: -1.58, halfWidth: 0.17, front: 0.06, back: -0.06, chamfer: 0.22 },
+    { y: -1.44, halfWidth: 0.1, front: 0.05, back: -0.05, chamfer: 0.26 }
+  ]);
+  group.add(mesh(chisel(blade, 0.008, random), silk, [0, 0, 0.54]));
+
+  return group;
+}
+
 const FACTORIES: Record<CosmeticId, (random: () => number) => THREE.Group> = {
   earings: createEarings,
   sunglasses: createSunglasses,
   tatoos: createTatoos,
-  crown: createCrown
+  crown: createCrown,
+  tuxedo: createTuxedo,
+  tie: createTie
 };
 
 /** Construit un accessoire, prêt à être ajouté au groupe de la statue. */
