@@ -83,6 +83,11 @@ jobs:
   github-pages:
     needs: build
     runs-on: ubuntu-latest
+    # itch.io est la cible principale, et son dépôt a déjà eu lieu dans le job
+    # précédent. Un échec ici — Pages pas encore activé dans les réglages du
+    # dépôt, par exemple — ne doit pas faire passer au rouge une livraison sur
+    # itch qui a parfaitement réussi.
+    continue-on-error: true
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
