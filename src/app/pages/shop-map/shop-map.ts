@@ -463,6 +463,8 @@ export class ShopMap {
             return this.icons.gem;
           case 'dice':
             return this.icons.die;
+          case 'combo':
+            return this.icons.arrow;
           case 'slumber':
             return this.icons.hourglass;
           default:
@@ -657,6 +659,14 @@ export class ShopMap {
         return { key: 'STAT_TRICKSHOT_CHANCE', params: { from: round(u.trickshotChance() * 100), to: round((u.trickshotChance() + step) * 100) } };
       case 'trickshotPower':
         return { key: 'STAT_TRICKSHOT_POWER', params: { from: round(u.trickshotPower()), to: round(u.trickshotPower() + step) } };
+      case 'comboSpeed':
+        return { key: 'STAT_COMBO_SPEED', params: { from: round(u.comboSpeedBonus()), to: round(u.comboSpeedBonus() + step) } };
+      case 'comboTurn':
+        return { key: 'STAT_COMBO_TURN', params: { from: round(u.comboTurnBonus()), to: round(u.comboTurnBonus() + step) } };
+      case 'comboFloor':
+        return { key: 'STAT_COMBO_FLOOR', params: { from: round(1 + u.comboFloor()), to: round(1 + u.comboFloor() + step) } };
+      case 'comboHold':
+        return { key: 'STAT_COMBO_HOLD', params: { from: percent(u.comboHold()), to: percent(Math.min(0.85, u.comboHold() + step)) } };
       case 'dieLuck':
         return { key: 'STAT_DIE_LUCK', params: { from: round(u.dieLuck() * 100), to: round((u.dieLuck() + step) * 100) } };
     }

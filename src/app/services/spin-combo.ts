@@ -1,4 +1,5 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { UtilityManager } from './utility-manager';
 
 /**
  * Combo de rotation : faire tourner la statue en dope le rendement, et
@@ -41,6 +42,13 @@ const MARATHON_CAP = 4;
   providedIn: 'root'
 })
 export class SpinCombo {
+
+  /**
+   * Les quatre constantes de base sont désormais des planchers : la branche
+   * Combo de l'arbre les relève. Elles sont lues à chaque image, ce qui est
+   * sans coût — ce sont des `computed` déjà calculés.
+   */
+  private readonly utilities = inject(UtilityManager);
 
   /** Multiplicateur appliqué au prochain clic. */
   readonly multiplier = signal(1);
@@ -95,7 +103,10 @@ export class SpinCombo {
     }
 
     if (this.speed < 0.05 && this.trickshotBonus === 0 && this.boostBonus === 0) {
-      this.turnBonus = Math.max(0, this.turnBonus - DECAY_PER_SECOND * dt);
+      // L'inertie achetée ralentit l'extinction au lieu de la supprimer : un
+      // combo qui ne retomberait jamais n'en serait plus un.
+      const decay = DECAY_PER_SECOND * (1 - this.utilities.comboHold());
+      this.turnBonus = Math.max(0, this.turnBonus - decay * dt);
       if (this.turnBonus === 0) this.reset();
     }
 
@@ -121,7 +132,11 @@ export class SpinCombo {
 
   private addTurn(): void {
     this.turnCount++;
-    this.turnBonus = Math.min(TURN_BONUS_CAP, this.turnBonus + TURN_BONUS);
+    const perTurn = this.utilities.comboTurnBonus();
+    // Le plafond suit le bonus par tour : sans cela, l'améliorer ne servait
+    // qu'à atteindre le même toit plus vite.
+    const cap = TURN_BONUS_CAP * (perTurn / TURN_BONUS);
+    this.turnBonus = Math.min(cap, this.turnBonus + perTurn);
   }
 
   /**
@@ -150,8 +165,16 @@ export class SpinCombo {
   }
 
   private compute(): number {
-    const fromSpeed = Math.min(this.speed, SPEED_CAP) / SPEED_CAP * SPEED_BONUS;
-    return 1 + fromSpeed + this.turnBonus + this.trickshotBonus + this.boostBonus + this.marathon();
+    const fromSpeed = (Math.min(this.speed, SPEED_CAP) / SPEED_CAP) * this.utilities.comboSpeedBonus();
+    return (
+      1 +
+      this.utilities.comboFloor() +
+      fromSpeed +
+      this.turnBonus +
+      this.trickshotBonus +
+      this.boostBonus +
+      this.marathon()
+    );
   }
 
   private publish(): void {

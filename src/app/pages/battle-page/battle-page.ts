@@ -11,33 +11,36 @@ import { UtilityManager } from '../../services/utility-manager';
 import { Sound, SoundManager } from '../../services/sound-manager';
 import { FormatAuraPipe } from '../../pipes/format-aura';
 import {
-  ATTACK_SHAPES,
-  AttackProfile,
+  AttackRole,
   BossDefinition,
+  BossIntent,
+  COMBAT,
   DIE_FACES,
+  INTENT_DAMAGE,
+  INTENT_POOL,
   PLAYER_HP_SECONDS
 } from '../../../assets/static/bosses';
 
-/** Une attaque jouable : un enseignement doublé de son profil de combat. */
+/** Un coup jouable : un enseignement doublé du rôle qu'il tient au combat. */
 export interface Attack {
   item: Item;
-  profile: AttackProfile;
-  /** Dégâts, déjà rapportés à la production du joueur. */
+  role: AttackRole;
+  /** Dégâts d'un MOG réussi, déjà rapportés à la production du joueur. */
   damage: number;
-  rollBonus: number;
-  cooldown: number;
 }
 
 /** Ce qui s'est passé au dernier tour, pour l'afficher. */
 interface Round {
-  /** Lancer brut du joueur, avant le bonus de profil. */
-  playerRoll: number;
-  /** Lancer une fois le bonus appliqué : c'est lui qui est comparé. */
-  playerTotal: number;
-  bossRoll: number;
-  /** `clash` quand les deux totaux tombent à égalité : personne ne touche. */
-  outcome: 'hit' | 'taken' | 'clash';
+  role: AttackRole;
+  /** Jets du tour, absents quand le coup joué n'en demandait pas. */
+  playerRoll?: number;
+  bossRoll?: number;
+  /** Ce qui est arrivé : coup porté, coup encaissé, égalité, garde, soin. */
+  outcome: 'hit' | 'taken' | 'clash' | 'guarded' | 'healed';
+  /** Dégâts infligés ou encaissés, selon l'issue. */
   damage: number;
+  /** Vie rendue par un LOOKSMAX. */
+  healed: number;
   actionName: string;
 }
 
@@ -73,6 +76,11 @@ export class BattlePage {
   private readonly gameLoop = inject(GameLoop);
 
   readonly dieFaces = DIE_FACES;
+  /** Part de vie manquante rendue par un LOOKSMAX, en pourcentage. */
+  readonly healPercent = Math.round(COMBAT.healShare * 100);
+
+  /** Hargne du boss en pourcentage, pour l'afficher. */
+  readonly enragePercent = computed(() => Math.round((this.enrage() - 1) * 100));
 
   /** Boss en cours de combat, `null` sur la liste. */
   readonly boss = signal<BossDefinition | null>(null);
@@ -95,6 +103,30 @@ export class BattlePage {
   /** Le manuel, replié par défaut : il sert la première fois, puis encombre. */
   readonly manualOpen = signal(false);
 
+  /** Ce que le boss s'apprête à faire, annoncé avant le choix du joueur. */
+  readonly intent = signal<BossIntent>('strike');
+  /** Tours écoulés : c'est eux qui nourrissent la hargne du boss. */
+  readonly turn = signal(1);
+  /** Vrai quand une garde NPC couvre encore le tour en cours. */
+  readonly guarded = signal(false);
+
+  /** Dégâts du boss ce tour-ci, hargne et intention comprises. */
+  readonly incoming = computed(() => {
+    const boss = this.boss();
+    if (!boss) return 0;
+    return (
+      boss.recommended *
+      boss.damageSeconds *
+      INTENT_DAMAGE[this.intent()] *
+      Math.pow(1 + COMBAT.enragePerTurn, this.turn() - 1)
+    );
+  });
+
+  /** Hargne accumulée, affichée dès qu'elle se met à compter. */
+  readonly enrage = computed(
+    () => Math.pow(1 + COMBAT.enragePerTurn, this.turn() - 1)
+  );
+
   /**
    * Les coups disponibles : les enseignements achetés, répartis en trois tiers
    * selon leur ancienneté. Les plus anciens frappent léger et sûr, les derniers
@@ -106,26 +138,26 @@ export class BattlePage {
     const unlocked = this.shopManager.getAllItems().filter(item => item.level() > 0);
     const production = this.production();
 
-    return unlocked.map((item, index) => {
-      const profile = BattlePage.profileFor(index, unlocked.length);
-      const shape = ATTACK_SHAPES[profile];
-      return {
-        item,
-        profile,
-        damage: production * shape.power,
-        rollBonus: shape.rollBonus,
-        // Plafonné à ce que le nombre d'attaques permet, sinon toutes peuvent
-        // se retrouver en recharge le même tour et le combat se bloque.
-        cooldown: Math.min(shape.cooldown, Math.max(0, unlocked.length - 1))
-      };
-    });
+    // Les rôles se distribuent en boucle sur les enseignements possédés : le
+    // premier acheté frappe, le deuxième encaisse, le troisième soigne, puis
+    // on recommence. Acheter plus large donne donc plusieurs cartes du même
+    // rôle, ce qui permet d'en rejouer une pendant que l'autre recharge.
+    return unlocked.map((item, index) => ({
+      item,
+      role: BattlePage.ROLE_CYCLE[index % BattlePage.ROLE_CYCLE.length],
+      damage: production * COMBAT.mogPower
+    }));
   });
 
-  /** Sous trois enseignements, tout reste neutre : un tiers n'aurait aucun sens. */
-  private static profileFor(index: number, total: number): AttackProfile {
-    if (total < 3) return 'balanced';
-    const third = Math.floor((index * 3) / total);
-    return third === 0 ? 'light' : third === 1 ? 'balanced' : 'heavy';
+  private static readonly ROLE_CYCLE: readonly AttackRole[] = ['mog', 'npc', 'looksmax'];
+
+  /**
+   * Recharge d'un coup, plafonnée à ce que le nombre de cartes permet : sans
+   * ce plafond, toutes peuvent se retrouver indisponibles le même tour et le
+   * combat se bloque.
+   */
+  private cooldownFor(): number {
+    return Math.min(COMBAT.cooldown, Math.max(0, this.attacks().length - 1));
   }
 
   /** Tours de recharge restants sur une attaque ; 0 si elle est prête. */
@@ -180,6 +212,9 @@ export class BattlePage {
     this.playerHp.set(this.playerMaxHp());
     this.lastRound.set(null);
     this.cooldowns.set({});
+    this.turn.set(1);
+    this.guarded.set(false);
+    this.intent.set(BattlePage.drawIntent());
     this.phase.set('select');
     this.soundManager.playFX(Sound.Plop);
   }
@@ -192,47 +227,94 @@ export class BattlePage {
       return;
     }
 
-    const playerRoll = this.rollPlayer();
-    // Le profil de l'attaque pèse sur le lancer : c'est là que se joue le
-    // choix. Frapper lourd, c'est accepter de rater plus souvent.
-    const playerTotal = playerRoll + attack.rollBonus;
-    const bossRoll = this.roll();
     const name = attack.item.name();
-
+    // Les dégâts du tour sont figés avant d'agir : l'intention et la hargne
+    // valent pour le coup qu'on est en train de jouer, pas pour le suivant.
+    const incoming = this.incoming();
+    const shielded = this.guarded();
     this.startCooldowns(attack);
 
-    if (playerTotal === bossRoll) {
-      // Égalité : les deux auras se neutralisent, personne ne perd de vie.
-      this.lastRound.set({ playerRoll, playerTotal, bossRoll, outcome: 'clash', damage: 0, actionName: name });
+    switch (attack.role) {
+      case 'mog':
+        this.resolveMog(attack, incoming, shielded, name);
+        break;
+
+      case 'npc':
+        // Pas de jet : encaisser est acquis. On paie en tempo, pas en hasard.
+        this.playerHp.update(hp => Math.max(0, hp - incoming * COMBAT.guardCut));
+        this.guarded.set(true);
+        this.lastRound.set({
+          role: 'npc',
+          outcome: 'guarded',
+          damage: incoming * COMBAT.guardCut,
+          healed: 0,
+          actionName: name
+        });
+        this.soundManager.playPitched(Sound.Plop, 0.85);
+        break;
+
+      case 'looksmax': {
+        // Part de ce qui **manque** : puissant quand on est bas, dérisoire
+        // quand on est au complet. Impossible d'en faire une rente.
+        const healed = (this.playerMaxHp() - this.playerHp()) * COMBAT.healShare;
+        const taken = incoming * (shielded ? COMBAT.guardCut : 1);
+        this.playerHp.update(hp => Math.max(0, Math.min(this.playerMaxHp(), hp + healed) - taken));
+        this.guarded.set(false);
+        this.lastRound.set({ role: 'looksmax', outcome: 'healed', damage: taken, healed, actionName: name });
+        this.soundManager.playPitched(Sound.Plop, 1.3);
+        break;
+      }
+    }
+
+    this.turn.update(turn => turn + 1);
+    this.intent.set(BattlePage.drawIntent());
+    this.resolveEnd(boss);
+  }
+
+  /** Le MOG est le seul coup qui passe par les dés : frapper, c'est parier. */
+  private resolveMog(attack: Attack, incoming: number, shielded: boolean, name: string): void {
+    const playerRoll = this.rollPlayer();
+    const bossRoll = this.roll();
+
+    if (playerRoll === bossRoll) {
+      this.lastRound.set({ role: 'mog', playerRoll, bossRoll, outcome: 'clash', damage: 0, healed: 0, actionName: name });
       this.soundManager.playFX(Sound.Plop);
       return;
     }
 
-    if (playerTotal > bossRoll) {
-      this.bossHp.update(hp => Math.max(0, hp - attack.damage));
-      this.lastRound.set({ playerRoll, playerTotal, bossRoll, outcome: 'hit', damage: attack.damage, actionName: name });
+    if (playerRoll > bossRoll) {
+      // Un boss en garde encaisse moitié moins : le frapper à ce moment-là est
+      // du gâchis, c'est le tour où l'on se refait.
+      const dealt = attack.damage * (this.intent() === 'guard' ? 0.5 : 1);
+      this.bossHp.update(hp => Math.max(0, hp - dealt));
+      this.lastRound.set({ role: 'mog', playerRoll, bossRoll, outcome: 'hit', damage: dealt, healed: 0, actionName: name });
       // Le son monte avec le dé : un vingt s'entend.
       this.soundManager.playPitched(Sound.Plop, 1 + (playerRoll / DIE_FACES) * 0.5);
     } else {
-      const damage = boss.recommended * boss.damageSeconds;
-      this.playerHp.update(hp => Math.max(0, hp - damage));
-      this.lastRound.set({ playerRoll, playerTotal, bossRoll, outcome: 'taken', damage, actionName: name });
+      const taken = incoming * (shielded ? COMBAT.guardCut : 1);
+      this.playerHp.update(hp => Math.max(0, hp - taken));
+      this.lastRound.set({ role: 'mog', playerRoll, bossRoll, outcome: 'taken', damage: taken, healed: 0, actionName: name });
       this.soundManager.playPitched(Sound.Plop, 0.7);
     }
+    // La garde ne couvre qu'un échange de plus ; attaquer la consomme.
+    this.guarded.set(false);
+  }
 
-    this.resolveEnd(boss);
+  private static drawIntent(): BossIntent {
+    return INTENT_POOL[Math.floor(Math.random() * INTENT_POOL.length)];
   }
 
   /**
-   * Fait vieillir toutes les recharges d'un tour, puis met celle de l'attaque
-   * jouée. Dans cet ordre : sinon elle perdrait un tour dès son propre coup.
+   * Fait vieillir toutes les recharges d'un tour, puis met celle du coup joué.
+   * Dans cet ordre : sinon il perdrait un tour dès son propre usage.
    */
   private startCooldowns(played: Attack): void {
     const next: Record<number, number> = {};
     for (const [id, turns] of Object.entries(this.cooldowns())) {
       if (turns > 1) next[Number(id)] = turns - 1;
     }
-    if (played.cooldown > 0) next[played.item.id] = played.cooldown;
+    const cooldown = this.cooldownFor();
+    if (cooldown > 0) next[played.item.id] = cooldown;
     this.cooldowns.set(next);
   }
 

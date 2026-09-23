@@ -26,17 +26,29 @@
       </section>
 
       <section class="middle">
+        <!-- L'intention du boss, annoncée AVANT le choix : c'est là-dessus
+             que se décide le coup à jouer. -->
+        <div class="intent" [class]="'intent kind-' + intent()">
+          <p class="intent-label">{{ 'BATTLE_INTENT' | translate }}</p>
+          <p class="intent-name">{{ ('INTENT_' + intent().toUpperCase()) | translate }}</p>
+          <p class="intent-detail">{{ ('INTENT_' + intent().toUpperCase() + '_DESC') | translate }}</p>
+        </div>
+
+        @if (enrage() > 1.05) {
+          <p class="enrage">{{ 'BATTLE_ENRAGE' | translate: { value: enragePercent() } }}</p>
+        }
+        @if (guarded()) {
+          <p class="shield">{{ 'BATTLE_SHIELDED' | translate }}</p>
+        }
+
         @if (lastRound(); as round) {
-          <div class="dice" [class]="'dice ' + round.outcome">
-            <p class="roll player">
-              {{ round.playerTotal }}
-              @if (round.playerTotal !== round.playerRoll) {
-                <small>{{ round.playerRoll }}{{ round.playerTotal > round.playerRoll ? '+' : '' }}{{ round.playerTotal - round.playerRoll }}</small>
-              }
-            </p>
-            <p class="versus">{{ 'BATTLE_VS' | translate }}</p>
-            <p class="roll boss">{{ round.bossRoll }}</p>
-          </div>
+          @if (round.playerRoll !== undefined && round.bossRoll !== undefined) {
+            <div class="dice" [class]="'dice ' + round.outcome">
+              <p class="roll player">{{ round.playerRoll }}</p>
+              <p class="versus">{{ 'BATTLE_VS' | translate }}</p>
+              <p class="roll boss">{{ round.bossRoll }}</p>
+            </div>
+          }
           <p class="log">
             @switch (round.outcome) {
               @case ('hit') {
@@ -46,6 +58,14 @@
               @case ('taken') {
                 {{ 'BATTLE_LOG_TAKEN' | translate }}
                 <strong>&minus;{{ round.damage | formatAura }}</strong>
+              }
+              @case ('guarded') {
+                {{ 'BATTLE_LOG_GUARDED' | translate }}
+                <strong>&minus;{{ round.damage | formatAura }}</strong>
+              }
+              @case ('healed') {
+                {{ 'BATTLE_LOG_HEALED' | translate }}
+                <strong>+{{ round.healed | formatAura }}</strong>
               }
               @default {
                 {{ 'BATTLE_LOG_CLASH' | translate }}
@@ -107,12 +127,13 @@
         @if (manualOpen()) {
           <div class="manual">
             <p>{{ 'BATTLE_MANUAL_DAMAGE' | translate }}</p>
-            <p>{{ 'BATTLE_MANUAL_ROLL' | translate: { faces: dieFaces } }}</p>
+            <p>{{ 'BATTLE_MANUAL_INTENT' | translate }}</p>
             <ul class="manual-profiles">
-              <li><b class="light">{{ 'ATTACK_LIGHT' | translate }}</b> — {{ 'BATTLE_MANUAL_LIGHT' | translate }}</li>
-              <li><b class="balanced">{{ 'ATTACK_BALANCED' | translate }}</b> — {{ 'BATTLE_MANUAL_BALANCED' | translate }}</li>
-              <li><b class="heavy">{{ 'ATTACK_HEAVY' | translate }}</b> — {{ 'BATTLE_MANUAL_HEAVY' | translate }}</li>
+              <li><b class="mog">{{ 'ROLE_MOG' | translate }}</b> — {{ 'BATTLE_MANUAL_MOG' | translate: { faces: dieFaces } }}</li>
+              <li><b class="npc">{{ 'ROLE_NPC' | translate }}</b> — {{ 'BATTLE_MANUAL_NPC' | translate }}</li>
+              <li><b class="looksmax">{{ 'ROLE_LOOKSMAX' | translate }}</b> — {{ 'BATTLE_MANUAL_LOOKSMAX' | translate }}</li>
             </ul>
+            <p>{{ 'BATTLE_MANUAL_ENRAGE' | translate }}</p>
             <p>{{ 'BATTLE_MANUAL_COOLDOWN' | translate }}</p>
           </div>
         }
@@ -121,16 +142,19 @@
           @for (attack of attacks(); track attack.item.id) {
             <button
               type="button"
-              [class]="'action-card profile-' + attack.profile"
+              [class]="'action-card role-' + attack.role"
               [class.charging]="!isReadyToPlay(attack)"
               [disabled]="!isReadyToPlay(attack)"
               (click)="play(attack)"
             >
-              <span class="action-profile">{{ ('ATTACK_' + attack.profile.toUpperCase()) | translate }}</span>
+              <span class="action-role">{{ ('ROLE_' + attack.role.toUpperCase()) | translate }}</span>
               <span class="action-name">{{ attack.item.name() }}</span>
-              <span class="action-damage">{{ attack.damage | formatAura }}</span>
-              <span class="action-roll">
-                {{ attack.rollBonus >= 0 ? '+' : '' }}{{ attack.rollBonus }} {{ 'BATTLE_ON_ROLL' | translate }}
+              <span class="action-effect">
+                @switch (attack.role) {
+                  @case ('mog') { {{ attack.damage | formatAura }} }
+                  @case ('npc') { &minus;70 % }
+                  @default { +{{ healPercent }} % }
+                }
               </span>
               @if (!isReadyToPlay(attack)) {
                 <span class="action-cooldown">{{ 'BATTLE_COOLDOWN' | translate: { turns: remaining(attack) } }}</span>

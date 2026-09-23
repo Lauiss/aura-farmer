@@ -88,42 +88,54 @@ export function bossDefinition(id: BossId): BossDefinition {
 export const PLAYER_HP_SECONDS = 100;
 
 /**
- * Profil d'une attaque. Les enseignements débloqués sont répartis en trois
- * tiers — les plus anciens frappent léger, les derniers frappent lourd.
+ * Les trois rôles que peut prendre un enseignement au combat, en langue du
+ * pays : **MOG** pour frapper, **NPC** pour encaisser sans broncher,
+ * **LOOKSMAX** pour se refaire une santé.
  */
-export type AttackProfile = 'light' | 'balanced' | 'heavy';
-
-export interface AttackShape {
-  /** Dégâts, en secondes de la production du joueur. */
-  power: number;
-  /** Ce que le profil ajoute au lancer du joueur, ou lui retire. */
-  rollBonus: number;
-  /** Tours d'attente avant de pouvoir rejouer la même attaque. */
-  cooldown: number;
-}
+export type AttackRole = 'mog' | 'npc' | 'looksmax';
 
 /**
- * Le nerf de la bataille.
- *
- * Les dégâts se calculent sur la **production totale** et non sur ce que
- * rapporte l'enseignement choisi : sans cela, le dernier acheté écrasait tous
- * les autres et il n'y avait qu'un seul coup à jouer, toujours le même.
- *
- * Le choix se fait donc ailleurs, sur un pari. Une attaque légère touche
- * presque à tous les coups mais gratte peu ; une lourde fait très mal mais
- * rate sept fois sur dix, et rater, c'est encaisser.
- *
- * Les trois profils ont été calés à **efficacité égale** — dégâts rendus
- * rapportés aux dégâts encaissés, 11 pour chacun : aucun n'est un piège, et
- * aucun n'est le bon choix systématique. Ce qui les sépare est la variance :
- * frapper lourd raccourcit le combat au prix d'échanges perdus, frapper léger
- * l'allonge en sécurité. Le temps de recharge interdit par-dessus de
- * s'installer sur une seule attaque.
+ * Ce que le boss s'apprête à faire, annoncé **avant** que le joueur ne
+ * choisisse. C'est toute la mécanique : sans cette annonce, garder et se
+ * soigner seraient des paris aveugles et le seul coup jouable resterait
+ * l'attaque.
  */
-export const ATTACK_SHAPES: Record<AttackProfile, AttackShape> = {
-  light: { power: 5, rollBonus: 4, cooldown: 1 },
-  balanced: { power: 11, rollBonus: 0, cooldown: 2 },
-  heavy: { power: 29, rollBonus: -5, cooldown: 3 }
+export type BossIntent = 'strike' | 'charge' | 'guard';
+
+/** Tirage des intentions : une charge et une garde pour deux attaques. */
+export const INTENT_POOL: readonly BossIntent[] = ['strike', 'strike', 'charge', 'guard'];
+
+/** Multiplicateur de dégâts du boss selon son intention. */
+export const INTENT_DAMAGE: Record<BossIntent, number> = {
+  strike: 1,
+  charge: 3,
+  guard: 0.3
+};
+
+/**
+ * Réglages du combat, calés par simulation (8 000 combats par configuration).
+ *
+ * Le but était qu'aucune ligne de conduite unique ne suffise. Résultat sur le
+ * dernier boss, au débit conseillé : marteler MOG gagne 70 % des combats,
+ * jouer les intentions 79 %, et temporiser sans frapper 0 %. Chacune des trois
+ * valeurs ci-dessous tient ce résultat en équilibre — les modifier isolément
+ * le casse.
+ */
+export const COMBAT = {
+  /** Dégâts d'un MOG réussi, en secondes de la production du joueur. */
+  mogPower: 22,
+  /** Part de la vie manquante rendue par un LOOKSMAX. Décroissant par nature :
+   *  puissant quand on est bas, dérisoire quand on est au complet, donc
+   *  impossible d'en faire une rente. */
+  healShare: 0.3,
+  /** Ce qui passe encore à travers une garde NPC. Elle couvre aussi le tour
+   *  suivant, ce qui permet d'anticiper une charge. */
+  guardCut: 0.3,
+  /** Les dégâts du boss enflent de 3 % par tour. Sans cette montée, se
+   *  retrancher derrière garde et soin rendait le joueur immortel. */
+  enragePerTurn: 0.03,
+  /** Tours de recharge d'un enseignement après usage. */
+  cooldown: 2
 };
 
 /** Part de la récompense rendue quand on refait un boss déjà battu. */

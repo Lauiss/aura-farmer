@@ -377,43 +377,46 @@
   }
 }
 
-/* --- Profils d'attaque -------------------------------------------------- */
-// Trois couleurs, toujours les mêmes, du plus sûr au plus risqué. Le manuel
-// et les cartes les partagent pour qu'on fasse le lien sans les relire.
-.light,
-.profile-light .action-profile {
-  color: #7ed957;
-}
-
-.balanced,
-.profile-balanced .action-profile {
-  color: $menu-accent;
-}
-
-.heavy,
-.profile-heavy .action-profile {
+/* --- Rôles : trois couleurs, toujours les mêmes ------------------------- */
+.mog,
+.role-mog .action-role {
   color: #ff6b3d;
 }
 
-.action-profile {
+.npc,
+.role-npc .action-role {
+  color: #5fd4ff;
+}
+
+.looksmax,
+.role-looksmax .action-role {
+  color: #7ed957;
+}
+
+.role-mog {
+  border-color: rgba(255, 107, 61, 0.5);
+}
+
+.role-npc {
+  border-color: rgba(95, 212, 255, 0.5);
+}
+
+.role-looksmax {
+  border-color: rgba(126, 217, 87, 0.5);
+}
+
+.action-role {
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
-.action-roll {
-  font-size: 0.75rem;
-  color: $menu-text-faint;
+.action-effect {
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  color: $menu-text;
   font-variant-numeric: tabular-nums;
-}
-
-.profile-light {
-  border-color: rgba(126, 217, 87, 0.5);
-}
-
-.profile-heavy {
-  border-color: rgba(255, 107, 61, 0.5);
 }
 
 // En recharge : la carte reste lisible pour qu'on prévoie son tour, mais
@@ -431,6 +434,70 @@
   font-size: 0.72rem;
   font-weight: $menu-weight-strong;
   color: #ff9f45;
+}
+
+/* --- L'intention du boss, la pièce maîtresse de l'écran ----------------- */
+// Elle est annoncée avant le choix : c'est elle qu'on lit en premier, donc
+// elle occupe le haut de la colonne centrale et porte la couleur du danger.
+.intent {
+  width: 100%;
+  padding: $spacing-150 $spacing-200;
+  border: 2px solid $menu-border-strong;
+  border-radius: $radius-100;
+  background: $menu-surface;
+}
+
+.intent-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: $menu-text-faint;
+}
+
+.intent-name {
+  font-size: $menu-size-title;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.intent-detail {
+  font-size: $menu-size-small;
+  color: $menu-text-dim;
+}
+
+.intent.kind-charge {
+  border-color: #ff4d6d;
+  background: color-mix(in srgb, #ff4d6d 12%, $menu-surface);
+}
+
+.intent.kind-charge .intent-name {
+  color: #ff4d6d;
+}
+
+.intent.kind-guard {
+  border-color: #5fd4ff;
+}
+
+.intent.kind-guard .intent-name {
+  color: #5fd4ff;
+}
+
+.intent.kind-strike .intent-name {
+  color: $menu-accent;
+}
+
+/* --- Hargne et garde : deux états qu'il faut voir sans les chercher --- */
+.enrage {
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  color: #ff9f45;
+  font-variant-numeric: tabular-nums;
+}
+
+.shield {
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  color: #5fd4ff;
 }
 
 /* --- Manuel ------------------------------------------------------------- */
@@ -464,7 +531,7 @@
 }
 
 .manual {
-  max-width: 44rem;
+  max-width: 46rem;
   margin: 0 auto $spacing-250;
   padding: $spacing-200;
   display: flex;
@@ -483,12 +550,4 @@
   display: flex;
   flex-direction: column;
   gap: $spacing-50;
-}
-
-/* Le détail du lancer, sous le total. */
-.roll small {
-  display: block;
-  font-size: 0.65rem;
-  font-weight: $menu-weight;
-  color: $menu-text-faint;
 }

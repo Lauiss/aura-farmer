@@ -150,6 +150,20 @@ export class UtilityManager {
   /** Élan ajouté au combo par publication parcourue. */
   readonly doomscrollCombo = computed(() => 0.08 + this.bonus('doomscroll', 'scrollCombo'));
 
+  // --- Combo de rotation ---------------------------------------------------
+
+  /** Bonus maximal tiré de la seule vitesse de rotation. */
+  readonly comboSpeedBonus = computed(() => 1.2 + this.bonus('combo', 'comboSpeed'));
+  /** Bonus par tour complet enchaîné. */
+  readonly comboTurnBonus = computed(() => 0.25 + this.bonus('combo', 'comboTurn'));
+  /** Plancher permanent du multiplicateur, statue immobile comprise. */
+  readonly comboFloor = computed(() => this.bonus('combo', 'comboFloor'));
+  /**
+   * Part de l'extinction retirée au combo : plus elle est haute, plus il tient
+   * longtemps une fois la statue arrêtée.
+   */
+  readonly comboHold = computed(() => Math.min(0.85, this.bonus('combo', 'comboHold')));
+
   // --- Dés pipés -----------------------------------------------------------
 
   /**

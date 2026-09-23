@@ -16,7 +16,8 @@ export type UtilityId =
   | 'spin'
   | 'prospect'
   | 'slumber'
-  | 'dice';
+  | 'dice'
+  | 'combo';
 
 /** Grandeur qu'une amélioration d'utilitaire fait progresser. */
 export type UtilityStat =
@@ -38,7 +39,11 @@ export type UtilityStat =
   | 'offlineRate'
   | 'trickshotChance'
   | 'trickshotPower'
-  | 'dieLuck';
+  | 'dieLuck'
+  | 'comboSpeed'
+  | 'comboTurn'
+  | 'comboFloor'
+  | 'comboHold';
 
 export interface UtilityUpgrade extends Purchasable {
   stat: UtilityStat;
@@ -113,6 +118,21 @@ export const UTILITIES: UtilityDefinition[] = [
       upgrade(3, 'TRICKSHOT_UP_SCOPE', 'trickshotChance', 0.015, 20000000000),
       upgrade(4, 'TRICKSHOT_UP_NOSCOPE', 'trickshotPower', 4, 200000000000),
       upgrade(5, 'TRICKSHOT_UP_COLLATERAL', 'trickshotChance', 0.02, 2000000000000)
+    ]
+  },
+  {
+    // Combo : le multiplicateur de rotation n'avait aucune prise dans l'arbre,
+    // alors qu'il porte une bonne part des gains. Quatre grandeurs distinctes
+    // plutôt qu'un seul curseur, pour qu'on choisisse son style.
+    id: 'combo',
+    price: 80000,
+    upgrades: [
+      upgrade(1, 'COMBO_UP_MOMENTUM', 'comboSpeed', 0.1, 400000),
+      upgrade(2, 'COMBO_UP_SPIRAL', 'comboTurn', 0.04, 4000000),
+      upgrade(3, 'COMBO_UP_ANCHOR', 'comboFloor', 0.06, 40000000),
+      upgrade(4, 'COMBO_UP_FLYWHEEL', 'comboHold', 0.12, 400000000),
+      upgrade(5, 'COMBO_UP_VORTEX', 'comboSpeed', 0.2, 4000000000),
+      upgrade(6, 'COMBO_UP_SINGULARITY', 'comboTurn', 0.08, 40000000000)
     ]
   },
   {
