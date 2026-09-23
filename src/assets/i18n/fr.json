@@ -261,5 +261,9 @@
     "TRICKSHOT_UP_COLLATERAL": "Collatéral",
     "STAT_TRICKSHOT_CHANCE": "Chance de tir : {{from}} % → {{to}} %",
     "STAT_TRICKSHOT_POWER": "Élan du tir : {{from}} → {{to}}",
-    "COMBO_MARATHON": "Marathon !"
+    "COMBO_MARATHON": "Marathon !",
+    "BOSS_PICCIONE": "Piccione Zampone",
+    "BOSS_FRIGO": "Frigo Camelo",
+    "BOSS_GUSINI": "Bombombini Gusini",
+    "BOSS_SPIONIRO": "Spioniro Golubiro"
 }

@@ -4,7 +4,10 @@
 :host {
   position: fixed;
   left: 50%;
-  bottom: $spacing-400;
+  // Posée au-dessus de la rangée de boutons de l'écran de jeu, qu'elle
+  // recouvrait : la marge de la couche d'habillage, la hauteur d'un bouton,
+  // puis de quoi laisser passer son libellé au survol.
+  bottom: calc(#{$spacing-400} + #{$spacing-800} + #{$spacing-300});
   transform: translateX(-50%);
   // Au-dessus de la modale, qui monte jusqu'à 1001.
   z-index: 1100;
@@ -90,5 +93,29 @@
 @media (prefers-reduced-motion: reduce) {
   .hint {
     animation: none;
+  }
+}
+
+// Sur un écran étroit, la tête et la bulle ne tiennent pas côte à côte à
+// pleine taille : la statue rétrécit et la bulle se cale sur la largeur
+// disponible plutôt que de déborder.
+@media (max-width: 34rem) {
+  :host {
+    width: 100%;
+    padding: 0 $spacing-200;
+  }
+
+  .speaker {
+    width: 5rem;
+    height: 5rem;
+  }
+
+  .bubble {
+    max-width: none;
+    padding: $spacing-150 $spacing-200;
+  }
+
+  .body {
+    font-size: $menu-size-body;
   }
 }

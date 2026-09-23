@@ -10,14 +10,29 @@
 export type BossId =
   | 'tralalero'
   | 'sahur'
+  | 'piccione'
   | 'patapim'
   | 'lirili'
+  | 'frigo'
   | 'bombardiro'
+  | 'gusini'
+  | 'spioniro'
   | 'piccolo'
   | 'chad';
 
 /** Allure générale d'un boss, qui commande son modèle low poly. */
-export type BossShape = 'shark' | 'club' | 'tree' | 'cactus' | 'croc' | 'namek' | 'moai';
+export type BossShape =
+  | 'shark'
+  | 'club'
+  | 'pigeon'
+  | 'tree'
+  | 'cactus'
+  | 'fridge'
+  | 'croc'
+  | 'goose'
+  | 'spy'
+  | 'namek'
+  | 'moai';
 
 export interface BossDefinition {
   id: BossId;
@@ -46,12 +61,16 @@ export interface BossDefinition {
  */
 export const BOSSES: readonly BossDefinition[] = [
   { id: 'tralalero', shape: 'shark', recommended: 500, hpSeconds: 25, damageSeconds: 4, reward: 15, color: 0x4a7fd4, accent: 0xf0f0f0 },
-  { id: 'sahur', shape: 'club', recommended: 12000, hpSeconds: 35, damageSeconds: 5, reward: 25, color: 0xa9793f, accent: 0x5c4326 },
-  { id: 'patapim', shape: 'tree', recommended: 300000, hpSeconds: 45, damageSeconds: 5.5, reward: 40, color: 0x6b8f4e, accent: 0x7a5a38 },
-  { id: 'lirili', shape: 'cactus', recommended: 9000000, hpSeconds: 55, damageSeconds: 6.5, reward: 60, color: 0x58a05e, accent: 0xd8c27a },
-  { id: 'bombardiro', shape: 'croc', recommended: 4e8, hpSeconds: 65, damageSeconds: 7, reward: 90, color: 0x6f9159, accent: 0x8fa3b8 },
-  { id: 'piccolo', shape: 'namek', recommended: 2e10, hpSeconds: 75, damageSeconds: 8, reward: 140, color: 0x7fb069, accent: 0xd6d0c0 },
-  { id: 'chad', shape: 'moai', recommended: 1e12, hpSeconds: 90, damageSeconds: 9, reward: 250, color: 0xb9b2a4, accent: 0xe8b84b }
+  { id: 'sahur', shape: 'club', recommended: 5000, hpSeconds: 31, damageSeconds: 4.5, reward: 20, color: 0xa9793f, accent: 0x5c4326 },
+  { id: 'piccione', shape: 'pigeon', recommended: 40000, hpSeconds: 37, damageSeconds: 5, reward: 28, color: 0x6f7f93, accent: 0x9aa7b8 },
+  { id: 'patapim', shape: 'tree', recommended: 300000, hpSeconds: 43, damageSeconds: 5.5, reward: 38, color: 0x6b8f4e, accent: 0x7a5a38 },
+  { id: 'lirili', shape: 'cactus', recommended: 2.5e+06, hpSeconds: 49, damageSeconds: 6, reward: 50, color: 0x58a05e, accent: 0xd8c27a },
+  { id: 'frigo', shape: 'fridge', recommended: 2e+07, hpSeconds: 55, damageSeconds: 6.5, reward: 65, color: 0xdfe3e6, accent: 0xc29a63 },
+  { id: 'bombardiro', shape: 'croc', recommended: 1.5e+08, hpSeconds: 61, damageSeconds: 7, reward: 85, color: 0x6f9159, accent: 0x8fa3b8 },
+  { id: 'gusini', shape: 'goose', recommended: 1.2e+09, hpSeconds: 68, damageSeconds: 7.5, reward: 110, color: 0xeeeae0, accent: 0x7d8796 },
+  { id: 'spioniro', shape: 'spy', recommended: 1e+10, hpSeconds: 75, damageSeconds: 8, reward: 145, color: 0x6b7686, accent: 0xb59a6d },
+  { id: 'piccolo', shape: 'namek', recommended: 8e+10, hpSeconds: 82, damageSeconds: 8.5, reward: 190, color: 0x7fb069, accent: 0xd6d0c0 },
+  { id: 'chad', shape: 'moai', recommended: 1e+12, hpSeconds: 90, damageSeconds: 9, reward: 250, color: 0xb9b2a4, accent: 0xe8b84b }
 ];
 
 export function bossDefinition(id: BossId): BossDefinition {

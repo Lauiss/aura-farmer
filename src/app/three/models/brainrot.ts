@@ -108,6 +108,23 @@ function propeller(x: number, z: number): THREE.Group {
   return group;
 }
 
+/** Bec d'oiseau, pointé vers l'avant. */
+function beak(color: number, y: number, z: number, length: number): THREE.Mesh {
+  return part(color, [
+    { y: y - 0.09, halfWidth: 0.16, front: z + length, back: z, chamfer: 0.34 },
+    { y: y + 0.09, halfWidth: 0.18, front: z + length * 0.8, back: z, chamfer: 0.34 }
+  ]);
+}
+
+/** Aile repliée le long du corps, pour les oiseaux. */
+function folded(color: number, side: number, y: number): THREE.Mesh {
+  return part(color, [
+    { y: y - 0.7, halfWidth: 0.12, front: 0.34, back: -0.4, chamfer: 0.35 },
+    { y: y, halfWidth: 0.2, front: 0.4, back: -0.46, chamfer: 0.32 },
+    { y: y + 0.45, halfWidth: 0.16, front: 0.34, back: -0.4, chamfer: 0.35 }
+  ], [side * 0.5, 0, 0], [0, 0, side * 0.12]);
+}
+
 function shapeOf(definition: BossDefinition): THREE.Group {
   const group = new THREE.Group();
   const { color, accent } = definition;
@@ -470,6 +487,269 @@ function shapeOf(definition: BossDefinition): THREE.Group {
       break;
     }
 
+    /**
+     * Le pigeon aux gros pieds : poitrail gonflé, toute petite tête, et des
+     * pattes emplumées démesurées. Tout le gag tient dans la disproportion,
+     * donc les pieds sont volontairement énormes.
+     */
+    case 'pigeon': {
+      group.add(
+        rough(color, [
+          { y: -0.7, halfWidth: 0.42, front: 0.5, back: -0.42, chamfer: 0.36 },
+          { y: 0, halfWidth: 0.62, front: 0.82, back: -0.5, chamfer: 0.34 },
+          { y: 0.55, halfWidth: 0.5, front: 0.6, back: -0.46, chamfer: 0.36 },
+          { y: 0.85, halfWidth: 0.3, front: 0.32, back: -0.3, chamfer: 0.38 }
+        ], 88, 0.04)
+      );
+      // Petite tête, perchée sur un cou court.
+      group.add(
+        part(accent, [
+          { y: 0.85, halfWidth: 0.26, front: 0.3, back: -0.28, chamfer: 0.38 },
+          { y: 1.25, halfWidth: 0.3, front: 0.36, back: -0.3, chamfer: 0.4 },
+          { y: 1.5, halfWidth: 0.22, front: 0.28, back: -0.24, chamfer: 0.4 }
+        ])
+      );
+      group.add(beak(0xe4a03c, 1.18, 0.3, 0.3));
+      group.add(eyes([0, 1.3, 0.24], 0.22, 0.75));
+
+      // Gorge irisée, la tache claire du pigeon de ville.
+      group.add(
+        part(0x4f8f8a, [
+          { y: 0.62, halfWidth: 0.26, front: 0.56, back: 0.3, chamfer: 0.38 },
+          { y: 0.9, halfWidth: 0.24, front: 0.4, back: 0.28, chamfer: 0.38 }
+        ])
+      );
+      group.add(folded(accent, -1, -0.05));
+      group.add(folded(accent, 1, -0.05));
+
+      // Les pattes : d'abord un manchon de plumes, puis des pieds énormes.
+      for (const side of [-1, 1]) {
+        group.add(
+          rough(accent, [
+            { y: -1.2, halfWidth: 0.34, front: 0.36, back: -0.34, chamfer: 0.38 },
+            { y: -0.85, halfWidth: 0.4, front: 0.42, back: -0.38, chamfer: 0.38 },
+            { y: -0.55, halfWidth: 0.3, front: 0.32, back: -0.3, chamfer: 0.38 }
+          ], 89 + side, 0.06)
+        );
+        // Trois doigts, largement étalés vers l'avant.
+        for (const toe of [-1, 0, 1]) {
+          group.add(
+            part(0xe4a03c, [
+              { y: -1.42, halfWidth: 0.1, front: 0.78, back: -0.16, chamfer: 0.3 },
+              { y: -1.3, halfWidth: 0.11, front: 0.7, back: -0.16, chamfer: 0.3 }
+            ], [side * 0.36 + toe * 0.17, 0, 0], [0, toe * 0.4, 0])
+          );
+        }
+      }
+      break;
+    }
+
+    /**
+     * Frigo Camelo : tête et cou de chameau sortant d'un réfrigérateur, deux
+     * pattes chaussées de grosses boots. Le frigo fait le corps, il est donc
+     * franchement rectangulaire là où tout le reste est arrondi.
+     */
+    case 'fridge': {
+      // Le frigo : un bloc net, chanfrein minimal.
+      group.add(
+        part(color, [
+          { y: -0.95, halfWidth: 0.7, front: 0.52, back: -0.52, chamfer: 0.06 },
+          { y: 1.15, halfWidth: 0.7, front: 0.52, back: -0.52, chamfer: 0.06 }
+        ])
+      );
+      // Rainure entre les deux portes, et la poignée verticale.
+      group.add(
+        part(0x9aa0a4, [
+          { y: 0.16, halfWidth: 0.71, front: 0.53, back: -0.53, chamfer: 0.06 },
+          { y: 0.22, halfWidth: 0.71, front: 0.53, back: -0.53, chamfer: 0.06 }
+        ])
+      );
+      group.add(
+        mesh(new THREE.BoxGeometry(0.08, 0.62, 0.09), material(0x8d949a), [0.5, 0.62, 0.56])
+      );
+      group.add(
+        mesh(new THREE.BoxGeometry(0.08, 0.62, 0.09), material(0x8d949a), [0.5, -0.36, 0.56])
+      );
+
+      // Cou et tête de chameau, qui sortent par le haut.
+      group.add(
+        part(accent, [
+          { y: 1.0, halfWidth: 0.19, front: 0.3, back: -0.02, chamfer: 0.34 },
+          { y: 1.6, halfWidth: 0.17, front: 0.46, back: 0.1, chamfer: 0.34 },
+          { y: 1.95, halfWidth: 0.2, front: 0.6, back: 0.16, chamfer: 0.34 }
+        ])
+      );
+      group.add(
+        part(accent, [
+          { y: 1.85, halfWidth: 0.23, front: 0.78, back: 0.1, chamfer: 0.34 },
+          { y: 2.2, halfWidth: 0.25, front: 0.66, back: 0.05, chamfer: 0.34 }
+        ])
+      );
+      // Museau allongé, la marque du chameau.
+      group.add(
+        part(0xd8b483, [
+          { y: 1.72, halfWidth: 0.16, front: 0.96, back: 0.6, chamfer: 0.34 },
+          { y: 1.98, halfWidth: 0.17, front: 0.92, back: 0.6, chamfer: 0.34 }
+        ])
+      );
+      // Oreilles.
+      for (const side of [-1, 1]) {
+        group.add(
+          part(accent, [
+            { y: 2.16, halfWidth: 0.07, front: 0.14, back: -0.1, chamfer: 0.36 },
+            { y: 2.38, halfWidth: 0.05, front: 0.1, back: -0.08, chamfer: 0.36 }
+          ], [side * 0.2, 0, 0.18], [0, 0, side * -0.3])
+        );
+      }
+      group.add(eyes([0, 2.1, 0.5], 0.2, 0.8));
+
+      // Pattes, et les grosses boots.
+      for (const side of [-1, 1]) {
+        group.add(
+          part(accent, [
+            { y: -1.45, halfWidth: 0.15, front: 0.15, back: -0.15, chamfer: 0.34 },
+            { y: -0.9, halfWidth: 0.18, front: 0.18, back: -0.18, chamfer: 0.34 }
+          ], [side * 0.34, 0, 0])
+        );
+        group.add(
+          part(0xb5741f, [
+            { y: -1.85, halfWidth: 0.3, front: 0.58, back: -0.3, chamfer: 0.24 },
+            { y: -1.4, halfWidth: 0.28, front: 0.34, back: -0.3, chamfer: 0.24 }
+          ], [side * 0.34, 0, 0.08])
+        );
+      }
+      break;
+    }
+
+    /**
+     * Bombombini Gusini : oie blanche fondue dans un bombardier, long cou,
+     * bec orange, moteurs sous les ailes et grenades en travers du poitrail.
+     */
+    case 'goose': {
+      const fuselage: Ring[] = [
+        { y: -1.4, halfWidth: 0.18, front: 0.18, back: -0.18, chamfer: 0.34 },
+        { y: -0.7, halfWidth: 0.42, front: 0.42, back: -0.42, chamfer: 0.32 },
+        { y: 0.3, halfWidth: 0.56, front: 0.54, back: -0.54, chamfer: 0.3 },
+        { y: 1.1, halfWidth: 0.4, front: 0.4, back: -0.4, chamfer: 0.32 }
+      ];
+      group.add(lying(color, fuselage, [0, 0.1, 0]));
+
+      // Long cou dressé, puis la tête et le bec orange.
+      group.add(
+        part(color, [
+          { y: 0.3, halfWidth: 0.17, front: 0.95, back: 0.62, chamfer: 0.34 },
+          { y: 1.05, halfWidth: 0.15, front: 1.0, back: 0.7, chamfer: 0.34 },
+          { y: 1.45, halfWidth: 0.18, front: 1.12, back: 0.74, chamfer: 0.34 }
+        ])
+      );
+      group.add(
+        part(color, [
+          { y: 1.4, halfWidth: 0.24, front: 1.26, back: 0.68, chamfer: 0.36 },
+          { y: 1.72, halfWidth: 0.22, front: 1.16, back: 0.7, chamfer: 0.36 }
+        ])
+      );
+      group.add(beak(0xe4832c, 1.5, 1.2, 0.42));
+      group.add(eyes([0, 1.62, 1.04], 0.2, 0.75));
+
+      // Ailes d'avion, moteur et hélice à chaque bout.
+      for (const side of [-1, 1]) {
+        group.add(
+          part(accent, [
+            { y: -0.1, halfWidth: 1.0, front: 0.46, back: -0.46, chamfer: 0.22 },
+            { y: 0.16, halfWidth: 1.0, front: 0.4, back: -0.4, chamfer: 0.22 }
+          ], [side * 1.05, 0, -0.2])
+        );
+        group.add(
+          part(0x555d66, [
+            { y: -0.12, halfWidth: 0.15, front: 0.55, back: -0.45, chamfer: 0.34 },
+            { y: 0.16, halfWidth: 0.15, front: 0.5, back: -0.45, chamfer: 0.34 }
+          ], [side * 1.3, 0, -0.15])
+        );
+        group.add(propeller(side * 1.3, 0.5));
+      }
+
+      // Grenades en bandoulière sur le poitrail : l'oie est armée.
+      for (const i of [-1, 0, 1]) {
+        group.add(
+          part(0x4b5a3c, [
+            { y: 0.28, halfWidth: 0.09, front: 0.82, back: 0.62, chamfer: 0.36 },
+            { y: 0.5, halfWidth: 0.11, front: 0.84, back: 0.6, chamfer: 0.36 }
+          ], [i * 0.26, -0.18, 0])
+        );
+      }
+
+      // Dérive arrière.
+      group.add(
+        part(accent, [
+          { y: 0.3, halfWidth: 0.09, front: -1.0, back: -1.4, chamfer: 0.2 },
+          { y: 0.95, halfWidth: 0.06, front: -1.1, back: -1.35, chamfer: 0.25 }
+        ])
+      );
+      break;
+    }
+
+    /**
+     * Spioniro Golubiro : le pigeon espion. Trench-coat beige, col relevé et
+     * chapeau mou — la panoplie du détective, sans quoi ce n'est qu'un pigeon.
+     */
+    case 'spy': {
+      // Le corps disparaît sous le trench : c'est lui le volume principal.
+      group.add(
+        part(accent, [
+          { y: -1.45, halfWidth: 0.56, front: 0.5, back: -0.5, chamfer: 0.3 },
+          { y: -0.5, halfWidth: 0.6, front: 0.54, back: -0.54, chamfer: 0.28 },
+          { y: 0.5, halfWidth: 0.52, front: 0.48, back: -0.48, chamfer: 0.3 },
+          { y: 0.8, halfWidth: 0.44, front: 0.44, back: -0.44, chamfer: 0.32 }
+        ])
+      );
+      // Boutonnage et ceinture, pour qu'on lise un manteau et pas un sac.
+      group.add(
+        part(0x8c7449, [
+          { y: -0.34, halfWidth: 0.61, front: 0.55, back: -0.55, chamfer: 0.28 },
+          { y: -0.16, halfWidth: 0.61, front: 0.55, back: -0.55, chamfer: 0.28 }
+        ])
+      );
+      group.add(
+        mesh(new THREE.BoxGeometry(0.06, 1.5, 0.05), material(0x8c7449), [0, -0.3, 0.55])
+      );
+      // Col relevé.
+      group.add(
+        part(0x8c7449, [
+          { y: 0.62, halfWidth: 0.56, front: 0.5, back: -0.5, chamfer: 0.3 },
+          { y: 1.0, halfWidth: 0.46, front: 0.42, back: -0.42, chamfer: 0.32 }
+        ])
+      );
+
+      // Tête de pigeon, qui dépasse du col.
+      group.add(
+        part(color, [
+          { y: 0.92, halfWidth: 0.28, front: 0.32, back: -0.3, chamfer: 0.38 },
+          { y: 1.3, halfWidth: 0.32, front: 0.38, back: -0.32, chamfer: 0.4 },
+          { y: 1.55, halfWidth: 0.24, front: 0.3, back: -0.26, chamfer: 0.4 }
+        ])
+      );
+      group.add(beak(0x3f4854, 1.24, 0.32, 0.28));
+      group.add(eyes([0, 1.36, 0.26], 0.22, 0.75));
+
+      // Chapeau mou : calotte puis bord large.
+      group.add(
+        part(0x4a4033, [
+          { y: 1.5, halfWidth: 0.62, front: 0.62, back: -0.62, chamfer: 0.4 },
+          { y: 1.58, halfWidth: 0.6, front: 0.6, back: -0.6, chamfer: 0.4 },
+          { y: 1.62, halfWidth: 0.34, front: 0.34, back: -0.34, chamfer: 0.4 },
+          { y: 1.92, halfWidth: 0.3, front: 0.3, back: -0.3, chamfer: 0.4 }
+        ])
+      );
+      // Ruban du chapeau.
+      group.add(
+        part(0x2e2820, [
+          { y: 1.66, halfWidth: 0.35, front: 0.35, back: -0.35, chamfer: 0.4 },
+          { y: 1.76, halfWidth: 0.35, front: 0.35, back: -0.35, chamfer: 0.4 }
+        ])
+      );
+      break;
+    }
+
     /** Piccolo : silhouette namek, antennes, turban et col de cape rigide. */
     case 'namek': {
       group.add(
@@ -537,6 +817,12 @@ function shapeOf(definition: BossDefinition): THREE.Group {
   return group;
 }
 
+/**
+ * Plus grande dimension visée, toutes créatures confondues — la tête de moyai
+ * fait un peu moins de 2,7 dans sa plus grande.
+ */
+const TARGET_SIZE = 2.8;
+
 export function createBrainrot(definition: BossDefinition): THREE.Group {
   const group = shapeOf(definition);
   group.name = `boss-${definition.id}`;
@@ -546,6 +832,16 @@ export function createBrainrot(definition: BossDefinition): THREE.Group {
   const bounds = new THREE.Box3().setFromObject(group);
   const center = bounds.getCenter(new THREE.Vector3());
   group.children.forEach(child => child.position.sub(center));
+
+  // Puis ramené au gabarit commun. Les proportions sont trop dissemblables
+  // pour s'en passer : le frigo-chameau monte à 4,1 de haut et les deux
+  // bombardiers à 4,2 de large, là où la statue fait 2,7. Sans mise à
+  // l'échelle, porter l'un ou l'autre à la place du moyai le faisait sortir
+  // du cadre. Le rapport est conservé, c'est la plus grande dimension qui est
+  // calée.
+  const size = bounds.getSize(new THREE.Vector3());
+  const largest = Math.max(size.x, size.y, size.z);
+  if (largest > 0) group.scale.setScalar(TARGET_SIZE / largest);
 
   return group;
 }
