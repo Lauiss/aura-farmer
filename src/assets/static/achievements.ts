@@ -833,6 +833,22 @@ export function createAchievements(
       unlocked: false,
     },
     {
+      id: 207,
+      title: "Ivank",
+      description: "Se garer un tank à côté de soi.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => hasCompanion('ivank'),
+      unlocked: false,
+    },
+    {
+      id: 208,
+      title: "Makouille",
+      description: "Adopter Makouille, la chatte tigrée.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => hasCompanion('makouille'),
+      unlocked: false,
+    },
+    {
       id: 210,
       title: "Entouré",
       description: "Réunir tous les compagnons autour de la statue.",

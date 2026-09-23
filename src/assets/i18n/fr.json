@@ -366,10 +366,6 @@
     "COMPANION_RACECAR_HINT": "Une voiture de course, juste pour la déco.",
     "COMPANION_SKIBIDI_HINT": "Skibidi bop bop yes yes.",
     "COMPANION_BRAULO_HINT": "Braulo t'a choisi. C'est lui qui rapporte le plus.",
-    "WARDROBE_COMPANIONS": "Compagnons",
-    "WARDROBE_COMPANIONS_NOTE": "Les ranger ne change rien à leur bonus : il est acquis à l'achat.",
-    "WARDROBE_OUT": "Sorti",
-    "WARDROBE_STOWED": "Rangé",
     "DOOMSCROLL_UP_FEED": "Fil tendu",
     "DOOMSCROLL_UP_RATIO": "Ratio",
     "DOOMSCROLL_UP_AKIMBO": "Akimbo",
@@ -378,5 +374,13 @@
     "SHOP_KIND_SOON": "À venir",
     "SHOP_CASINO": "Casino",
     "SHOP_CASINO_DESC": "Miser son aura, la doubler ou tout perdre. Pas encore ouvert.",
-    "SHOP_SOON_HINT": "Le casino n'a pas encore ouvert ses portes. Reviens plus tard."
+    "SHOP_SOON_HINT": "Le casino n'a pas encore ouvert ses portes. Reviens plus tard.",
+    "CHEST_OPEN_ALL": "Tout ouvrir ({{count}})",
+    "CHEST_BULK_TITLE": "{{count}} coffres ouverts",
+    "CHEST_BULK_FIGURES": "{{count}} statuette(s)",
+    "CHEST_BULK_RELICS": "{{count}} relique(s) sacrée(s) !",
+    "COMPANION_IVANK": "Ivank le tank",
+    "COMPANION_MAKOUILLE": "Makouille",
+    "COMPANION_IVANK_HINT": "Ivank est garé là. Personne ne viendra t'embêter.",
+    "COMPANION_MAKOUILLE_HINT": "Makouille a rejoint Braulo. Le duo est au complet."
 }

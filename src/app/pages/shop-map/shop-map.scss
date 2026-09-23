@@ -645,3 +645,14 @@
   --branch: #c08cff;
   --branch-soft: rgba(192, 140, 255, 0.16);
 }
+
+// Le pourcentage coiffe le décompte : c'est lui qu'on vient lire, le rapport
+// brut demandant une division de tête.
+.progress .percent {
+  display: block;
+  font-size: $menu-size-title;
+  font-weight: 800;
+  line-height: 1;
+  color: $menu-accent;
+  font-variant-numeric: tabular-nums;
+}

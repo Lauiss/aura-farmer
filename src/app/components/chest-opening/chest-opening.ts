@@ -101,6 +101,7 @@ export class ChestOpening implements AfterViewInit, OnDestroy {
 
   open(): void {
     if (this.phase() !== 'idle') return;
+    this.bulk.set(null);
     const reward = this.collection.openChest(this.tier);
     if (!reward) return;
 
@@ -117,6 +118,35 @@ export class ChestOpening implements AfterViewInit, OnDestroy {
     this.zone.runOutsideAngular(() => this.resetChest());
     this.reward.set(null);
     this.phase.set('idle');
+  }
+
+  /** Récapitulatif d'une ouverture en série, `null` hors de ce mode. */
+  readonly bulk = signal<{ gems: number; collectibles: number; relics: number; aura: number; count: number } | null>(null);
+
+  /**
+   * Ouvre d'un coup tous les coffres du tier en réserve.
+   *
+   * Les enchaîner un par un demandait trois secondes d'animation chacun : avec
+   * une dizaine en attente, on regardait défiler une minute avant de pouvoir
+   * rejouer. Le récapitulatif dit ce qu'on a eu, sans rien perdre au passage.
+   */
+  openAll(): void {
+    if (this.phase() !== 'idle' || this.remaining() <= 0) return;
+
+    const total = { gems: 0, collectibles: 0, relics: 0, aura: 0, count: 0 };
+    while (this.collection.chestCount(this.tier) > 0) {
+      const reward = this.collection.openChest(this.tier);
+      if (!reward) break;
+      total.count++;
+      total.gems += reward.gems;
+      total.aura += reward.aura;
+      if (reward.collectible) total.collectibles++;
+      if (reward.relic) total.relics++;
+    }
+
+    this.bulk.set(total);
+    this.phase.set('reveal');
+    this.soundManager.playFX(Sound.Buy);
   }
 
   close(): void {

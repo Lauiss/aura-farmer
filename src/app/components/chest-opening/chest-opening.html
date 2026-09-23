@@ -20,13 +20,47 @@
 
   @switch (phase()) {
     @case ('idle') {
-      <button type="button" class="action primary" [disabled]="remaining() <= 0" (click)="open()">
-        {{ 'CHEST_OPEN' | translate }}
-      </button>
+      <div class="actions">
+        <button type="button" class="action primary" [disabled]="remaining() <= 0" (click)="open()">
+          {{ 'CHEST_OPEN' | translate }}
+        </button>
+        @if (remaining() > 2) {
+          <!-- Au-delà de deux coffres, les enchaîner un par un fait attendre
+               plus qu'il ne fait plaisir. -->
+          <button type="button" class="action" (click)="openAll()">
+            {{ 'CHEST_OPEN_ALL' | translate: { count: remaining() } }}
+          </button>
+        }
+      </div>
       <p class="caption">{{ 'CHEST_REMAINING' | translate: { count: remaining() } }}</p>
     }
     @case ('reveal') {
-      @if (reward(); as reward) {
+      @if (bulk(); as total) {
+        <div class="reward bulk" role="status">
+          <p class="rarity">{{ 'CHEST_BULK_TITLE' | translate: { count: total.count } }}</p>
+          <ul class="bulk-lines">
+            <li>+{{ total.gems }} 💎</li>
+            @if (total.collectibles > 0) {
+              <li>{{ 'CHEST_BULK_FIGURES' | translate: { count: total.collectibles } }}</li>
+            }
+            @if (total.relics > 0) {
+              <li class="bulk-relic">{{ 'CHEST_BULK_RELICS' | translate: { count: total.relics } }}</li>
+            }
+            @if (total.aura > 0) {
+              <li>+{{ total.aura | formatAura }} {{ 'AURA' | translate }}</li>
+            }
+          </ul>
+        </div>
+
+        <div class="actions">
+          @if (remaining() > 0) {
+            <button type="button" class="action primary" (click)="next()">
+              {{ 'CHEST_NEXT' | translate: { count: remaining() } }}
+            </button>
+          }
+          <button type="button" class="action" (click)="close()">{{ 'CLOSE' | translate }}</button>
+        </div>
+      } @else if (reward(); as reward) {
         <div class="reward" [style.--rarity]="rarityColors[reward.rarity]" role="status">
           <p class="rarity">{{ ('RARITY_' + reward.rarity.toUpperCase()) | translate }}</p>
 

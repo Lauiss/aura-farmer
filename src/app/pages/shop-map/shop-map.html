@@ -141,6 +141,7 @@
     }
 
     <p class="progress">
+      <span class="percent">{{ progressPercent() }} %</span>
       <span class="count">{{ progress().owned }}/{{ progress().total }}</span>
       <span class="caption">{{ 'SHOP_PROGRESS' | translate }}</span>
     </p>

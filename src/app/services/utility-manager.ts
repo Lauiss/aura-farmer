@@ -184,8 +184,15 @@ export class UtilityManager {
    * font le reste.
    */
   readonly dieLuck = computed(() =>
-    this.ownedIds().has('dice') ? 0.05 + this.bonus('dice', 'dieLuck') : 0
+    this.ownedIds().has('dice')
+      // Plafonné : au-delà, le dé du joueur sort toujours sur la face maximale
+      // et le combat n'a plus de hasard du tout.
+      ? Math.min(UtilityManager.DIE_LUCK_CAP, 0.05 + this.bonus('dice', 'dieLuck'))
+      : 0
   );
+
+  /** Part maximale de jets forcés sur la face haute. */
+  private static readonly DIE_LUCK_CAP = 0.35;
 
   // --- Prospection de gemmes ---------------------------------------------
 

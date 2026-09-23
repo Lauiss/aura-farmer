@@ -271,3 +271,68 @@ canvas.clickable {
     animation: none;
   }
 }
+
+/* --- Récapitulatif d'une ouverture en série ---------------------------- */
+.reward.bulk .bulk-lines {
+  margin-top: $spacing-150;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-50;
+  font-size: $menu-size-lead;
+  font-weight: $menu-weight-strong;
+  font-variant-numeric: tabular-nums;
+}
+
+.bulk-lines .bulk-relic {
+  color: $menu-accent;
+}
+
+/* --- Juice de l'ouverture ---------------------------------------------- */
+// La scène encaisse le coup au moment où le couvercle saute : sans cela,
+// l'ouverture n'était qu'un fondu.
+.stage.active {
+  animation: chest-shake 0.5s ease-out;
+}
+
+.stage.legendary {
+  animation: chest-burst 0.7s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+@keyframes chest-shake {
+  0%, 100% {
+    transform: translateX(0) rotate(0);
+  }
+  20% {
+    transform: translateX(-4px) rotate(-0.6deg);
+  }
+  45% {
+    transform: translateX(4px) rotate(0.6deg);
+  }
+  70% {
+    transform: translateX(-2px) rotate(-0.3deg);
+  }
+}
+
+@keyframes chest-burst {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  30% {
+    transform: scale(1.08);
+    filter: brightness(1.8);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage.active,
+  .stage.legendary {
+    animation: none;
+  }
+}

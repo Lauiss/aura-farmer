@@ -90,24 +90,37 @@ export class GameLoop {
   }
 
   private startAuraGain() {
+    // Chaque tâche est isolée : une exception dans l'une d'elles **terminait
+    // définitivement** la souscription, et avec elle la production passive pour
+    // le reste de la session — l'aura cessait de monter sans rien signaler.
     interval(1000).subscribe(() => {
-      // Le combo ne dope plus seulement le clic : entretenir la rotation fait
-      // aussi monter la production passive, sans quoi le multiplicateur ne
-      // servait à rien dès qu'on cessait de cliquer.
-      const gain = this.shopManager.getTotalValue() * this.spinCombo.current();
-      if(gain > 0){
-        this.auraManager.auraCount.update(current => current + gain);
-        this.auraManager.allTimeAura.update(total => total + gain);
-      }
-      // Vérifier les achievements toutes les secondes
-      this.achievementsManager.checkAchievements();
-      // Et faire vieillir les canettes en cours.
-      this.consumables.tick();
+      this.guard('production', () => {
+        // Le combo ne dope plus seulement le clic : entretenir la rotation
+        // fait aussi monter la production passive, sans quoi le multiplicateur
+        // ne servait à rien dès qu'on cessait de cliquer.
+        const gain = this.shopManager.getTotalValue() * this.spinCombo.current();
+        if (gain > 0) {
+          this.auraManager.auraCount.update(current => current + gain);
+          this.auraManager.allTimeAura.update(total => total + gain);
+        }
+      });
+      this.guard('succès', () => this.achievementsManager.checkAchievements());
+      this.guard('consommables', () => this.consumables.tick());
     });
 
-    interval(10000).subscribe(() => {
-        this.createSave();
-    })
+    interval(10000).subscribe(() => this.guard('sauvegarde', () => this.createSave()));
+  }
+
+  /**
+   * Exécute une tâche de la boucle sans laisser son échec emporter les autres
+   * ni la souscription elle-même.
+   */
+  private guard(label: string, task: () => void): void {
+    try {
+      task();
+    } catch (error) {
+      console.error(`Boucle de jeu, étape « ${label} » :`, error);
+    }
   }
 
   createSave(): void {

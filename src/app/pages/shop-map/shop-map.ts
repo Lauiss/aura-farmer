@@ -406,6 +406,16 @@ export class ShopMap {
     return { owned, total };
   });
 
+  /**
+   * Avancement en pourcentage. Le décompte brut ne dit rien tant qu'on n'a pas
+   * fait la division de tête, alors que c'est l'information qu'on vient
+   * chercher en bas de la carte.
+   */
+  readonly progressPercent = computed(() => {
+    const { owned, total } = this.progress();
+    return total > 0 ? Math.floor((owned / total) * 100) : 0;
+  });
+
   /** Nœud qui vient d'être acheté, pour lui donner son à-coup. */
   readonly burst = signal<{ key: string; first: boolean } | null>(null);
 

@@ -55,11 +55,17 @@ export class Doomscroll {
     this.spinCombo.boost(this.utilityManager.doomscrollCombo());
 
     if (kind === 'chest') {
+      const waiting = this.collection.chestCount('doomscroll');
       this.collection.addChest('doomscroll');
-      // Une seule modale d'ouverture à la fois : les coffres suivants
-      // attendent dans l'inventaire, où elle les enchaîne.
+
+      // La modale ne s'ouvre que pour le **premier** coffre : au-delà, elle
+      // coupait la partie en plein milieu pour annoncer ce qu'on savait déjà.
+      // Les suivants s'empilent dans l'inventaire, où l'on choisit son moment
+      // — et où l'on peut tout ouvrir d'un coup.
       const alreadyOpen = this.modalManager.entries().some(entry => entry.component === ChestOpening);
-      if (!alreadyOpen) this.modalManager.open(ChestOpening, { tier: 'doomscroll' });
+      if (!alreadyOpen && waiting === 0) {
+        this.modalManager.open(ChestOpening, { tier: 'doomscroll' });
+      }
       return { kind, amount: 0 };
     }
 

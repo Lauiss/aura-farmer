@@ -150,11 +150,14 @@ export const UTILITIES: UtilityDefinition[] = [
     price: 2000,
     revealAt: BATTLE_UNLOCK,
     upgrades: [
-      upgrade(1, 'DICE_UP_WEIGHTED', 'dieLuck', 0.04, 20000),
-      upgrade(2, 'DICE_UP_SLEIGHT', 'dieLuck', 0.05, 800000),
-      upgrade(3, 'DICE_UP_LOADED', 'dieLuck', 0.06, 40000000),
-      upgrade(4, 'DICE_UP_FATE', 'dieLuck', 0.07, 2000000000),
-      upgrade(5, 'DICE_UP_DESTINY', 'dieLuck', 0.08, 1e11)
+      // Trois exemplaires seulement, et de petites valeurs : cinq exemplaires
+      // aux anciennes valeurs cumulaient 155 %, donc **tous** les jets sortaient
+      // sur 20 et les combats se gagnaient sans y penser.
+      upgrade(1, 'DICE_UP_WEIGHTED', 'dieLuck', 0.015, 20000, 3),
+      upgrade(2, 'DICE_UP_SLEIGHT', 'dieLuck', 0.018, 800000, 3),
+      upgrade(3, 'DICE_UP_LOADED', 'dieLuck', 0.02, 40000000, 3),
+      upgrade(4, 'DICE_UP_FATE', 'dieLuck', 0.022, 2000000000, 3),
+      upgrade(5, 'DICE_UP_DESTINY', 'dieLuck', 0.025, 1e11, 3)
     ]
   },
   {

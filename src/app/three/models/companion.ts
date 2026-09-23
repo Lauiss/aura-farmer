@@ -292,8 +292,52 @@ function shapeOf(definition: CompanionDefinition): THREE.Group {
       break;
     }
 
-    /** Braulo : un chat assis, oreilles pointues et longue queue enroulée. */
+    /**
+     * Ivank le tank : caisse basse, chenilles, tourelle et long canon. Le
+     * canon est ce qui le distingue de n'importe quelle boîte sur chenilles.
+     */
+    case 'ivank': {
+      // Chenilles, de part et d'autre.
+      for (const z of [-0.52, 0.52]) {
+        group.add(box(accent, 1.9, 0.44, 0.3, [0, -0.5, z]));
+        for (const x of [-0.72, -0.24, 0.24, 0.72]) {
+          const roller = mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.34, 7), material(0x2a2e26), [x, -0.5, z]);
+          roller.rotation.z = Math.PI / 2;
+          group.add(roller);
+        }
+      }
+      // Caisse, avec un glacis incliné à l'avant.
+      group.add(box(color, 1.7, 0.36, 0.86, [0, -0.16, 0]));
+      group.add(box(color, 0.5, 0.3, 0.84, [0.92, -0.24, 0], [0, 0, -0.45]));
+      // Tourelle et trappe.
+      group.add(part(color, [
+        { y: 0.02, halfWidth: 0.46, front: 0.46, back: -0.5, chamfer: 0.32 },
+        { y: 0.34, halfWidth: 0.4, front: 0.4, back: -0.44, chamfer: 0.32 }
+      ], [-0.12, 0, 0]));
+      group.add(
+        mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.08, 8), material(accent), [-0.28, 0.38, 0])
+      );
+      // Le canon, long et net.
+      group.add(
+        mesh(new THREE.CylinderGeometry(0.085, 0.1, 1.5, 8), material(accent),
+          [0.72, 0.16, 0], [0, 0, Math.PI / 2])
+      );
+      group.add(
+        mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.22, 8), material(accent),
+          [1.42, 0.16, 0], [0, 0, Math.PI / 2])
+      );
+      // Étoile peinte sur le flanc.
+      group.add(box(0xc4352f, 0.26, 0.26, 0.04, [-0.3, -0.16, 0.44]));
+      break;
+    }
+
+    /**
+     * Braulo et Makouille : deux chats tigrés, mêmes cotes. Seules les teintes
+     * changent, plus un noeud sur la tête pour Makouille — un second modèle
+     * complet pour la même silhouette n'apporterait rien à tenir à jour.
+     */
     default: {
+      const bow = definition.id === 'makouille';
       group.add(
         mesh(chisel(loft([
           { y: -0.75, halfWidth: 0.36, front: 0.4, back: -0.4, chamfer: 0.36 },
@@ -303,7 +347,7 @@ function shapeOf(definition: CompanionDefinition): THREE.Group {
       );
       // Les rayures : des anneaux sombres à peine plus larges que le corps.
       // C'est elles qui font le tigré, la silhouette étant celle de tout chat.
-      const stripe = material(0x4a443d);
+      const stripe = material(bow ? 0x8a6b4f : 0x4a443d);
       for (const y of [-0.62, -0.34, -0.06, 0.2]) {
         group.add(
           mesh(
@@ -321,14 +365,15 @@ function shapeOf(definition: CompanionDefinition): THREE.Group {
         { y: 0.3, halfWidth: 0.15, front: 0.16, back: -0.14, chamfer: 0.38 },
         { y: 0.6, halfWidth: 0.18, front: 0.2, back: -0.16, chamfer: 0.38 }
       ], [0, 0, 0.06]));
-      group.add(part(0x9a938a, [
+      const head = bow ? 0xdcc4a6 : 0x9a938a;
+      group.add(part(head, [
         { y: 0.58, halfWidth: 0.3, front: 0.32, back: -0.26, chamfer: 0.4 },
         { y: 0.95, halfWidth: 0.33, front: 0.35, back: -0.28, chamfer: 0.4 },
         { y: 1.1, halfWidth: 0.24, front: 0.27, back: -0.22, chamfer: 0.4 }
       ], [0, 0, 0.06]));
       // Oreilles pointues, plus larges et plus hautes pour se détacher.
       for (const side of [-1, 1]) {
-        group.add(part(0x9a938a, [
+        group.add(part(head, [
           { y: 1.0, halfWidth: 0.19, front: 0.14, back: -0.12, chamfer: 0.28 },
           { y: 1.48, halfWidth: 0.03, front: 0.04, back: -0.04, chamfer: 0.35 }
         ], [side * 0.22, 0, 0.02], [0, 0, side * 0.26]));
@@ -353,6 +398,17 @@ function shapeOf(definition: CompanionDefinition): THREE.Group {
       for (const y of [-0.55, -0.1, 0.2]) {
         group.add(mesh(new THREE.SphereGeometry(0.085, 5, 4), stripe, [0, y, -0.44 - y * 0.12]));
       }
+      // Le noeud de Makouille, posé **sur le côté** de la tête. Entre les deux
+      // oreilles, il les recouvrait toutes les deux et masquait le visage.
+      if (bow) {
+        for (const side of [-1, 1]) {
+          group.add(
+            mesh(new THREE.SphereGeometry(0.11, 5, 4), material(accent), [0.42, 1.02 + side * 0.11, 0.06])
+          );
+        }
+        group.add(mesh(new THREE.SphereGeometry(0.055, 5, 4), material(0xe8859f), [0.44, 1.02, 0.12]));
+      }
+
       // Le front porte aussi ses marques.
       for (const side of [-1, 1]) {
         group.add(

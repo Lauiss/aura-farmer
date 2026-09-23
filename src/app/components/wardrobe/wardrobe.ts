@@ -7,12 +7,11 @@ import { BackgroundId } from '../../three/models/backgrounds';
 import { Sound, SoundManager } from '../../services/sound-manager';
 import { BattleManager } from '../../services/battle-manager';
 import { BossId } from '../../../assets/static/bosses';
-import { StoreManager } from '../../services/store-manager';
-import { CompanionId } from '../../../assets/static/companions';
 
 /**
  * Garde-robe : tout ce que le joueur peut arborer se règle ici — accessoires,
- * compagnons, décor affiché, et brainrots ramenés des battles. Le port des brainrots vivait
+ * décor affiché, et brainrots ramenés des battles. Les compagnons n'y sont
+ * pas : ils restent affichés en toutes circonstances. Le port des brainrots vivait
  * dans l'écran des battles, où l'on vient se battre et non s'habiller.
  */
 @Component({
@@ -28,7 +27,6 @@ export class Wardrobe {
   readonly wardrobe = inject(WardrobeManager);
   readonly backgrounds = inject(BackgroundManager);
   readonly battles = inject(BattleManager);
-  readonly store = inject(StoreManager);
   private readonly soundManager = inject(SoundManager);
 
   toggle(id: CosmeticId): void {
@@ -43,20 +41,6 @@ export class Wardrobe {
 
   backgroundKey(id: BackgroundId): string {
     return `BACKGROUND_${id.toUpperCase()}`;
-  }
-
-  /** Compagnons acquis, qu'on peut sortir ou ranger. */
-  readonly companions = computed(() =>
-    this.store.companionCatalogue.filter(companion => this.store.hasCompanion(companion.id))
-  );
-
-  /**
-   * Sortir ou ranger un compagnon ne change rien au bonus : il est acquis à
-   * l'achat. Décorer ne doit pas coûter de production.
-   */
-  toggleCompanion(id: CompanionId): void {
-    this.store.toggleCompanion(id);
-    this.soundManager.playFX(Sound.Plop);
   }
 
   /** Brainrots vaincus, donc portables. */

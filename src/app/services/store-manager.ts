@@ -11,11 +11,7 @@ interface StoreSave {
   chests: ChestTier[];
   drinks: ConsumableId[];
   companions: CompanionId[];
-  /**
-   * Compagnons **rangés**, et non ceux qui sont sortis : comme la garde-robe,
-   * on mémorise ce qu'on retire. Un compagnon fraîchement acheté doit se voir
-   * sans qu'on ait à l'activer.
-   */
+  /** Restant d'une version où l'on pouvait ranger un compagnon. Ignoré. */
   stowed?: CompanionId[];
 }
 
@@ -41,7 +37,6 @@ export class StoreManager {
   private readonly chests = signal<Set<ChestTier>>(new Set());
   private readonly drinks = signal<Set<ConsumableId>>(new Set());
   private readonly companionIds = signal<Set<CompanionId>>(new Set());
-  private readonly stowed = signal<Set<CompanionId>>(new Set());
 
   constructor() {
     const saved: StoreSave | null = this.saveManager.loadProgress(SaveLocation.Store);
@@ -49,7 +44,6 @@ export class StoreManager {
       this.chests.set(new Set(saved.chests ?? []));
       this.drinks.set(new Set(saved.drinks ?? []));
       this.companionIds.set(new Set(saved.companions ?? []));
-      this.stowed.set(new Set(saved.stowed ?? []));
     }
   }
 
@@ -114,30 +108,14 @@ export class StoreManager {
   readonly companions = computed<CompanionId[]>(() => [...this.companionIds()]);
   readonly companionCount = computed(() => this.companionIds().size);
 
-  /** Ceux qui sont réellement posés autour de la statue. */
-  readonly shownCompanions = computed<CompanionId[]>(() =>
-    [...this.companionIds()].filter(id => !this.stowed().has(id))
-  );
-
-  isCompanionShown(id: CompanionId): boolean {
-    return this.hasCompanion(id) && !this.stowed().has(id);
-  }
-
   /**
-   * Sort un compagnon ou le range. Cela ne touche **pas** au bonus : il est
-   * acquis à l'achat et le rester quoi qu'on affiche, sinon décorer coûterait
-   * de la production.
+   * Ceux qui sont posés au bas de l'écran. Ils le sont **tous** : un compagnon
+   * s'achète, il ne se range pas. Ils suivent l'ordre du catalogue et non celui
+   * des achats, pour que la rangée ne se réordonne pas d'une partie à l'autre.
    */
-  toggleCompanion(id: CompanionId): void {
-    if (!this.hasCompanion(id)) return;
-    this.stowed.update(hidden => {
-      const next = new Set(hidden);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-    this.persist();
-  }
+  readonly shownCompanions = computed<CompanionId[]>(() =>
+    COMPANIONS.filter(companion => this.companionIds().has(companion.id)).map(c => c.id)
+  );
 
   /**
    * Ce que les compagnons ajoutent à la production, en facteur. Additif entre
@@ -166,8 +144,7 @@ export class StoreManager {
     this.saveManager.saveProgress(SaveLocation.Store, {
       chests: [...this.chests()],
       drinks: [...this.drinks()],
-      companions: [...this.companionIds()],
-      stowed: [...this.stowed()]
+      companions: [...this.companionIds()]
     } satisfies StoreSave);
   }
 }
