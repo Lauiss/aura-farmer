@@ -42,6 +42,9 @@ jobs:
           sudo mv butler /usr/local/bin/butler
 
       # 6. Déployer sur Itch.io
+      # Le builder `application` range le site dans `browser/` : c'est ce
+      # dossier qu'il faut pousser, pour qu'itch trouve `index.html` à la racine
+      # de l'archive. Pousser `dist/aura-farmer` donnait une page blanche.
       - name: Deploy to Itch.io
         env:
           BUTLER_API_KEY: ${{ secrets.ITCH_API_KEY }}
@@ -51,4 +54,5 @@ jobs:
         run: |
           echo "🚀 Deploying to itch.io..."
           echo "User: $ITCH_USER | Game: $ITCH_GAME | Channel: $ITCH_CHANNEL"
-          butler push "dist/aura-farmer" "$ITCH_USER/$ITCH_GAME:$ITCH_CHANNEL"
+          test -f dist/aura-farmer/browser/index.html
+          butler push "dist/aura-farmer/browser" "$ITCH_USER/$ITCH_GAME:$ITCH_CHANNEL"
