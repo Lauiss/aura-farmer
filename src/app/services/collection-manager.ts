@@ -192,11 +192,16 @@ export class CollectionManager {
       this.relicIds.update(owned => new Set(owned).add(relic.id));
     }
 
-    const missing = COLLECTIBLES.filter(c => c.rarity === rarity && !this.ownedIds().has(c.id));
+    // Une relique **remplace** la statuette : un coffre donne l'une ou l'autre,
+    // jamais les deux. Sans quoi le tirage le plus rare du jeu passait pour un
+    // simple supplément.
+    const missing = relic
+      ? []
+      : COLLECTIBLES.filter(c => c.rarity === rarity && !this.ownedIds().has(c.id));
     if (missing.length && Math.random() < RARITY_COLLECTIBLE_CHANCE[rarity]) {
       reward.collectible = missing[Math.floor(Math.random() * missing.length)];
       this.ownedIds.update(owned => new Set(owned).add(reward.collectible!.id));
-    } else {
+    } else if (!relic) {
       // Au plancher, quelques dizaines de clics : un coffre ouvert tôt dans la
       // partie rapporte quand même quelque chose.
       reward.aura = Math.max(

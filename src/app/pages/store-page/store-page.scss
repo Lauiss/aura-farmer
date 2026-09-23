@@ -285,3 +285,14 @@
     height: 8rem;
   }
 }
+
+// Rayon encore fermé : on dit où l'ouvrir plutôt que de laisser un trou.
+.shelf-empty {
+  margin-top: $spacing-150;
+  padding: $spacing-200;
+  font-size: $menu-size-small;
+  color: $menu-text-faint;
+  text-align: center;
+  border: 1px dashed $menu-border-strong;
+  border-radius: $radius-100;
+}

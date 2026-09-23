@@ -2,6 +2,7 @@ import { FormatAuraPipe } from "../../app/pipes/format-aura";
 import { Achievement } from "../../app/services/achievements-manager";
 import { COLLECTIBLES, RELICS } from "./collectibles";
 import { BOSSES, BossId } from "./bosses";
+import { COMPANIONS, CompanionId } from "./companions";
 
 export function createAchievements(
   getShopItems: () => any[],
@@ -14,7 +15,9 @@ export function createAchievements(
   getGemsEarned: () => number = () => 0,
   getFigureCount: () => number = () => 0,
   isBossDefeated: (id: BossId) => boolean = () => false,
-  getBossCount: () => number = () => 0
+  getBossCount: () => number = () => 0,
+  hasCompanion: (id: CompanionId) => boolean = () => false,
+  getCompanionCount: () => number = () => 0
 ): Achievement[] {
   const achievements: Achievement[] = [
     {
@@ -762,6 +765,70 @@ export function createAchievements(
       description: "Vaincre la moitié des boss des battles d'aura.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
       condition: () => getBossCount() >= Math.ceil(BOSSES.length / 2),
+      unlocked: false,
+    },
+    {
+      id: 200,
+      title: "Vermouth",
+      description: "Adopter Vermouth, le chien.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => hasCompanion('vermouth'),
+      unlocked: false,
+    },
+    {
+      id: 201,
+      title: "Papillon",
+      description: "Se procurer le couteau papillon.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => hasCompanion('butterfly'),
+      unlocked: false,
+    },
+    {
+      id: 202,
+      title: "Deux-Roues",
+      description: "Se garer une moto à côté de soi.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => hasCompanion('moto'),
+      unlocked: false,
+    },
+    {
+      id: 203,
+      title: "Paquet Complet",
+      description: "Poser un paquet de cigarettes au pied de la statue.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => hasCompanion('cigarettes'),
+      unlocked: false,
+    },
+    {
+      id: 204,
+      title: "Pilote",
+      description: "Se payer une voiture de course.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => hasCompanion('racecar'),
+      unlocked: false,
+    },
+    {
+      id: 205,
+      title: "Skibidi",
+      description: "Faire venir le skibidi toilet.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => hasCompanion('skibidi'),
+      unlocked: false,
+    },
+    {
+      id: 206,
+      title: "Braulo",
+      description: "Adopter Braulo, le chat — le meilleur de tous.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => hasCompanion('braulo'),
+      unlocked: false,
+    },
+    {
+      id: 210,
+      title: "Entouré",
+      description: "Réunir tous les compagnons autour de la statue.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getCompanionCount() >= COMPANIONS.length,
       unlocked: false,
     },
     {

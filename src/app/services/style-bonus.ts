@@ -5,6 +5,7 @@ import { WardrobeManager } from './wardrobe-manager';
 import { COSMETIC_BONUS } from '../three/models/cosmetics';
 import { CollectionManager } from './collection-manager';
 import { ConsumableManager } from './consumable-manager';
+import { StoreManager } from './store-manager';
 
 /**
  * Relie l'apparence à la production : porter une pièce et afficher un décor
@@ -24,6 +25,7 @@ export class StyleBonus {
   private readonly backgrounds = inject(BackgroundManager);
   private readonly collection = inject(CollectionManager);
   private readonly consumables = inject(ConsumableManager);
+  private readonly store = inject(StoreManager);
 
   constructor() {
     effect(() => {
@@ -41,7 +43,9 @@ export class StyleBonus {
           this.collection.relicBonus() *
           // Les canettes en cours : un facteur temporaire, au même endroit que
           // les bonus permanents puisque `ShopManager` n'en attend qu'un seul.
-          this.consumables.multiplier()
+          this.consumables.multiplier() *
+          // Les compagnons posés autour de la statue.
+          this.store.companionBonus()
       );
     });
   }

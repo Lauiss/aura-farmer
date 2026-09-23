@@ -22,6 +22,10 @@ import { ModelIcons } from '../../services/model-icons';
 import { GameLoop } from '../../services/game-loop';
 import { CollectionManager } from '../../services/collection-manager';
 import { UpgradeType } from '../../../assets/static/enum/upgrade-types';
+import { StoreManager } from '../../services/store-manager';
+import { CHESTS, ChestTier } from '../../../assets/static/collectibles';
+import { CONSUMABLES, ConsumableDefinition } from '../../../assets/static/consumables';
+import { COMPANIONS, CompanionDefinition } from '../../../assets/static/companions';
 
 type NodeKind =
   | 'root'
@@ -33,10 +37,13 @@ type NodeKind =
   | 'background'
   | 'background-upgrade'
   | 'utility'
-  | 'utility-upgrade';
+  | 'utility-upgrade'
+  | 'chest-unlock'
+  | 'drink-unlock'
+  | 'companion';
 
 /** Branche d'un nœud : elle en donne la couleur, comme dans Sludgeneer. */
-type Branch = 'root' | 'teachings' | 'outfit' | 'scenery' | 'utilities';
+type Branch = 'root' | 'teachings' | 'outfit' | 'scenery' | 'utilities' | 'store';
 
 export interface MapNode {
   key: string;
@@ -57,6 +64,10 @@ export interface MapNode {
   backgroundUpgrade?: BackgroundUpgrade;
   utility?: UtilityDefinition;
   utilityUpgrade?: UtilityUpgrade;
+  /** Rayon de coffres ouvert par ce nœud. */
+  chestTier?: ChestTier;
+  drink?: ConsumableDefinition;
+  companion?: CompanionDefinition;
 }
 
 /** Une ligne de l'infobulle : un effet, avec sa valeur actuelle et la suivante. */
@@ -120,6 +131,7 @@ export class ShopMap {
   readonly backgroundManager = inject(BackgroundManager);
   readonly utilityManager = inject(UtilityManager);
   readonly collection = inject(CollectionManager);
+  readonly store = inject(StoreManager);
 
   readonly world = WORLD;
   private readonly icons = {
@@ -278,6 +290,70 @@ export class ShopMap {
       }
     });
 
+    // --- Nord-est : la boutique. Les rayons partent vers le haut, les
+    // compagnons descendent depuis une sous-catégorie qui leur est propre.
+    const store = category('store', 'SHOP_CATEGORY_STORE', 1, -1);
+
+    previous = store;
+    for (const [index, chest] of CHESTS.filter(c => c.price !== null).entries()) {
+      const spot = { x: store.x + (index + 1) * STEP, y: store.y - STEP * 0.85 };
+      nodes.push({
+        key: `chest-${chest.tier}`,
+        kind: 'chest-unlock',
+        branch: 'store',
+        ...spot,
+        parent: previous,
+        chestTier: chest.tier
+      });
+      previous = spot;
+      if (!this.store.isChestUnlocked(chest.tier)) break;
+    }
+
+    previous = store;
+    for (const [index, drink] of CONSUMABLES.entries()) {
+      const spot = { x: store.x + (index + 1) * STEP, y: store.y + STEP * 0.85 };
+      nodes.push({
+        key: `drink-${drink.id}`,
+        kind: 'drink-unlock',
+        branch: 'store',
+        ...spot,
+        parent: previous,
+        drink
+      });
+      previous = spot;
+      // Un cran à la fois, comme les enseignements : on ne voit jamais plus
+      // loin que la canette suivante.
+      if (!this.store.isDrinkUnlocked(drink.id)) break;
+    }
+
+    // Sous-catégorie des compagnons, au-dessus de la boutique. Ils s'étirent
+    // vers la **droite** : vers la gauche, ils traversaient la colonne des
+    // décors qui monte depuis la racine.
+    const companionsHub = { x: store.x, y: store.y - SIDE_BRANCH * 0.55 };
+    nodes.push({
+      key: 'category-companions',
+      kind: 'category',
+      branch: 'store',
+      ...companionsHub,
+      parent: store,
+      labelKey: 'SHOP_CATEGORY_COMPANIONS'
+    });
+
+    previous = companionsHub;
+    for (const [index, companion] of COMPANIONS.entries()) {
+      const spot = { x: companionsHub.x + (index + 1) * STEP, y: companionsHub.y };
+      nodes.push({
+        key: `companion-${companion.id}`,
+        kind: 'companion',
+        branch: 'store',
+        ...spot,
+        parent: previous,
+        companion
+      });
+      previous = spot;
+      if (!this.store.hasCompanion(companion.id)) break;
+    }
+
     return nodes;
   });
 
@@ -388,6 +464,12 @@ export class ShopMap {
         return { current: this.backgroundManager.isOwned(node.background!.id) ? 1 : 0, max: 1 };
       case 'utility':
         return { current: this.utilityManager.isOwned(node.utility!.id) ? 1 : 0, max: 1 };
+      case 'chest-unlock':
+        return { current: this.store.isChestUnlocked(node.chestTier!) ? 1 : 0, max: 1 };
+      case 'drink-unlock':
+        return { current: this.store.isDrinkUnlocked(node.drink!.id) ? 1 : 0, max: 1 };
+      case 'companion':
+        return { current: this.store.hasCompanion(node.companion!.id) ? 1 : 0, max: 1 };
       default:
         return null;
     }
@@ -413,6 +495,10 @@ export class ShopMap {
         return this.translate.instant(`BACKGROUND_${node.background!.id.toUpperCase()}`);
       case 'utility':
         return this.translate.instant(`UTILITY_${node.utility!.id.toUpperCase()}`);
+      case 'chest-unlock':
+      case 'drink-unlock':
+      case 'companion':
+        return this.storeName(node);
       case 'utility-upgrade':
         return this.translate.instant(node.utilityUpgrade!.name);
       case 'background-upgrade':
@@ -420,6 +506,13 @@ export class ShopMap {
       default:
         return this.translate.instant(node.upgrade!.name);
     }
+  }
+
+  /** Nom d'un nœud de la branche boutique. */
+  private storeName(node: MapNode): string {
+    if (node.chestTier) return this.translate.instant(`CHEST_${node.chestTier.toUpperCase()}`);
+    if (node.drink) return this.translate.instant(`DRINK_${node.drink.id.toUpperCase()}`);
+    return this.translate.instant(`COMPANION_${node.companion!.id.toUpperCase()}`);
   }
 
   /** Nature du nœud, en sous-titre de l'infobulle. */
@@ -434,7 +527,10 @@ export class ShopMap {
       background: 'SHOP_KIND_BACKGROUND',
       'background-upgrade': 'SHOP_KIND_UPGRADE',
       utility: 'SHOP_KIND_UTILITY',
-      'utility-upgrade': 'SHOP_KIND_UPGRADE'
+      'utility-upgrade': 'SHOP_KIND_UPGRADE',
+      'chest-unlock': 'SHOP_KIND_SHELF',
+      'drink-unlock': 'SHOP_KIND_SHELF',
+      companion: 'SHOP_KIND_COMPANION'
     };
     return keys[node.kind];
   }
@@ -451,6 +547,12 @@ export class ShopMap {
         return this.icons.hanger;
       case 'background':
         return this.icons.building;
+      case 'chest-unlock':
+        return this.modelIcons.chest(node.chestTier!);
+      case 'drink-unlock':
+        return this.modelIcons.can(node.drink!.id);
+      case 'companion':
+        return this.modelIcons.companion(node.companion!.id);
       case 'utility':
         switch (node.utility!.id) {
           case 'doomscroll':
@@ -507,6 +609,12 @@ export class ShopMap {
         return node.background!.price;
       case 'utility':
         return node.utility!.price;
+      case 'chest-unlock':
+        return this.store.chestPrice(node.chestTier!);
+      case 'drink-unlock':
+        return node.drink!.unlockPrice;
+      case 'companion':
+        return node.companion!.price;
       // Les améliorations suivent le réglage d'achat multiple comme les
       // articles : le prix affiché est celui du lot, pas d'un exemplaire.
       case 'utility-upgrade':
@@ -607,6 +715,22 @@ export class ShopMap {
         return [{ key: `UTILITY_${node.utility!.id.toUpperCase()}_DESC`, params: {} }];
       case 'utility-upgrade':
         return [this.utilityEffect(node.utilityUpgrade!)];
+      case 'chest-unlock':
+        return [{ key: 'SHOP_SHELF_CHEST_DESC', params: {} }];
+      case 'drink-unlock':
+        return [
+          {
+            key: 'SHOP_SHELF_DRINK_DESC',
+            params: {
+              multiplier: `${node.drink!.multiplier}`,
+              minutes: `${Math.round(node.drink!.duration / 60)}`
+            }
+          }
+        ];
+      case 'companion':
+        return [
+          { key: 'SHOP_COMPANION_DESC', params: { value: `${Math.round(node.companion!.bonus * 100)}` } }
+        ];
       default:
         return [{ key: `SHOP_HUB_${node.branch.toUpperCase()}_DESC`, params: {} }];
     }
@@ -786,6 +910,17 @@ export class ShopMap {
       case 'utility':
         if (this.utilityManager.buy(node.utility!.id)) {
           this.hintManager.show(`UTILITY_${node.utility!.id.toUpperCase()}_HINT`);
+        }
+        break;
+      case 'chest-unlock':
+        this.store.unlockChest(node.chestTier!);
+        break;
+      case 'drink-unlock':
+        this.store.unlockDrink(node.drink!);
+        break;
+      case 'companion':
+        if (this.store.buyCompanion(node.companion!)) {
+          this.hintManager.show(`COMPANION_${node.companion!.id.toUpperCase()}_HINT`);
         }
         break;
       default:

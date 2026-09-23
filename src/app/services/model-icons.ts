@@ -15,6 +15,8 @@ import { createGem } from '../three/models/gem';
 import { createHourglass } from '../three/models/hourglass';
 import { createDie } from '../three/models/die';
 import { createCan } from '../three/models/can';
+import { createCompanion } from '../three/models/companion';
+import { CompanionId, companionDefinition } from '../../assets/static/companions';
 import { ConsumableId, consumableDefinition } from '../../assets/static/consumables';
 import { createRelic } from '../three/models/relic';
 import { createBrainrot } from '../three/models/brainrot';
@@ -158,6 +160,17 @@ export class ModelIcons {
         size: 192,
         distance: 4.2,
         rotation: [0.12, 0.4, 0]
+      })
+    );
+  }
+
+  /** Compagnon posé autour de la statue. */
+  companion(id: CompanionId): string {
+    return this.render(`companion-${id}`, () =>
+      renderToDataUrl(createCompanion(companionDefinition(id)), {
+        size: 192,
+        distance: 5,
+        rotation: [0.1, 0.6, 0]
       })
     );
   }

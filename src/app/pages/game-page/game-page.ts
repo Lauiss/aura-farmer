@@ -25,6 +25,7 @@ import { DoomPhone } from '../../components/doom-phone/doom-phone';
 import { CollectionManager } from '../../services/collection-manager';
 import { BattleManager } from '../../services/battle-manager';
 import { Onboarding } from '../../services/onboarding';
+import { StoreManager } from '../../services/store-manager';
 import { Router } from '@angular/router';
 
 @Component({
@@ -66,6 +67,7 @@ export class GamePage {
   readonly collection = inject(CollectionManager);
   readonly battles = inject(BattleManager);
   readonly onboarding = inject(Onboarding);
+  readonly store = inject(StoreManager);
 
   /** L'accès à la collection apparaît avec le premier coffre ou la première gemme. */
   readonly showCollection = computed(
@@ -231,10 +233,12 @@ export class GamePage {
     }
 
     // Le Mogging se joue au clic : chaque coup pousse le combo, ce qui donne
-    // une raison de cliquer vite en plus de faire tourner la statue.
+    // une raison de cliquer vite en plus de faire tourner la statue. Et la
+    // statue prend sa tête de mogger, pour qu'on voie ce qu'on a débloqué.
     const mogging = this.moggingLevel();
     if (mogging > 0) {
       this.spinCombo.boost(GamePage.MOGGING_BOOST * mogging);
+      this.viewer?.playMog();
     }
 
     // Le trickshot est rare : quand il part, il fait s'envoler le combo.

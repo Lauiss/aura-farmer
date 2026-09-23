@@ -14,6 +14,7 @@ import { CollectionManager } from './collection-manager';
 import { UtilityManager } from './utility-manager';
 import { BattleManager } from './battle-manager';
 import { ConsumableManager } from './consumable-manager';
+import { StoreManager } from './store-manager';
 
 /**
  * Boucle de jeu : production d'aura passive, vérification des succès et
@@ -43,6 +44,7 @@ export class GameLoop {
   private readonly utilityManager = inject(UtilityManager);
   private readonly battles = inject(BattleManager);
   private readonly consumables = inject(ConsumableManager);
+  private readonly store = inject(StoreManager);
 
   private started = false;
 
@@ -70,7 +72,9 @@ export class GameLoop {
         () => this.collection.gemsEarned(),
         () => this.collection.ownedCount(),
         id => this.battles.isDefeated(id),
-        () => this.battles.defeatedCount()
+        () => this.battles.defeatedCount(),
+        id => this.store.hasCompanion(id),
+        () => this.store.companionCount()
       )
     );
 

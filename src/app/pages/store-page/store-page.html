@@ -57,8 +57,11 @@
     <section class="shelf">
       <h2 class="shelf-title">{{ 'STORE_DRINKS' | translate }}</h2>
       <p class="shelf-lead">{{ 'STORE_DRINKS_LEAD' | translate }}</p>
+      @if (!store.availableDrinks().length) {
+        <p class="shelf-empty">{{ 'STORE_LOCKED' | translate }}</p>
+      }
       <div class="goods">
-        @for (drink of consumables.catalogue; track drink.id) {
+        @for (drink of store.availableDrinks(); track drink.id) {
           <div class="good" [class.running]="consumables.isActive(drink.id)">
             <img [src]="canIcon(drink)" alt="" class="good-icon">
             <span class="good-name">{{ ('DRINK_' + drink.id.toUpperCase()) | translate }}</span>
@@ -82,8 +85,11 @@
     <section class="shelf">
       <h2 class="shelf-title">{{ 'COLLECTION_SHOP' | translate }}</h2>
       <p class="shelf-lead">{{ 'COLLECTION_SHOP_LEAD' | translate }}</p>
+      @if (!shopChests().length) {
+        <p class="shelf-empty">{{ 'STORE_LOCKED' | translate }}</p>
+      }
       <div class="goods">
-        @for (chest of shopChests; track chest.tier) {
+        @for (chest of shopChests(); track chest.tier) {
           <div class="good">
             <img [src]="chestIcon(chest.tier)" alt="" class="good-icon">
             <span class="good-name">{{ ('CHEST_' + chest.tier.toUpperCase()) | translate }}</span>

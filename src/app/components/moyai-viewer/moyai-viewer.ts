@@ -22,6 +22,9 @@ import { createBullet, createSniper, setSniperOpacity } from '../../three/models
 import { animateWeakPoint, createWeakPoint } from '../../three/models/weak-point';
 import { auraShellOpacity, createAuraShard, createAuraShell } from '../../three/models/aura';
 import { createBrainrot } from '../../three/models/brainrot';
+import { createMogFace, fadeMogFace } from '../../three/models/mog-face';
+import { createCompanion } from '../../three/models/companion';
+import { CompanionId, companionDefinition } from '../../../assets/static/companions';
 import { BossId, bossDefinition } from '../../../assets/static/bosses';
 
 /** Réglages des points faibles, fournis par les améliorations achetées. */
@@ -99,6 +102,9 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
    * vivre trois contextes WebGL.
    */
   readonly maxFps = input(0);
+
+  /** Compagnons acquis, posés en arc au pied de la statue. */
+  readonly companions = input<readonly CompanionId[]>([]);
 
   /** Émis au clic sur la statue, pour l'utiliser comme cible de jeu. */
   readonly clicked = output<MouseEvent>();
@@ -206,6 +212,13 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   private readonly shardLife: number[] = [];
   private nextShard = 0;
 
+  /** Compagnons actuellement posés, par identifiant. */
+  private readonly placed = new Map<CompanionId, THREE.Group>();
+
+  /** Expression de mogger, jouée au clic quand le Mogging est débloqué. */
+  private mogFace?: THREE.Group;
+  private mogElapsed = -1;
+
   /** Halo autour de la statue, monté dès qu'un palier d'aura est atteint. */
   private auraShell?: THREE.Group;
   private auraElapsed = 0;
@@ -255,6 +268,11 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     });
 
     effect(() => {
+      const wanted = this.companions();
+      this.zone.runOutsideAngular(() => this.syncCompanions(wanted));
+    });
+
+    effect(() => {
       // Lu pour la dépendance : la créature portée change, le sujet aussi.
       this.creature();
       this.zone.runOutsideAngular(() => {
@@ -282,6 +300,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     if (this.backgroundGroup) disposeObject(this.backgroundGroup);
     if (this.weakPoint) disposeObject(this.weakPoint);
     if (this.auraShell) disposeObject(this.auraShell);
+    for (const object of this.placed.values()) disposeObject(object);
     for (const shard of this.shards) disposeObject(shard);
     this.renderer?.dispose();
     // Le composant d'indication est monté et démonté à répétition : sans
@@ -321,6 +340,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     // appel, arriver sur l'écran avec un million d'aura n'allumait aucun halo
     // tant que le palier ne changeait pas.
     this.syncAura(this.auraLevel());
+    this.syncCompanions(this.companions());
 
     this.addLights(this.scene);
 
@@ -375,6 +395,8 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.weakPoint = undefined;
     this.weakState = 'hidden';
     this.shush = undefined;
+    this.mogFace = undefined;
+    this.mogElapsed = -1;
 
     this.buildSubject();
   }
@@ -468,16 +490,19 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
    */
   private static readonly SHUSH_PATH = new THREE.CatmullRomCurve3(
     [
-      new THREE.Vector3(0.26, -0.18, 1.0), // devant les lèvres
-      new THREE.Vector3(0.38, -0.44, 0.86), // amorce de la descente
-      new THREE.Vector3(0.58, -0.6, 0.62), // coin du menton
+      new THREE.Vector3(0.88, -0.48, -0.08), // sous l'oreille
       new THREE.Vector3(0.78, -0.58, 0.26), // le long de la mâchoire
-      new THREE.Vector3(0.88, -0.48, -0.08) // sous l'oreille
+      new THREE.Vector3(0.58, -0.6, 0.62), // coin du menton
+      new THREE.Vector3(0.38, -0.44, 0.86), // remontée vers la bouche
+      new THREE.Vector3(0.26, -0.18, 1.0) // devant les lèvres
     ],
     false,
     'catmullrom',
     0.4
   );
+
+  /** Position du « chut », devant les lèvres : la fin du tracé. */
+  private static readonly SHUSH_POSE = new THREE.Vector3(0.26, -0.18, 1.0);
   private static readonly SHUSH_DURATION = 1.45;
 
   /** Le tir part de loin, en haut à droite, et vise le front de la statue. */
@@ -496,19 +521,37 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
       return;
     }
 
-    // Apparition, pose tenue, glissé le long de la mâchoire, effacement.
-    const slide = THREE.MathUtils.clamp((t - 0.38) / 0.42, 0, 1);
-    // Adoucissement aux deux bouts, pour que le doigt ne parte pas d'un coup.
-    const eased = slide * slide * (3 - 2 * slide);
+    // Deux temps, et non un seul mouvement continu. D'abord le « chut » tenu
+    // devant les lèvres ; puis le tracé de la mâchoire, qui part **de
+    // l'oreille et revient vers le menton** — il le parcourait à l'envers, du
+    // menton vers l'oreille, ce qui ne ressemblait pas au geste.
+    //
+    // Le doigt s'efface entre les deux : sans cette coupure il lui faudrait
+    // traverser tout le visage pour rejoindre son point de départ.
+    const SHUSH_END = 0.36;
+    const SLIDE_START = 0.48;
 
-    MoyaiViewer.SHUSH_PATH.getPointAt(eased, finger.position);
-    // Le doigt s'incline et se tourne vers la tempe au fil du glissé, au lieu
-    // de rester dressé comme au moment du « chut ».
-    finger.rotation.set(0, eased * 0.7, -eased * 1.15);
+    let opacity: number;
+    if (t < SHUSH_END) {
+      finger.position.copy(MoyaiViewer.SHUSH_POSE);
+      finger.rotation.set(0, 0, 0);
+      opacity = THREE.MathUtils.clamp(t / 0.1, 0, 1) * THREE.MathUtils.clamp((SHUSH_END - t) / 0.1, 0, 1);
+    } else if (t < SLIDE_START) {
+      // Temps mort : le doigt est effacé, il se replace sans se voir.
+      opacity = 0;
+    } else {
+      const slide = THREE.MathUtils.clamp((t - SLIDE_START) / 0.4, 0, 1);
+      // Adoucissement aux deux bouts, pour que le doigt ne parte pas d'un coup.
+      const eased = slide * slide * (3 - 2 * slide);
+      MoyaiViewer.SHUSH_PATH.getPointAt(eased, finger.position);
+      // Il se redresse en avançant vers le menton, au lieu de rester couché.
+      finger.rotation.set(0, (1 - eased) * 0.7, -(1 - eased) * 1.15);
+      opacity =
+        THREE.MathUtils.clamp((t - SLIDE_START) / 0.1, 0, 1) *
+        THREE.MathUtils.clamp((1 - t) / 0.18, 0, 1);
+    }
 
-    const fadeIn = THREE.MathUtils.clamp(t / 0.1, 0, 1);
-    const fadeOut = THREE.MathUtils.clamp((1 - t) / 0.18, 0, 1);
-    setCursorOpacity(finger, Math.min(fadeIn, fadeOut));
+    setCursorOpacity(finger, opacity);
   }
 
   // --- Points faibles ------------------------------------------------------
@@ -692,35 +735,43 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
 
     if (!this.sniper) {
       this.sniper = createSniper();
-      // Plus gros qu'avant : il est désormais loin de la statue, un fusil à
-      // 0,42 n'y était plus qu'un point.
-      this.sniper.scale.setScalar(0.75);
+      // Tenu par la statue : à son échelle, pas à celle d'un tireur lointain.
+      this.sniper.scale.setScalar(0.5);
       this.bullet = createBullet();
       this.scene.add(this.sniper);
       this.scene.add(this.bullet);
     }
 
-    // Le tireur est **en face** de la statue et la vise : c'est lui qui tire,
-    // la balle part de loin et vient frapper la tête. Il colle auparavant à la
-    // tempe du moyai, ce qui se lisait comme un accessoire plutôt que comme un
-    // tir venu d'ailleurs.
+    // **C'est la statue qui tire.** Le fusil part de son épaule et la balle
+    // s'en va au loin, dans une direction tirée au sort. Le tireur extérieur
+    // de la version précédente donnait l'impression qu'on canardait le moyai,
+    // alors que le trickshot est censé être une prouesse de sa part.
     //
-    // Sa position reste calée sur la caméra au moment du tir : c'est elle qui
-    // orbite autour de la statue, et un fusil posé à un point fixe du monde
-    // sortait du cadre dès qu'on avait tourné le moyai.
+    // L'épaule se calcule par rapport à la caméra : c'est elle qui orbite, et
+    // une arme posée à un point fixe du monde sortait du cadre dès qu'on avait
+    // tourné la statue.
     const camera = this.camera;
     const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
     const up = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
+    const toward = camera.position.clone().normalize();
 
-    // La cible : le haut du crâne, là où la balle sera visible.
-    this.shotTo.set(0, 0.55, 0);
-    // Le tireur, à distance sur le côté et légèrement en hauteur. Le côté est
-    // tiré au sort pour que deux tirs de suite ne se ressemblent pas.
+    // Départ : devant l'épaule, du côté tiré au sort.
     const side = Math.random() < 0.5 ? -1 : 1;
     this.shotFrom
-      .copy(this.shotTo)
-      .addScaledVector(right, side * 4.6)
-      .addScaledVector(up, 1.8);
+      .set(0, -0.15, 0)
+      .addScaledVector(right, side * 0.95)
+      .addScaledVector(toward, 0.75);
+
+    // Cible : un point lointain, dans une direction quelconque mais toujours
+    // vers l'avant de l'écran, sinon la balle part derrière la tête et ne se
+    // voit pas.
+    const spread = (Math.random() - 0.5) * 1.6;
+    const rise = 0.3 + Math.random() * 1.4;
+    this.shotTo
+      .copy(this.shotFrom)
+      .addScaledVector(right, side * 2.4 + spread)
+      .addScaledVector(up, rise)
+      .addScaledVector(toward, 3.4);
 
     this.trickshotElapsed = 0;
     this.sniper.visible = true;
@@ -809,7 +860,74 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   private static readonly reducedMotion =
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  /**
+   * Pose les compagnons en arc devant la statue, les plus récents vers
+   * l'extérieur.
+   *
+   * Ils vivent dans la scène et non sur le moyai : ils ne doivent ni tourner
+   * avec lui, ni disparaître quand on porte un brainrot à sa place. Rien n'est
+   * reconstruit quand la liste change, seuls les venus et les partis.
+   */
+  private syncCompanions(wanted: readonly CompanionId[]): void {
+    if (!this.scene) return;
+
+    for (const [id, object] of this.placed) {
+      if (wanted.includes(id)) continue;
+      this.scene.remove(object);
+      disposeObject(object);
+      this.placed.delete(id);
+    }
+
+    wanted.forEach((id, index) => {
+      let object = this.placed.get(id);
+      if (!object) {
+        object = createCompanion(companionDefinition(id));
+        this.scene!.add(object);
+        this.placed.set(id, object);
+      }
+
+      // Répartis de part et d'autre, de plus en plus loin : le premier acquis
+      // se tient près du pied, les suivants s'écartent.
+      const rank = Math.floor(index / 2) + 1;
+      const side = index % 2 === 0 ? -1 : 1;
+      object.position.set(side * (1.05 + rank * 0.85), -1.75, 0.55 - rank * 0.35);
+      object.scale.setScalar(0.42);
+      object.rotation.y = side * -0.5;
+    });
+  }
+
   // --- Aura ----------------------------------------------------------------
+
+  private static readonly MOG_DURATION = 0.75;
+
+  /**
+   * Fait prendre à la statue sa tête de mogger. L'expression est greffée sur
+   * elle, donc elle la suit si on la tourne, et ne vit que le temps du clic.
+   */
+  playMog(): void {
+    if (!this.moyai) return;
+
+    if (!this.mogFace) {
+      this.mogFace = createMogFace();
+      this.moyai.add(this.mogFace);
+    }
+    this.mogElapsed = 0;
+    this.mogFace.visible = true;
+  }
+
+  private animateMog(delta: number): void {
+    const face = this.mogFace;
+    if (!face?.visible || this.mogElapsed < 0) return;
+
+    this.mogElapsed += delta;
+    const t = this.mogElapsed / MoyaiViewer.MOG_DURATION;
+    if (t >= 1) {
+      face.visible = false;
+      this.mogElapsed = -1;
+      return;
+    }
+    fadeMogFace(face, t);
+  }
 
   /** Nombre d'éclats gardés en réserve : au-delà, les plus anciens repartent. */
   private static readonly SHARD_POOL = 28;
@@ -993,6 +1111,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.animateTrickshot(delta);
     this.updateWeakPoint(delta);
     this.animateShards(delta);
+    this.animateMog(delta);
     this.animateAura(delta);
     this.animateBounce(delta);
     this.reportBackFacing(delta);

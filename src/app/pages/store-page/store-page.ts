@@ -5,6 +5,7 @@ import { ChestOpening } from '../../components/chest-opening/chest-opening';
 import { MoyaiViewer } from '../../components/moyai-viewer/moyai-viewer';
 import { CollectionManager } from '../../services/collection-manager';
 import { ConsumableManager } from '../../services/consumable-manager';
+import { StoreManager } from '../../services/store-manager';
 import { GameLoop } from '../../services/game-loop';
 import { HintManager } from '../../services/hint-manager';
 import { ModalManager } from '../../services/modal-manager';
@@ -41,6 +42,7 @@ export class StorePage {
 
   readonly collection = inject(CollectionManager);
   readonly consumables = inject(ConsumableManager);
+  readonly store = inject(StoreManager);
   private readonly modalManager = inject(ModalManager);
   private readonly modelIcons = inject(ModelIcons);
   private readonly hintManager = inject(HintManager);
@@ -50,8 +52,13 @@ export class StorePage {
 
   readonly rarityColors = RARITY_COLORS;
 
-  /** Le coffre du doomscrolling tombe tout seul : il ne se vend pas. */
-  readonly shopChests = CHESTS.filter(chest => chest.price !== null);
+  /**
+   * Coffres en vente : ceux dont le rayon a été ouvert dans l'arbre. Celui du
+   * doomscrolling tombe tout seul et ne se vend pas.
+   */
+  readonly shopChests = computed(() =>
+    CHESTS.filter(chest => chest.price !== null && this.store.isChestUnlocked(chest.tier))
+  );
 
   /** Coffres en réserve, à ouvrir sans repasser par la caisse. */
   readonly pendingTiers = computed(() =>
