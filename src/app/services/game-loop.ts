@@ -12,6 +12,7 @@ import { SecretTracker } from './secret-tracker';
 import { SpinCombo } from './spin-combo';
 import { CollectionManager } from './collection-manager';
 import { UtilityManager } from './utility-manager';
+import { BattleManager } from './battle-manager';
 
 /**
  * Boucle de jeu : production d'aura passive, vérification des succès et
@@ -39,6 +40,7 @@ export class GameLoop {
   private readonly spinCombo = inject(SpinCombo);
   private readonly collection = inject(CollectionManager);
   private readonly utilityManager = inject(UtilityManager);
+  private readonly battles = inject(BattleManager);
 
   private started = false;
 
@@ -64,7 +66,9 @@ export class GameLoop {
         () => this.secretTracker.backFacingReached(),
         () => this.collection.relicCount(),
         () => this.collection.gemsEarned(),
-        () => this.collection.ownedCount()
+        () => this.collection.ownedCount(),
+        id => this.battles.isDefeated(id),
+        () => this.battles.defeatedCount()
       )
     );
 

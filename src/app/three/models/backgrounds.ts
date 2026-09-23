@@ -50,9 +50,9 @@ function backgroundUpgrades(bonus: number, price: number): BackgroundUpgrade[] {
 }
 
 const CATALOGUE: BackgroundDefinition[] = [
-  { id: 'city', sky: 0x1d2433, bonus: 0.25, price: 1000000, upgrades: backgroundUpgrades(0.25, 1000000) },
-  { id: 'mountains', sky: 0x23303a, bonus: 0.5, price: 100000000, upgrades: backgroundUpgrades(0.5, 100000000) },
-  { id: 'dusk', sky: 0x3a2233, bonus: 1, price: 10000000000, upgrades: backgroundUpgrades(1, 10000000000) }
+  { id: 'city', sky: 0x2b3a57, bonus: 0.25, price: 1000000, upgrades: backgroundUpgrades(0.25, 1000000) },
+  { id: 'mountains', sky: 0x3b5068, bonus: 0.5, price: 100000000, upgrades: backgroundUpgrades(0.5, 100000000) },
+  { id: 'dusk', sky: 0x2a1b33, bonus: 1, price: 10000000000, upgrades: backgroundUpgrades(1, 10000000000) }
 ];
 
 // Les décors sont déjà écrits dans l'ordre, mais le tri le garantit si l'on en
@@ -65,9 +65,23 @@ for (const background of CATALOGUE) {
 
 export const BACKGROUNDS: readonly BackgroundDefinition[] = CATALOGUE;
 
-/** Repères de la scène de fond : assez large pour couvrir les écrans étirés. */
+/**
+ * Repères de la scène de fond.
+ *
+ * Les plans peints étaient trop petits : la caméra du décor voit, à la
+ * distance du ciel, près de 108 unités de large sur un écran 21/9 et 45 de
+ * haut, là où le plan n'en faisait que 62 sur 40. Les bords de l'écran
+ * restaient donc vides. Les plans couvrent maintenant largement, et la
+ * couleur du ciel est **en plus** posée sur la scène elle-même
+ * (`backgroundScene.background`), ce qui garantit qu'aucun format ne laisse
+ * de trou quoi qu'il arrive.
+ */
 const HALF_WIDTH = 26;
 const GROUND_Y = -7;
+/** Cotes du plan de ciel : de quoi couvrir un 21/9 avec de la marge. */
+const SKY_WIDTH = 140;
+const SKY_HEIGHT = 60;
+const SKY_Z = -30;
 
 function flat(color: number, roughness = 1): THREE.MeshStandardMaterial {
   return new THREE.MeshStandardMaterial({ color, flatShading: true, roughness, metalness: 0 });
@@ -75,46 +89,78 @@ function flat(color: number, roughness = 1): THREE.MeshStandardMaterial {
 
 /** Grand plan peint, posé loin derrière le décor. */
 function sky(color: number): THREE.Mesh {
-  const plane = new THREE.PlaneGeometry(HALF_WIDTH * 2.4, 40);
-  return new THREE.Mesh(plane, new THREE.MeshBasicMaterial({ color }));
+  return mesh(
+    new THREE.PlaneGeometry(SKY_WIDTH, SKY_HEIGHT),
+    new THREE.MeshBasicMaterial({ color }),
+    [0, 4, SKY_Z]
+  );
+}
+
+/**
+ * Sol qui ferme le bas du cadre, large comme le ciel.
+ *
+ * Il s'arrête devant la caméra du décor (posée en z = 16) : le faire passer
+ * derrière elle n'ajoutait rien à l'image et ne produisait que de la
+ * géométrie hors champ.
+ */
+function ground(color: number): THREE.Mesh {
+  // De l'arrière du ciel jusqu'à huit unités devant la caméra du décor : au
+  // delà, la géométrie passe derrière l'objectif sans rien ajouter.
+  const depth = 48;
+  const floor = mesh(new THREE.PlaneGeometry(SKY_WIDTH, depth), flat(color), [0, GROUND_Y, SKY_Z + depth / 2 - 10]);
+  floor.rotation.x = -Math.PI / 2;
+  return floor;
 }
 
 /** Skyline : deux rangées de blocs, la plus lointaine plus sombre. */
 function createCity(random: () => number): THREE.Group {
   const group = new THREE.Group();
-  group.add(mesh(sky(0x1d2433).geometry, new THREE.MeshBasicMaterial({ color: 0x1d2433 }), [0, 4, -30]));
+  group.add(sky(0x2b3a57));
 
-  const row = (z: number, color: number, count: number, maxHeight: number) => {
+  // Les fenêtres allumées partagent un seul matériau : c'est elles qui font
+  // lire la skyline comme une ville plutôt que comme des barres grises.
+  const window = new THREE.MeshBasicMaterial({ color: 0xffd489 });
+
+  const row = (z: number, color: number, count: number, maxHeight: number, lit: number) => {
     const material = flat(color);
     for (let i = 0; i < count; i++) {
       const width = 0.9 + random() * 1.6;
-      const height = 2 + random() * maxHeight;
+      const height = 2.5 + random() * maxHeight;
       const x = -HALF_WIDTH + (i / (count - 1)) * HALF_WIDTH * 2 + (random() - 0.5);
       const block = loft([
         { y: GROUND_Y, halfWidth: width, front: width * 0.7, back: -width * 0.7, chamfer: 0.04 },
         { y: GROUND_Y + height, halfWidth: width, front: width * 0.7, back: -width * 0.7, chamfer: 0.04 }
       ]);
       group.add(mesh(chisel(block, 0.03, random), material, [x, 0, z]));
+
+      // Quelques fenêtres, posées juste devant la façade pour ne pas s'y
+      // enfoncer et disparaître.
+      const floors = Math.floor(height / 0.9);
+      for (let f = 0; f < floors; f++) {
+        if (random() > lit) continue;
+        const pane = new THREE.PlaneGeometry(width * 0.22, 0.3);
+        group.add(
+          mesh(pane, window, [
+            x + (random() - 0.5) * width * 1.1,
+            GROUND_Y + 0.7 + f * 0.9,
+            z + width * 0.7 + 0.02
+          ])
+        );
+      }
     }
   };
 
-  row(-22, 0x2b3446, 22, 7);
-  row(-16, 0x232b3a, 18, 5);
+  row(-22, 0x3a4763, 22, 7, 0.35);
+  row(-16, 0x2a3348, 18, 5, 0.45);
 
-  // Sol, qui ferme le bas du cadre.
-  const ground = new THREE.PlaneGeometry(HALF_WIDTH * 2.4, 24);
-  const floor = new THREE.Mesh(ground, flat(0x161c26));
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.set(0, GROUND_Y, -8);
-  group.add(floor);
-
+  group.add(ground(0x1b2230));
   return group;
 }
 
 /** Trois rangées de pics, de plus en plus clairs vers l'avant. */
 function createMountains(random: () => number): THREE.Group {
   const group = new THREE.Group();
-  group.add(mesh(sky(0x23303a).geometry, new THREE.MeshBasicMaterial({ color: 0x23303a }), [0, 4, -30]));
+  group.add(sky(0x3b5068));
 
   const range = (z: number, color: number, count: number, height: number, base: number) => {
     const material = flat(color);
@@ -130,10 +176,14 @@ function createMountains(random: () => number): THREE.Group {
     }
   };
 
-  range(-24, 0x2e3b47, 9, 11, 3.6);
-  range(-18, 0x27333e, 7, 8, 3.2);
-  range(-12, 0x1e2831, 6, 6, 3);
+  // Les rangées s'assombrissent vers l'avant : c'est ce contraste qui donne
+  // la profondeur, les trois teintes d'origine étant trop proches pour se
+  // distinguer l'une de l'autre.
+  range(-24, 0x53687e, 9, 11, 3.6);
+  range(-18, 0x3a4c5e, 7, 8, 3.2);
+  range(-12, 0x25323f, 6, 6, 3);
 
+  group.add(ground(0x1a242e));
   return group;
 }
 
@@ -142,19 +192,21 @@ function createDusk(random: () => number): THREE.Group {
   const group = new THREE.Group();
 
   // Dégradé : un plan dont les sommets hauts et bas portent deux teintes.
-  const plane = new THREE.PlaneGeometry(HALF_WIDTH * 2.4, 40, 1, 4);
+  const plane = new THREE.PlaneGeometry(SKY_WIDTH, SKY_HEIGHT, 1, 6);
   const colors: number[] = [];
   const top = new THREE.Color(0x2a1b33);
   const bottom = new THREE.Color(0xc4623f);
   const position = plane.attributes['position'] as THREE.BufferAttribute;
   for (let i = 0; i < position.count; i++) {
-    const t = (position.getY(i) + 20) / 40;
+    // Rapporté à la hauteur réelle du plan : la constante 40 d'origine n'a
+    // pas suivi son agrandissement et écrasait tout le dégradé en bas.
+    const t = (position.getY(i) + SKY_HEIGHT / 2) / SKY_HEIGHT;
     const color = bottom.clone().lerp(top, t);
     colors.push(color.r, color.g, color.b);
   }
   plane.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   group.add(
-    mesh(plane, new THREE.MeshBasicMaterial({ vertexColors: true }), [0, 4, -30])
+    mesh(plane, new THREE.MeshBasicMaterial({ vertexColors: true }), [0, 4, SKY_Z])
   );
 
   // Soleil bas sur l'horizon.
@@ -174,6 +226,7 @@ function createDusk(random: () => number): THREE.Group {
     group.add(mesh(chisel(ridge, 0.06, random), material, [x, 0, -14]));
   }
 
+  group.add(ground(0x140f1a));
   return group;
 }
 

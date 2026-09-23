@@ -83,10 +83,21 @@ export class UtilityManager {
       .reduce((total, u) => total + u.value * this.shopManager.upgradePurchases(u), 0);
   }
 
+  // --- Trickshot ---------------------------------------------------------
+
+  /** Probabilité qu'un clic déclenche le tir. */
+  readonly trickshotChance = computed(() =>
+    this.ownedIds().has('trickshot')
+      ? (this.definition('trickshot').chance ?? 0) + this.bonus('trickshot', 'trickshotChance')
+      : 0
+  );
+
+  /** Élan donné au combo par un tir réussi. */
+  readonly trickshotPower = computed(() => 8 + this.bonus('trickshot', 'trickshotPower'));
+
   /** Tire au sort le déclenchement du trickshot, si on le possède. */
   rollTrickshot(): boolean {
-    if (!this.isOwned('trickshot')) return false;
-    return Math.random() < (this.definition('trickshot').chance ?? 0);
+    return Math.random() < this.trickshotChance();
   }
 
   // --- Points faibles ----------------------------------------------------

@@ -23,6 +23,7 @@ import { Wardrobe } from '../../components/wardrobe/wardrobe';
 import { ComboMeter } from '../../components/combo-meter/combo-meter';
 import { DoomPhone } from '../../components/doom-phone/doom-phone';
 import { CollectionManager } from '../../services/collection-manager';
+import { BattleManager } from '../../services/battle-manager';
 import { Router } from '@angular/router';
 
 @Component({
@@ -43,6 +44,8 @@ export class GamePage {
 
   /** Identifiant de l'article Mewing, qui débloque le geste du « chut ». */
   private readonly mewingItemId = 4;
+  /** Identifiant du Mogging, dont chaque clic alimente le combo. */
+  private readonly moggingItemId = 9;
 
   public readonly soundManager = inject(SoundManager);
   public readonly translate = inject(TranslateService);
@@ -60,6 +63,7 @@ export class GamePage {
   readonly backgroundManager = inject(BackgroundManager);
   readonly utilityManager = inject(UtilityManager);
   readonly collection = inject(CollectionManager);
+  readonly battles = inject(BattleManager);
 
   /** L'accès à la collection apparaît avec le premier coffre ou la première gemme. */
   readonly showCollection = computed(
@@ -125,6 +129,15 @@ export class GamePage {
    */
   readonly speedLines = [6, 18, 31, 44, 57, 70, 83, 94];
 
+  /**
+   * L'accès aux battles s'ouvre avec le premier enseignement acheté : sans
+   * rien à frapper, l'écran n'aurait aucune action à proposer.
+   */
+  readonly showBattles = computed(
+    () => this.shopManager.getAllItems().some(item => item.level() > 0)
+  );
+
+  readonly battleIcon = this.modelIcons.boss('tralalero');
   readonly shopIcon = this.modelIcons.shop();
   readonly trophyIcon = this.modelIcons.trophy(true);
   readonly gearIcon = this.modelIcons.gear();
@@ -137,6 +150,11 @@ export class GamePage {
   openWardrobe() {
     this.soundManager.playFX(Sound.Plop);
     this.modalManager.open(Wardrobe);
+  }
+
+  openBattles() {
+    this.soundManager.playFX(Sound.Plop);
+    this.router.navigate(['/battle']);
   }
 
   openCollection() {
@@ -211,10 +229,17 @@ export class GamePage {
       this.viewer?.playShush();
     }
 
+    // Le Mogging se joue au clic : chaque coup pousse le combo, ce qui donne
+    // une raison de cliquer vite en plus de faire tourner la statue.
+    const mogging = this.moggingLevel();
+    if (mogging > 0) {
+      this.spinCombo.boost(GamePage.MOGGING_BOOST * mogging);
+    }
+
     // Le trickshot est rare : quand il part, il fait s'envoler le combo.
     if (this.utilityManager.rollTrickshot()) {
       this.viewer?.playTrickshot();
-      this.spinCombo.landTrickshot();
+      this.spinCombo.landTrickshot(this.utilityManager.trickshotPower());
     }
 
     // Le clic d'une série monte d'un cran à chaque point enchaîné : c'est ce
@@ -224,6 +249,14 @@ export class GamePage {
     } else {
       this.soundManager.playFX(Sound.Plop);
     }
+  }
+
+  /** Élan donné au combo par clic et par niveau de Mogging. */
+  private static readonly MOGGING_BOOST = 0.012;
+
+  /** Niveau de Mogging atteint ; 0 tant qu'il n'est pas acheté. */
+  private moggingLevel(): number {
+    return this.shopManager.getAllItems().find(item => item.id === this.moggingItemId)?.level() ?? 0;
   }
 
   /**

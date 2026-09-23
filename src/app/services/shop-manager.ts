@@ -305,15 +305,16 @@ export class ShopManager {
   }
 
   /** Achat d'une amélioration de pièce d'outfit, sur le modèle des articles. */
-  buyOutfitUpgrade(pieceIndex: number, upgradeId: number): void {
+  buyOutfitUpgrade(pieceIndex: number, upgradeId: number): boolean {
     const piece = this.moyaiUpgrades()[pieceIndex];
-    if (!piece?.unlocked || !piece.upgrades) return;
+    if (!piece?.unlocked || !piece.upgrades) return false;
 
     const upgrade = piece.upgrades.find(u => u.id === upgradeId);
-    if (!upgrade || !this.buyUpgradeCopy(piece.upgrades, upgrade)) return;
+    if (!upgrade || !this.buyUpgradeCopy(piece.upgrades, upgrade)) return false;
 
     this.moyaiUpgrades.set([...this.moyaiUpgrades()]);
     this.recomputeEffects();
+    return true;
   }
 
   /** Compétences portées à leur plafond, pour les succès. */
@@ -364,15 +365,29 @@ export class ShopManager {
     return true;
   }
 
-  unlockUpgrade(itemId: number, upgradeId: number) {
+  unlockUpgrade(itemId: number, upgradeId: number): boolean {
     const item = this.items().find(i => i.id === itemId);
     const upgrade = item?.upgrades?.find(u => u.id === upgradeId);
-    if (!item?.upgrades || !upgrade) return;
+    if (!item?.upgrades || !upgrade) return false;
 
-    if (this.buyUpgradeCopy(item.upgrades, upgrade)) {
-      this.items.set([...this.items()]);
-      this.recomputeEffects();
+    if (!this.buyUpgradeCopy(item.upgrades, upgrade)) return false;
+
+    this.items.set([...this.items()]);
+    this.recomputeEffects();
+    return true;
+  }
+
+  /**
+   * Prix cumulé des `count` prochains exemplaires d'une amélioration. Chaque
+   * exemplaire renchérissant le suivant, la somme n'est pas `prix × count`.
+   */
+  upgradeBatchPrice(upgrade: Purchasable, count: number): number {
+    const owned = this.upgradePurchases(upgrade);
+    let total = 0;
+    for (let i = 0; i < count; i++) {
+      total += Math.round(upgrade.price * Math.pow(UPGRADE_PRICE_FACTOR, owned + i));
     }
+    return total;
   }
 
   /**

@@ -126,6 +126,8 @@
                 {{ price(node) | formatAura }} <small>{{ 'AURA' | translate }}</small>
                 @if (node.kind === 'item' && amountFor(node.item!) > 1) {
                   <span class="batch">&times;{{ amountFor(node.item!) }}</span>
+                } @else if (node.kind !== 'item' && copiesFor(node) > 1) {
+                  <span class="batch">&times;{{ copiesFor(node) }}</span>
                 }
               </p>
             }

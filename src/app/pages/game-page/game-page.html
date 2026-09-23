@@ -13,6 +13,7 @@
     [distance]="heroDistance()"
     [weakPoints]="utilityManager.weakPointConfig()"
     [auraLevel]="auraLevel()"
+    [creature]="battles.worn()"
     [palette]="collection.skinPalette()"
     [inertia]="utilityManager.inertia()"
     [autoSpin]="utilityManager.autoSpin()"
@@ -74,6 +75,9 @@
     <app-icon-btn [icon]="shopIcon" label="SHOP" (activate)="openShop()"></app-icon-btn>
     @if (wardrobeManager.hasAny() || backgroundManager.hasAny()) {
       <app-icon-btn [icon]="hangerIcon" label="WARDROBE" (activate)="openWardrobe()"></app-icon-btn>
+    }
+    @if (showBattles()) {
+      <app-icon-btn [icon]="battleIcon" label="BATTLE" (activate)="openBattles()"></app-icon-btn>
     }
     @if (showCollection()) {
       <span class="with-badge">

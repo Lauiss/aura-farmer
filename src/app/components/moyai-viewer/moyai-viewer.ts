@@ -17,10 +17,12 @@ import { disposeObject } from '../../three/geometry';
 import { MoyaiPalette, applyMoyaiPalette, createMoyai } from '../../three/models/moyai';
 import { createCursor, setCursorOpacity } from '../../three/models/cursor';
 import { CosmeticId, createCosmetic } from '../../three/models/cosmetics';
-import { BackgroundId, createBackground } from '../../three/models/backgrounds';
+import { BackgroundId, backgroundDefinition, createBackground } from '../../three/models/backgrounds';
 import { createBullet, createSniper, setSniperOpacity } from '../../three/models/sniper';
 import { animateWeakPoint, createWeakPoint } from '../../three/models/weak-point';
 import { auraShellOpacity, createAuraShard, createAuraShell } from '../../three/models/aura';
+import { createBrainrot } from '../../three/models/brainrot';
+import { BossId, bossDefinition } from '../../../assets/static/bosses';
 
 /** Réglages des points faibles, fournis par les améliorations achetées. */
 export interface WeakPointConfig {
@@ -78,6 +80,13 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
    * statue s'entoure d'une lueur qui s'intensifie à chaque palier.
    */
   readonly auraLevel = input(0);
+
+  /**
+   * Brainrot porté à la place de la statue, gagné en battle d'aura. `null`
+   * pour le moyai d'origine. Les accessoires ne suivent pas : ils sont taillés
+   * pour la tête de moai et se poseraient n'importe où sur une autre créature.
+   */
+  readonly creature = input<BossId | null>(null);
 
   /** Émis au clic sur la statue, pour l'utiliser comme cible de jeu. */
   readonly clicked = output<MouseEvent>();
@@ -200,7 +209,8 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     // suivant de la liste.
     effect(() => {
       const wanted = this.cosmetics();
-      this.zone.runOutsideAngular(() => this.syncCosmetics(wanted));
+      const creature = this.creature();
+      this.zone.runOutsideAngular(() => this.syncCosmetics(creature ? [] : wanted));
     });
 
     // Le cadrage suit la distance demandée : un buste habillé descend plus bas
@@ -217,7 +227,9 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
 
     effect(() => {
       const palette = this.palette();
-      if (this.moyai) applyMoyaiPalette(this.moyai, palette);
+      // Un brainrot n'a pas les matériaux nommés de la statue : la palette de
+      // la collection ne le concerne pas.
+      if (this.moyai && !this.creature()) applyMoyaiPalette(this.moyai, palette);
     });
 
     effect(() => {
@@ -228,6 +240,14 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     effect(() => {
       const level = this.auraLevel();
       this.zone.runOutsideAngular(() => this.syncAura(level));
+    });
+
+    effect(() => {
+      // Lu pour la dépendance : la créature portée change, le sujet aussi.
+      this.creature();
+      this.zone.runOutsideAngular(() => {
+        if (this.moyai) this.swapSubject();
+      });
     });
   }
   private userInteracted = false;
@@ -280,15 +300,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
     this.camera.position.set(0, 0.1, this.distance());
 
-    this.moyai = createMoyai({ palette: this.palette() ?? undefined });
-    this.moyai.rotation.set(...this.rotation());
-    this.scene.add(this.moyai);
-    // Relevés avant la pose des accessoires : un point faible se pose sur la
-    // pierre, jamais sur des lunettes.
-    this.moyai.traverse(child => {
-      if ((child as THREE.Mesh).isMesh) this.headMeshes.push(child);
-    });
-    this.syncCosmetics(this.cosmetics());
+    this.buildSubject();
     // Comme le décor et les accessoires : l'effet qui suit `auraLevel` s'est
     // déjà exécuté avant que la scène n'existe et n'a rien pu poser. Sans cet
     // appel, arriver sur l'écran avec un million d'aura n'allumait aucun halo
@@ -304,6 +316,52 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.resizeObserver.observe(container);
 
     this.renderFrame();
+  }
+
+  /**
+   * Monte le sujet de la scène : la statue, ou le brainrot gagné en battle.
+   *
+   * Les maillages sont relevés **avant** la pose des accessoires : un point
+   * faible se pose sur la pierre, jamais sur des lunettes.
+   */
+  private buildSubject(): void {
+    if (!this.scene) return;
+
+    const id = this.creature();
+    const subject = id ? createBrainrot(bossDefinition(id)) : createMoyai({ palette: this.palette() ?? undefined });
+
+    subject.rotation.set(...this.rotation());
+    this.scene.add(subject);
+    this.moyai = subject;
+
+    this.headMeshes.length = 0;
+    subject.traverse(child => {
+      if ((child as THREE.Mesh).isMesh) this.headMeshes.push(child);
+    });
+
+    // Les accessoires sont modelés pour la tête de moai : sur un brainrot ils
+    // flotteraient à côté. Ils ne se posent donc que sur la statue.
+    if (!id) this.syncCosmetics(this.cosmetics());
+  }
+
+  /**
+   * Remplace le sujet sans reconstruire la scène. Tout ce qui lui était
+   * greffé — accessoires, point faible, curseur du mewing — part avec lui et
+   * sera reposé à la demande.
+   */
+  private swapSubject(): void {
+    if (!this.scene || !this.moyai) return;
+
+    this.scene.remove(this.moyai);
+    disposeObject(this.moyai);
+    this.worn.clear();
+    // Ces deux-là étaient enfants du sujet : ils viennent d'être libérés avec
+    // lui, et doivent être oubliés sous peine de double libération.
+    this.weakPoint = undefined;
+    this.weakState = 'hidden';
+    this.shush = undefined;
+
+    this.buildSubject();
   }
 
   /** Amortissement de base, réduit par l'inertie achetée. */
@@ -600,7 +658,12 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
       this.backgroundGroup = undefined;
     }
 
+    this.backgroundScene.background = null;
     if (!id) return;
+
+    // La couleur du ciel est posée sur la scène en plus du plan peint : quel
+    // que soit le format de l'écran, aucun bord ne peut rester vide.
+    this.backgroundScene.background = new THREE.Color(backgroundDefinition(id).sky);
     this.backgroundGroup = createBackground(id);
     this.backgroundScene.add(this.backgroundGroup);
   }

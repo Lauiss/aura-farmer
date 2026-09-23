@@ -1,0 +1,378 @@
+@use '../../../menu-theme' as *;
+@use '../../../variables' as *;
+
+.battle-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: $menu-bg;
+  color: $menu-text;
+}
+
+/* --- Barre du haut ----------------------------------------------------- */
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-200;
+  padding: $spacing-200 $spacing-300;
+  border-bottom: 1px solid $menu-border;
+}
+
+.back {
+  font: inherit;
+  font-weight: $menu-weight;
+  color: $menu-text-dim;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.back:hover,
+.back:focus-visible {
+  color: $menu-accent;
+}
+
+.heading {
+  font-size: $menu-size-title;
+  font-weight: $menu-weight-strong;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.rate {
+  font-size: $menu-size-lead;
+  font-weight: $menu-weight-strong;
+  font-variant-numeric: tabular-nums;
+
+  span {
+    font-size: $menu-size-small;
+    font-weight: $menu-weight;
+    color: $menu-text-dim;
+  }
+}
+
+/* --- Liste des boss ---------------------------------------------------- */
+.roster {
+  padding: $spacing-300;
+}
+
+.lead {
+  max-width: 44rem;
+  margin: 0 auto $spacing-300;
+  text-align: center;
+  color: $menu-text-dim;
+}
+
+.bosses {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: $spacing-200;
+}
+
+.boss-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-50;
+  padding: $spacing-200;
+  background: $menu-surface;
+  border: 2px solid $menu-border-strong;
+  border-radius: $radius-100;
+}
+
+// Battu : le cadre passe à l'ambre, comme tout ce qui est acquis.
+.boss-card.defeated {
+  border-color: $menu-accent;
+}
+
+.boss-card.locked {
+  border-style: dashed;
+  background: $menu-bg;
+  color: $menu-text-faint;
+}
+
+.portrait {
+  width: 7rem;
+  height: 7rem;
+  object-fit: contain;
+}
+
+.boss-card.locked .portrait {
+  opacity: 0.2;
+  filter: grayscale(1);
+}
+
+.boss-card .name {
+  font-size: $menu-size-subtitle;
+  font-weight: $menu-weight-strong;
+  text-align: center;
+}
+
+.recommended {
+  font-size: $menu-size-small;
+  color: $menu-text-dim;
+  font-variant-numeric: tabular-nums;
+}
+
+// Débit insuffisant : le combat sera rude, autant le dire avant de le lancer.
+.recommended.short {
+  color: #ff6b3d;
+  font-weight: $menu-weight-strong;
+}
+
+.reward {
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  color: #9fe6ff;
+}
+
+.action {
+  margin-top: $spacing-50;
+  padding: $spacing-100 $spacing-200;
+  font: inherit;
+  font-weight: $menu-weight-strong;
+  color: $menu-text;
+  background: none;
+  border: 1px solid $menu-border-strong;
+  border-radius: $radius-100;
+  cursor: pointer;
+}
+
+.action:hover,
+.action:focus-visible {
+  border-color: $menu-accent;
+  color: $menu-accent;
+}
+
+.action.primary {
+  color: $menu-bg;
+  background: $menu-accent;
+  border-color: $menu-accent;
+}
+
+.action.primary:hover,
+.action.primary:focus-visible {
+  color: $menu-bg;
+  filter: brightness(1.1);
+}
+
+/* --- Combat ------------------------------------------------------------ */
+.fight {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr minmax(16rem, 22rem) 1fr;
+  align-items: center;
+  gap: $spacing-300;
+  padding: $spacing-300;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-100;
+}
+
+.bar-hp {
+  width: min(100%, 18rem);
+  height: 0.9rem;
+  border-radius: 999px;
+  background: rgba(237, 230, 214, 0.14);
+  overflow: hidden;
+}
+
+.bar-hp span {
+  display: block;
+  height: 100%;
+  transition: width 0.25s ease-out;
+}
+
+.boss-hp span {
+  background: #ff6b3d;
+}
+
+.player-hp span {
+  background: $menu-accent;
+}
+
+.hp {
+  font-size: $menu-size-small;
+  color: $menu-text-dim;
+  font-variant-numeric: tabular-nums;
+}
+
+.middle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-150;
+  text-align: center;
+}
+
+/* --- Les dés : le coeur du tour, donc le plus gros de l'écran --- */
+.dice {
+  display: flex;
+  align-items: center;
+  gap: $spacing-200;
+  animation: roll-in 0.3s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.roll {
+  width: 3.6rem;
+  height: 3.6rem;
+  display: grid;
+  place-items: center;
+  font-size: 1.8rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  border: 2px solid $menu-border-strong;
+  border-radius: $radius-100;
+}
+
+// Le dé gagnant du tour s'entoure, l'autre reste neutre : on lit le résultat
+// sans avoir à comparer les deux nombres.
+.dice.hit .roll.player {
+  border-color: $menu-accent;
+  color: $menu-accent;
+}
+
+.dice.taken .roll.boss {
+  border-color: #ff6b3d;
+  color: #ff6b3d;
+}
+
+.versus {
+  font-size: $menu-size-small;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: $menu-text-faint;
+}
+
+.log {
+  min-height: 3rem;
+  color: $menu-text-dim;
+}
+
+.log strong {
+  color: $menu-text;
+  font-variant-numeric: tabular-nums;
+}
+
+.log.hint {
+  color: $menu-text-faint;
+}
+
+/* --- Verdict ----------------------------------------------------------- */
+.verdict {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-100;
+  padding: $spacing-200;
+  border: 2px solid $menu-border-strong;
+  border-radius: $radius-100;
+  background: $menu-surface;
+}
+
+.verdict.won {
+  border-color: $menu-accent;
+}
+
+.verdict-title {
+  font-size: $menu-size-title;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.verdict.won .verdict-title {
+  color: $menu-accent;
+}
+
+.verdict.lost .verdict-title {
+  color: #ff6b3d;
+}
+
+.verdict-gems {
+  font-size: $menu-size-lead;
+  font-weight: $menu-weight-strong;
+  color: #9fe6ff;
+}
+
+.verdict-first,
+.verdict-hint {
+  font-size: $menu-size-small;
+  color: $menu-text-dim;
+}
+
+/* --- Choix de l'action ------------------------------------------------- */
+.actions-bar {
+  padding: $spacing-200 $spacing-300 $spacing-400;
+  border-top: 1px solid $menu-border;
+}
+
+.actions-title {
+  margin-bottom: $spacing-150;
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: $menu-text-dim;
+  text-align: center;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: $spacing-150;
+}
+
+.action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-50;
+  padding: $spacing-150 $spacing-250;
+  font: inherit;
+  color: $menu-text;
+  background: $menu-surface;
+  border: 2px solid $menu-border-strong;
+  border-radius: $radius-100;
+  cursor: pointer;
+}
+
+.action-card:hover,
+.action-card:focus-visible {
+  border-color: $menu-accent;
+}
+
+.action-name {
+  font-weight: $menu-weight-strong;
+}
+
+.action-damage {
+  font-size: $menu-size-small;
+  color: $menu-accent;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes roll-in {
+  from {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 52rem) {
+  .fight {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dice {
+    animation: none;
+  }
+}

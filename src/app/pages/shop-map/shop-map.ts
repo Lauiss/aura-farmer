@@ -502,13 +502,24 @@ export class ShopMap {
         return node.background!.price;
       case 'utility':
         return node.utility!.price;
+      // Les améliorations suivent le réglage d'achat multiple comme les
+      // articles : le prix affiché est celui du lot, pas d'un exemplaire.
       case 'utility-upgrade':
-        return this.shopManager.upgradePrice(node.utilityUpgrade!);
+        return this.upgradePriceFor(node, node.utilityUpgrade!);
       case 'background-upgrade':
-        return this.shopManager.upgradePrice(node.backgroundUpgrade!);
+        return this.upgradePriceFor(node, node.backgroundUpgrade!);
       default:
-        return this.shopManager.upgradePrice(node.upgrade!);
+        return this.upgradePriceFor(node, node.upgrade!);
     }
+  }
+
+  private upgradePriceFor(node: MapNode, upgrade: Purchasable): number {
+    return this.shopManager.upgradeBatchPrice(upgrade, Math.max(1, this.copiesFor(node)));
+  }
+
+  /** Exemplaires visés par le réglage courant, pour l'affichage du prix. */
+  copiesFor(node: MapNode): number {
+    return this.upgradeCount(node, this.buyAmount());
   }
 
   affordable(node: MapNode): boolean {
@@ -639,6 +650,10 @@ export class ShopMap {
         return { key: 'STAT_OFFLINE_HOURS', params: { from: round(u.offlineCapSeconds() / 3600), to: round(u.offlineCapSeconds() / 3600 + step) } };
       case 'offlineRate':
         return { key: 'STAT_OFFLINE_RATE', params: { from: percent(u.offlineRate()), to: percent(u.offlineRate() + step) } };
+      case 'trickshotChance':
+        return { key: 'STAT_TRICKSHOT_CHANCE', params: { from: round(u.trickshotChance() * 100), to: round((u.trickshotChance() + step) * 100) } };
+      case 'trickshotPower':
+        return { key: 'STAT_TRICKSHOT_POWER', params: { from: round(u.trickshotPower()), to: round(u.trickshotPower() + step) } };
     }
   }
 
@@ -678,6 +693,50 @@ export class ShopMap {
 
   // --- Achat -------------------------------------------------------------
 
+  /**
+   * Quantité visée pour ce clic. `Maj` force le maximum sans toucher au
+   * réglage courant : c'est le raccourci attendu dans un clicker, on n'a pas
+   * envie de faire défiler ×1 → ×10 → max pour un seul achat groupé.
+   */
+  private wantedAmount(event?: MouseEvent): BuyAmount {
+    return event?.shiftKey ? 'MAX' : this.buyAmount();
+  }
+
+  /** Exemplaires d'une amélioration visés, plafond compris. */
+  private upgradeCount(node: MapNode, amount: BuyAmount): number {
+    const level = this.levelOf(node);
+    if (!level) return 0;
+    const remaining = level.max - level.current;
+    const wanted = amount === '1' ? 1 : amount === '10' ? 10 : remaining;
+    return Math.max(0, Math.min(wanted, remaining));
+  }
+
+  /**
+   * Achète plusieurs exemplaires d'une amélioration. Chacun renchérit le
+   * suivant : on s'arrête au premier refus, faute d'aura ou parce que le
+   * plafond est atteint. Les améliorations ignoraient jusqu'ici le réglage
+   * d'achat multiple et n'en prenaient qu'un seul.
+   */
+  private buyUpgradeCopies(node: MapNode, amount: BuyAmount): void {
+    const count = this.upgradeCount(node, amount);
+    for (let i = 0; i < count; i++) {
+      if (!this.buyOneUpgrade(node)) break;
+    }
+  }
+
+  private buyOneUpgrade(node: MapNode): boolean {
+    switch (node.kind) {
+      case 'utility-upgrade':
+        return this.utilityManager.buyUpgrade(node.utility!.id, node.utilityUpgrade!.id);
+      case 'background-upgrade':
+        return this.backgroundManager.buyUpgrade(node.background!.id, node.backgroundUpgrade!.id);
+      case 'outfit-upgrade':
+        return this.shopManager.buyOutfitUpgrade(node.pieceIndex!, node.upgrade!.id);
+      default:
+        return this.shopManager.unlockUpgrade(node.item!.id, node.upgrade!.id);
+    }
+  }
+
   activate(node: MapNode, event?: MouseEvent): void {
     // Un glissement de la carte ne doit pas finir en achat ; une activation au
     // clavier (`detail` à 0) n'a, elle, rien glissé.
@@ -697,10 +756,11 @@ export class ShopMap {
     // Un premier achat se fête plus fort qu'un renfort : on note lequel des
     // deux avant de toucher aux données.
     const first = this.levelOf(node)!.current === 0;
+    const amount = this.wantedAmount(event);
 
     switch (node.kind) {
       case 'item':
-        this.shopManager.buyItem(node.item!.id, this.buyAmount());
+        this.shopManager.buyItem(node.item!.id, amount);
         break;
       case 'outfit':
         this.shopManager.buyMoyaiUpgrade(node.pieceIndex!);
@@ -713,17 +773,10 @@ export class ShopMap {
           this.hintManager.show(`UTILITY_${node.utility!.id.toUpperCase()}_HINT`);
         }
         break;
-      case 'utility-upgrade':
-        this.utilityManager.buyUpgrade(node.utility!.id, node.utilityUpgrade!.id);
-        break;
-      case 'background-upgrade':
-        this.backgroundManager.buyUpgrade(node.background!.id, node.backgroundUpgrade!.id);
-        break;
-      case 'outfit-upgrade':
-        this.shopManager.buyOutfitUpgrade(node.pieceIndex!, node.upgrade!.id);
-        break;
       default:
-        this.shopManager.unlockUpgrade(node.item!.id, node.upgrade!.id);
+        // Toutes les familles d'améliorations passent par le même chemin, et
+        // obéissent donc au même réglage d'achat multiple.
+        this.buyUpgradeCopies(node, amount);
     }
 
     // Un premier achat et un palier atteint se fêtent fort ; un renfort

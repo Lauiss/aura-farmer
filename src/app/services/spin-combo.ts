@@ -28,6 +28,14 @@ const TRICKSHOT_DECAY = 0.8;
  */
 const BOOST_CAP = 4;
 const BOOST_DECAY = 0.35;
+/**
+ * Marathon : au-delà de cent tours enchaînés, chaque centaine ajoute un point
+ * de multiplicateur. Le bonus de tours ordinaire plafonne à six tours ; sans
+ * ce palier, faire tourner la statue longtemps ne rapportait plus rien.
+ */
+const MARATHON_TURNS = 100;
+const MARATHON_BONUS = 1;
+const MARATHON_CAP = 4;
 
 @Injectable({
   providedIn: 'root'
@@ -116,10 +124,23 @@ export class SpinCombo {
     this.turnBonus = Math.min(TURN_BONUS_CAP, this.turnBonus + TURN_BONUS);
   }
 
-  /** Un trickshot réussi fait s'envoler le multiplicateur. */
-  landTrickshot(): void {
-    this.trickshotBonus = TRICKSHOT_BONUS;
+  /**
+   * Un trickshot réussi fait s'envoler le multiplicateur. `power` vient des
+   * améliorations du tir ; sans elles, c'est la valeur d'origine.
+   */
+  landTrickshot(power = TRICKSHOT_BONUS): void {
+    this.trickshotBonus = power;
     this.publish();
+  }
+
+  /** Tours enchaînés au-delà du seuil de marathon, convertis en bonus. */
+  private marathon(): number {
+    return Math.min(MARATHON_CAP, Math.floor(this.turnCount / MARATHON_TURNS) * MARATHON_BONUS);
+  }
+
+  /** Vrai quand le palier des cent tours est franchi, pour l'affichage. */
+  isMarathon(): boolean {
+    return this.turnCount >= MARATHON_TURNS;
   }
 
   /** Ajoute de l'élan au combo, par exemple sur un point faible touché. */
@@ -130,7 +151,7 @@ export class SpinCombo {
 
   private compute(): number {
     const fromSpeed = Math.min(this.speed, SPEED_CAP) / SPEED_CAP * SPEED_BONUS;
-    return 1 + fromSpeed + this.turnBonus + this.trickshotBonus + this.boostBonus;
+    return 1 + fromSpeed + this.turnBonus + this.trickshotBonus + this.boostBonus + this.marathon();
   }
 
   private publish(): void {

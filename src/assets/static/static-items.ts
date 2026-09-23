@@ -1,7 +1,7 @@
 import { computed, signal } from "@angular/core";
 import { Item } from "../../app/services/shop-manager";
 import { sortByPrice } from "./order";
-import { bicepsUpgrades, fartUpgrades, gamingUpgrades, jawlineUpgrades, mewingUpgrades, monetizeUpgrades, rizzUpgrades, silenceUpgrades } from "./item_upgrades";
+import { bicepsUpgrades, dabUpgrades, fartUpgrades, gamingUpgrades, jawlineUpgrades, mewingUpgrades, moggingUpgrades, monetizeUpgrades, rizzUpgrades, silenceUpgrades, sixSevenUpgrades } from "./item_upgrades";
 
 export const shopItems: Item[] = [
   {
@@ -158,6 +158,51 @@ export const shopItems: Item[] = [
     unlocked: false,
     upgrades: monetizeUpgrades,
     icon: 'assets/imgs/upgrades/monetize_aura.png'
+  },
+  {
+    id: 9,
+    name: signal('Mogging'),
+    value: signal(1160000),
+    baseValue: 1160000,
+    level: signal(0),
+    price: signal(20000000000),
+    factor: 1.32,
+    maxLevel: 25,
+    basePrice: 20000000000,
+    displayCondition: computed(() => shopItems[7].level() >= 10),
+    unlocked: false,
+    upgrades: moggingUpgrades,
+    icon: 'assets/imgs/upgrades/upgrade_generic.png'
+  },
+  {
+    id: 10,
+    name: signal('Six Seven'),
+    value: signal(8500000),
+    baseValue: 8500000,
+    level: signal(0),
+    price: signal(270000000000),
+    factor: 1.325,
+    maxLevel: 25,
+    basePrice: 270000000000,
+    displayCondition: computed(() => shopItems[8].level() >= 10),
+    unlocked: false,
+    upgrades: sixSevenUpgrades,
+    icon: 'assets/imgs/upgrades/upgrade_generic.png'
+  },
+  {
+    id: 11,
+    name: signal('Dab'),
+    value: signal(62000000),
+    baseValue: 62000000,
+    level: signal(0),
+    price: signal(3700000000000),
+    factor: 1.33,
+    maxLevel: 25,
+    basePrice: 3700000000000,
+    displayCondition: computed(() => shopItems[9].level() >= 10),
+    unlocked: false,
+    upgrades: dabUpgrades,
+    icon: 'assets/imgs/upgrades/upgrade_generic.png'
   },
 ];
 

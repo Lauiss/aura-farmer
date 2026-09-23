@@ -25,7 +25,12 @@
       </p>
     }
     @if (combo.turns() > 0) {
-      <p class="turns">{{ combo.turns() }} {{ 'COMBO_TURNS' | translate }}</p>
+      <p class="turns" [class.marathon]="combo.isMarathon()">
+        {{ combo.turns() }} {{ 'COMBO_TURNS' | translate }}
+        @if (combo.isMarathon()) {
+          <span class="marathon-tag">{{ 'COMBO_MARATHON' | translate }}</span>
+        }
+      </p>
     }
   </div>
 }

@@ -73,6 +73,16 @@
   color: $menu-accent;
 }
 
+// Cent tours enchaînés : le compteur passe en avant, c'est un palier.
+.turns.marathon {
+  color: var(--tier);
+}
+
+.marathon-tag {
+  margin-left: 0.4rem;
+  font-weight: 800;
+}
+
 .turns {
   font-size: 0.8rem;
   font-weight: $menu-weight;

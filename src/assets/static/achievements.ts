@@ -1,6 +1,7 @@
 import { FormatAuraPipe } from "../../app/pipes/format-aura";
 import { Achievement } from "../../app/services/achievements-manager";
 import { COLLECTIBLES, RELICS } from "./collectibles";
+import { BOSSES, BossId } from "./bosses";
 
 export function createAchievements(
   getShopItems: () => any[],
@@ -11,7 +12,9 @@ export function createAchievements(
   getBackFacingReached: () => boolean = () => false,
   getRelicCount: () => number = () => 0,
   getGemsEarned: () => number = () => 0,
-  getFigureCount: () => number = () => 0
+  getFigureCount: () => number = () => 0,
+  isBossDefeated: (id: BossId) => boolean = () => false,
+  getBossCount: () => number = () => 0
 ): Achievement[] {
   const achievements: Achievement[] = [
     {
@@ -663,6 +666,78 @@ export function createAchievements(
       description: "Réunir les dix reliques sacrées de l'aura.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
       condition: () => getRelicCount() >= RELICS.length,
+      unlocked: false,
+    },
+    {
+      id: 100,
+      title: "Requin en Baskets",
+      description: "Vaincre Tralalero Tralala en battle d'aura.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => isBossDefeated('tralalero'),
+      unlocked: false,
+    },
+    {
+      id: 101,
+      title: "Tung Tung Tung",
+      description: "Vaincre Tung Tung Tung Sahur en battle d'aura.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => isBossDefeated('sahur'),
+      unlocked: false,
+    },
+    {
+      id: 102,
+      title: "Brr Brr",
+      description: "Vaincre Brr Brr Patapim en battle d'aura.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => isBossDefeated('patapim'),
+      unlocked: false,
+    },
+    {
+      id: 103,
+      title: "Lirili Larila",
+      description: "Vaincre Lirili Larila en battle d'aura.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => isBossDefeated('lirili'),
+      unlocked: false,
+    },
+    {
+      id: 104,
+      title: "Bombardement",
+      description: "Vaincre Bombardiro Crocodilo en battle d'aura.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => isBossDefeated('bombardiro'),
+      unlocked: false,
+    },
+    {
+      id: 105,
+      title: "Namek",
+      description: "Vaincre Piccolo en battle d'aura.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => isBossDefeated('piccolo'),
+      unlocked: false,
+    },
+    {
+      id: 106,
+      title: "Succession",
+      description: "Vaincre son frère Chad Moai et reprendre l'héritage.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => isBossDefeated('chad'),
+      unlocked: false,
+    },
+    {
+      id: 120,
+      title: "Chasseur de Brainrots",
+      description: "Vaincre la moitié des boss des battles d'aura.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getBossCount() >= Math.ceil(BOSSES.length / 2),
+      unlocked: false,
+    },
+    {
+      id: 121,
+      title: "Aura Suprême",
+      description: "Vaincre tous les boss des battles d'aura.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getBossCount() >= BOSSES.length,
       unlocked: false,
     }
   ];

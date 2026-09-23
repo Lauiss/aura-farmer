@@ -369,3 +369,121 @@ export const monetizeUpgrades: ItemUpgrade[] = [
     unlocked: false,
   }
 ];
+
+
+export const moggingUpgrades: ItemUpgrade[] = [
+  {
+    id: 1,
+    name: "Regard Vertical",
+    description: "+12 % de production de Mogging, à chaque exemplaire.",
+    type: UpgradeType.MULTIPLIER,
+    effect: { type: UpgradeType.MULTIPLIER, value: 0.12, targetItemId: [9] },
+    price: 160000000000,
+    unlocked: false,
+  },
+  {
+    id: 2,
+    name: "Mâchoire Souveraine",
+    description: "+24 % de production de Mogging, à chaque exemplaire.",
+    type: UpgradeType.MULTIPLIER,
+    effect: { type: UpgradeType.MULTIPLIER, value: 0.24, targetItemId: [9] },
+    price: 480000000000,
+    unlocked: false,
+  },
+  {
+    id: 3,
+    name: "Mog Silencieux",
+    description: "+10 % d'aura par clic, à chaque exemplaire.",
+    type: UpgradeType.CLICK,
+    effect: { type: UpgradeType.CLICK, value: 0.1, targetItemId: [9] },
+    price: 1440000000000,
+    unlocked: false,
+  },
+  {
+    id: 4,
+    name: "Effondrement Adverse",
+    description: "+60 % de production de Mogging, à chaque exemplaire.",
+    type: UpgradeType.ITEM_BOOST,
+    effect: { type: UpgradeType.ITEM_BOOST, value: 0.6, targetItemId: [9] },
+    price: 4320000000000,
+    unlocked: false,
+  }
+];
+
+export const sixSevenUpgrades: ItemUpgrade[] = [
+  {
+    id: 1,
+    name: "Comptine Virale",
+    description: "+14 % de production de Six Seven, à chaque exemplaire.",
+    type: UpgradeType.MULTIPLIER,
+    effect: { type: UpgradeType.MULTIPLIER, value: 0.14, targetItemId: [10] },
+    price: 2160000000000,
+    unlocked: false,
+  },
+  {
+    id: 2,
+    name: "Boucle Infinie",
+    description: "+28 % de production de Six Seven, à chaque exemplaire.",
+    type: UpgradeType.MULTIPLIER,
+    effect: { type: UpgradeType.MULTIPLIER, value: 0.28, targetItemId: [10] },
+    price: 6480000000000,
+    unlocked: false,
+  },
+  {
+    id: 3,
+    name: "Réflexe Pavlovien",
+    description: "+12 % d'aura par clic, à chaque exemplaire.",
+    type: UpgradeType.CLICK,
+    effect: { type: UpgradeType.CLICK, value: 0.12, targetItemId: [10] },
+    price: 19440000000000,
+    unlocked: false,
+  },
+  {
+    id: 4,
+    name: "Six Sept Absolu",
+    description: "+70 % de production de Six Seven, à chaque exemplaire.",
+    type: UpgradeType.ITEM_BOOST,
+    effect: { type: UpgradeType.ITEM_BOOST, value: 0.7, targetItemId: [10] },
+    price: 58320000000000,
+    unlocked: false,
+  }
+];
+
+export const dabUpgrades: ItemUpgrade[] = [
+  {
+    id: 1,
+    name: "Coude Parfait",
+    description: "+16 % de production du Dab, à chaque exemplaire.",
+    type: UpgradeType.MULTIPLIER,
+    effect: { type: UpgradeType.MULTIPLIER, value: 0.16, targetItemId: [11] },
+    price: 29600000000000,
+    unlocked: false,
+  },
+  {
+    id: 2,
+    name: "Dab Synchronisé",
+    description: "+32 % de production du Dab, à chaque exemplaire.",
+    type: UpgradeType.MULTIPLIER,
+    effect: { type: UpgradeType.MULTIPLIER, value: 0.32, targetItemId: [11] },
+    price: 88800000000000,
+    unlocked: false,
+  },
+  {
+    id: 3,
+    name: "Dab au Ralenti",
+    description: "+15 % d'aura par clic, à chaque exemplaire.",
+    type: UpgradeType.CLICK,
+    effect: { type: UpgradeType.CLICK, value: 0.15, targetItemId: [11] },
+    price: 266400000000000,
+    unlocked: false,
+  },
+  {
+    id: 4,
+    name: "Dab Éternel",
+    description: "+80 % de production du Dab, à chaque exemplaire.",
+    type: UpgradeType.ITEM_BOOST,
+    effect: { type: UpgradeType.ITEM_BOOST, value: 0.8, targetItemId: [11] },
+    price: 799200000000000,
+    unlocked: false,
+  }
+];

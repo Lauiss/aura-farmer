@@ -27,7 +27,9 @@ export type UtilityStat =
   | 'gemCritChance'
   | 'gemAmount'
   | 'offlineHours'
-  | 'offlineRate';
+  | 'offlineRate'
+  | 'trickshotChance'
+  | 'trickshotPower';
 
 export interface UtilityUpgrade extends Purchasable {
   stat: UtilityStat;
@@ -83,7 +85,21 @@ export const UTILITIES: UtilityDefinition[] = [
       upgrade(6, 'DOOMSCROLL_UP_AUTOPILOT', 'autoScroll', 1, 5e13, 1)
     ]
   },
-  { id: 'trickshot', price: 50000000, chance: 0.03, upgrades: [] },
+  {
+    // Le trickshot partait trop rarement pour qu'on le voie, et rien ne
+    // permettait d'y remédier : il a maintenant sa chaîne, moitié fréquence
+    // moitié puissance.
+    id: 'trickshot',
+    price: 50000000,
+    chance: 0.03,
+    upgrades: [
+      upgrade(1, 'TRICKSHOT_UP_AIM', 'trickshotChance', 0.01, 200000000),
+      upgrade(2, 'TRICKSHOT_UP_CALIBER', 'trickshotPower', 2, 2000000000),
+      upgrade(3, 'TRICKSHOT_UP_SCOPE', 'trickshotChance', 0.015, 20000000000),
+      upgrade(4, 'TRICKSHOT_UP_NOSCOPE', 'trickshotPower', 4, 200000000000),
+      upgrade(5, 'TRICKSHOT_UP_COLLATERAL', 'trickshotChance', 0.02, 2000000000000)
+    ]
+  },
   {
     // Sommeil : la progression hors-ligne était figée à huit heures à plein
     // rendement, sans rien pour la faire progresser. Elle a maintenant sa

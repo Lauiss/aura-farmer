@@ -1,0 +1,138 @@
+<div class="battle-page">
+  <header class="bar">
+    @if (boss()) {
+      <button type="button" class="back" (click)="leaveFight()">&larr; {{ 'BATTLE_LEAVE' | translate }}</button>
+    } @else {
+      <button type="button" class="back" (click)="back()">&larr; {{ 'BACK' | translate }}</button>
+    }
+    <h1 class="heading">{{ 'BATTLE' | translate }}</h1>
+    <p class="rate">
+      {{ production() | formatAura }} <span>{{ 'AURA_PER_SECOND' | translate }}</span>
+    </p>
+  </header>
+
+  @if (boss(); as current) {
+    <!-- ------------------------------- Combat ------------------------------- -->
+    <main class="fight">
+      <section class="side boss">
+        <img [src]="bossIcon(current)" alt="" class="portrait">
+        <h2 class="name">{{ ('BOSS_' + current.id.toUpperCase()) | translate }}</h2>
+        <div class="bar-hp boss-hp">
+          <span [style.width.%]="bossRatio() * 100"></span>
+        </div>
+        <p class="hp">{{ bossHp() | formatAura }} / {{ bossMaxHp() | formatAura }}</p>
+      </section>
+
+      <section class="middle">
+        @if (lastRound(); as round) {
+          <div class="dice" [class]="'dice ' + round.outcome">
+            <p class="roll player">{{ round.playerRoll }}</p>
+            <p class="versus">{{ 'BATTLE_VS' | translate }}</p>
+            <p class="roll boss">{{ round.bossRoll }}</p>
+          </div>
+          <p class="log">
+            @switch (round.outcome) {
+              @case ('hit') {
+                {{ 'BATTLE_LOG_HIT' | translate: { action: round.actionName } }}
+                <strong>&minus;{{ round.damage | formatAura }}</strong>
+              }
+              @case ('taken') {
+                {{ 'BATTLE_LOG_TAKEN' | translate }}
+                <strong>&minus;{{ round.damage | formatAura }}</strong>
+              }
+              @default {
+                {{ 'BATTLE_LOG_CLASH' | translate }}
+              }
+            }
+          </p>
+        } @else {
+          <p class="log hint">{{ 'BATTLE_PICK_HINT' | translate: { faces: dieFaces } }}</p>
+        }
+
+        @switch (phase()) {
+          @case ('won') {
+            <div class="verdict won" role="status">
+              <p class="verdict-title">{{ 'BATTLE_WON' | translate }}</p>
+              <p class="verdict-gems">+{{ winnings() }} 💎</p>
+              @if (firstWin()) {
+                <p class="verdict-first">{{ 'BATTLE_FIRST_WIN' | translate }}</p>
+                <button type="button" class="action primary" (click)="wear(current)">
+                  {{ 'BATTLE_WEAR' | translate }}
+                </button>
+              }
+              <button type="button" class="action" (click)="leaveFight()">{{ 'BATTLE_LEAVE' | translate }}</button>
+            </div>
+          }
+          @case ('lost') {
+            <div class="verdict lost" role="status">
+              <p class="verdict-title">{{ 'BATTLE_LOST' | translate }}</p>
+              <p class="verdict-hint">{{ 'BATTLE_LOST_HINT' | translate }}</p>
+              <button type="button" class="action" (click)="leaveFight()">{{ 'BATTLE_LEAVE' | translate }}</button>
+            </div>
+          }
+        }
+      </section>
+
+      <section class="side player">
+        <h2 class="name">{{ 'BATTLE_YOU' | translate }}</h2>
+        <div class="bar-hp player-hp">
+          <span [style.width.%]="playerRatio() * 100"></span>
+        </div>
+        <p class="hp">{{ playerHp() | formatAura }} / {{ playerMaxHp() | formatAura }}</p>
+      </section>
+    </main>
+
+    @if (phase() === 'select') {
+      <footer class="actions-bar">
+        <p class="actions-title">{{ 'BATTLE_CHOOSE' | translate }}</p>
+        <div class="actions">
+          @for (item of actions(); track item.id) {
+            <button type="button" class="action-card" (click)="play(item)">
+              <span class="action-name">{{ item.name() }}</span>
+              <span class="action-damage">{{ damageOf(item) | formatAura }}</span>
+            </button>
+          }
+        </div>
+      </footer>
+    }
+  } @else {
+    <!-- ------------------------------ Liste ------------------------------ -->
+    <main class="roster">
+      <p class="lead">{{ 'BATTLE_LEAD' | translate }}</p>
+
+      <div class="bosses">
+        @for (entry of battles.catalogue; track entry.id) {
+          <article
+            class="boss-card"
+            [class.locked]="!battles.isUnlocked(entry.id)"
+            [class.defeated]="battles.isDefeated(entry.id)"
+          >
+            <img [src]="battles.isUnlocked(entry.id) ? bossIcon(entry) : ''" alt="" class="portrait">
+            <h2 class="name">
+              {{ battles.isUnlocked(entry.id) ? (('BOSS_' + entry.id.toUpperCase()) | translate) : '?????' }}
+            </h2>
+
+            @if (battles.isUnlocked(entry.id)) {
+              <p class="recommended" [class.short]="!isReady(entry)">
+                {{ 'BATTLE_RECOMMENDED' | translate }} {{ entry.recommended | formatAura }} /s
+              </p>
+              <p class="reward">{{ battles.reward(entry) }} 💎</p>
+
+              <button type="button" class="action primary" (click)="start(entry)">
+                {{ (battles.isDefeated(entry.id) ? 'BATTLE_REMATCH' : 'BATTLE_FIGHT') | translate }}
+              </button>
+
+              @if (battles.isDefeated(entry.id)) {
+                <button type="button" class="action" (click)="wear(entry)">
+                  {{ (battles.worn() === entry.id ? 'BATTLE_WORN' : 'BATTLE_WEAR') | translate }}
+                </button>
+              }
+            } @else {
+              <p class="recommended">{{ 'BATTLE_LOCKED' | translate }}</p>
+            }
+          </article>
+        }
+      </div>
+    </main>
+  }
+</div>

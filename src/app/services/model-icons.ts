@@ -14,6 +14,8 @@ import { createWeakPoint } from '../three/models/weak-point';
 import { createGem } from '../three/models/gem';
 import { createHourglass } from '../three/models/hourglass';
 import { createRelic } from '../three/models/relic';
+import { createBrainrot } from '../three/models/brainrot';
+import { BossId, bossDefinition } from '../../assets/static/bosses';
 import { renderToDataUrl } from '../three/snapshot';
 import * as THREE from 'three';
 
@@ -142,6 +144,17 @@ export class ModelIcons {
   gem(): string {
     return this.render('gem', () =>
       renderToDataUrl(createGem(), { size: 192, distance: 3.6, rotation: [0.12, 0.4, 0] })
+    );
+  }
+
+  /** Brainrot d'un boss de battle. */
+  boss(id: BossId): string {
+    return this.render(`boss-${id}`, () =>
+      renderToDataUrl(createBrainrot(bossDefinition(id)), {
+        size: 192,
+        distance: 7.6,
+        rotation: [0.05, 0.45, 0]
+      })
     );
   }
 
