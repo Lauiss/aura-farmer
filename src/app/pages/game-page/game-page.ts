@@ -14,6 +14,7 @@ import { AchievementsList } from '../../components/achievements-list/achievement
 import { ModelIcons } from '../../services/model-icons';
 import { GameLoop } from '../../services/game-loop';
 import { SpinCombo } from '../../services/spin-combo';
+import { CritStreak } from '../../services/crit-streak';
 import { WardrobeManager } from '../../services/wardrobe-manager';
 import { BackgroundManager } from '../../services/background-manager';
 import { UtilityManager } from '../../services/utility-manager';
@@ -53,6 +54,7 @@ export class GamePage {
   private readonly modelIcons = inject(ModelIcons);
   private readonly router = inject(Router);
   private readonly spinCombo = inject(SpinCombo);
+  readonly critStreak = inject(CritStreak);
   private readonly gameLoop = inject(GameLoop);
   readonly wardrobeManager = inject(WardrobeManager);
   readonly backgroundManager = inject(BackgroundManager);
@@ -96,6 +98,21 @@ export class GamePage {
 
   readonly reportBackFacing = (backFacing: boolean, dt: number) =>
     this.secretTracker.reportBackFacing(backFacing, dt);
+
+  /** Un point faible parti sans avoir été touché casse la série en cours. */
+  readonly reportWeakPointMissed = () => this.critStreak.miss();
+
+  /**
+   * Au-delà de ce multiplicateur, l'écran passe en « go fast » : des traînées
+   * filent sur les bords pour dire que la partie s'emballe.
+   */
+  readonly goFast = computed(() => this.spinCombo.multiplier() >= 10);
+
+  /**
+   * Position des traînées le long de chaque bord, en pourcentage. Fixée une
+   * fois : les recalculer ferait sauter les traînées à chaque image.
+   */
+  readonly speedLines = [6, 18, 31, 44, 57, 70, 83, 94];
 
   readonly shopIcon = this.modelIcons.shop();
   readonly trophyIcon = this.modelIcons.trophy(true);
@@ -142,12 +159,18 @@ export class GamePage {
     const multiplier = this.spinCombo.current();
     // Un point faible touché porte un coup critique, puis relance le combo.
     const critical = !!e && (this.viewer?.tryHitWeakPoint(e) ?? false);
-    const critMultiplier = critical ? this.utilityManager.critMultiplier() : 1;
+    // Les enchaîner paie : chaque point touché d'affilée multiplie davantage,
+    // jusqu'à cinq. Manquer un point remet la série à zéro.
+    const streak = critical ? this.critStreak.hit() : 0;
+    const critMultiplier = critical
+      ? this.utilityManager.critMultiplier() * this.critStreak.multiplier()
+      : 1;
 
     const delta = this.shopManager.clickValue() * multiplier * critMultiplier;
     this.auraManager.gain(delta);
     if (critical) {
-      this.spinCombo.boost(this.utilityManager.weakPointCombo());
+      // La série nourrit aussi le combo affiché, pas seulement le coup porté.
+      this.spinCombo.boost(this.utilityManager.weakPointCombo() * this.critStreak.multiplier());
       // De loin en loin, un critique fait aussi tomber une gemme.
       if (Math.random() < GamePage.CRIT_GEM_CHANCE) {
         this.collection.addGems(1);
@@ -160,7 +183,7 @@ export class GamePage {
 
     if (e && delta !== 0) {
       this.jellyButton(e);
-      this.spawnFloatingDelta(e.clientX, e.clientY, delta, multiplier, critical ? critMultiplier : 0);
+      this.spawnFloatingDelta(e.clientX, e.clientY, delta, multiplier, critical ? critMultiplier : 0, streak);
     }
 
     if (this.hasMewing()) {
@@ -173,7 +196,13 @@ export class GamePage {
       this.spinCombo.landTrickshot();
     }
 
-    this.soundManager.playFX(Sound.Plop);
+    // Le clic d'une série monte d'un cran à chaque point enchaîné : c'est ce
+    // qui se remarque avant même le chiffre.
+    if (streak > 1) {
+      this.soundManager.playPitched(Sound.Plop, this.critStreak.pitch());
+    } else {
+      this.soundManager.playFX(Sound.Plop);
+    }
   }
 
   /**
@@ -224,7 +253,7 @@ export class GamePage {
   }
 
   /** Crée un “+X” flottant à la position du clic (coordonnées écran) */
-  private spawnFloatingDelta(clientX: number, clientY: number, delta: number, multiplier = 1, critical = 0) {
+  private spawnFloatingDelta(clientX: number, clientY: number, delta: number, multiplier = 1, critical = 0, streak = 0) {
     const span = document.createElement('span');
     // tu peux réutiliser ton pipe si tu veux le même formatage :
     const formatted = new FormatAuraPipe().transform(delta >= 0 ? delta : -delta);
@@ -251,14 +280,19 @@ export class GamePage {
     // faible, avec son multiplicateur.
     if (critical > 0) {
       const crit = document.createElement('small');
-      crit.textContent = `${this.translate.instant('CRITICAL_HIT')} ×${critical}`;
+      // La série se lit dans le même souffle que le critique : c'est elle qui
+      // explique le chiffre qui gonfle.
+      const label = streak > 1
+        ? `${this.translate.instant('CRIT_STREAK')} ×${streak}`
+        : this.translate.instant('CRITICAL_HIT');
+      crit.textContent = `${label} ×${critical.toFixed(1)}`;
       Object.assign(crit.style, {
         display: 'block',
         fontSize: '18px',
         fontWeight: '800',
         letterSpacing: '0.16em',
         textTransform: 'uppercase',
-        color: '#5fd4ff'
+        color: streak >= 5 ? '#ffd166' : '#5fd4ff'
       } as CSSStyleDeclaration);
       span.prepend(crit);
     }

@@ -2,6 +2,11 @@
   <div class="combo" [class]="'combo tier-' + tier()" role="status" aria-live="polite">
     <p class="value">&times;{{ display() }}</p>
     <p class="tier">{{ tierLabel() | translate }}</p>
+    @if (streak.active()) {
+      <p class="streak" [class.maxed]="streak.maxed()">
+        {{ 'CRIT_STREAK' | translate }} &times;{{ streak.count() }}
+      </p>
+    }
     @if (combo.turns() > 0) {
       <p class="turns">{{ combo.turns() }} {{ 'COMBO_TURNS' | translate }}</p>
     }

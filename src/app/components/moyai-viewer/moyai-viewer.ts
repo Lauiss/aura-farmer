@@ -90,6 +90,13 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   readonly backFacingReporter = input<((backFacing: boolean, dt: number) => void) | null>(null);
 
   /**
+   * Signale un point faible éteint sans avoir été touché, pour que la série
+   * en cours retombe. Rappel plutôt que sortie, comme les deux précédents :
+   * il part de la boucle de rendu, hors de la zone Angular.
+   */
+  readonly weakPointMissedReporter = input<(() => void) | null>(null);
+
+  /**
    * Une statue manipulable reçoit un `click` à la fin de chaque rotation à la
    * souris. Sans ce filtre, faire tourner le moyai rapporterait de l'aura.
    */
@@ -466,7 +473,8 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
         const closing = this.weakTimer < 0.5 && Math.sin(this.weakAge * 40) < 0;
         point.scale.setScalar(config.size * appear);
         animateWeakPoint(point, this.weakAge, closing ? 0.35 : 1);
-        if (this.weakTimer <= 0) this.hideWeakPoint(config);
+        // Éteint sans avoir été touché : la série en cours est perdue.
+        if (this.weakTimer <= 0) this.hideWeakPoint(config, true);
         break;
       }
 
@@ -474,16 +482,17 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
         const t = 1 - Math.max(0, this.weakTimer) / MoyaiViewer.WEAK_POP_DURATION;
         point.scale.setScalar(config.size * (1 + t * 1.6));
         animateWeakPoint(point, this.weakAge, 1 - t);
-        if (this.weakTimer <= 0) this.hideWeakPoint(config);
+        if (this.weakTimer <= 0) this.hideWeakPoint(config, false);
         break;
       }
     }
   }
 
-  private hideWeakPoint(config: WeakPointConfig): void {
+  private hideWeakPoint(config: WeakPointConfig, missed: boolean): void {
     if (this.weakPoint) this.weakPoint.visible = false;
     this.weakState = 'hidden';
     this.weakTimer = config.respawn;
+    if (missed) this.weakPointMissedReporter()?.();
   }
 
   /**

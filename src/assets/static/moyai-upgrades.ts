@@ -2,6 +2,7 @@ import { signal } from "@angular/core";
 import { MoyaiUpgrades } from "../../app/components/aura-btn/aura-btn";
 import { UpgradeType } from "../../app/services/shop-manager";
 import { outfitUpgrades } from "./outfit-upgrades";
+import { sortByPrice } from "./order";
 
 export const moyaiUpgrades: MoyaiUpgrades[] = [
     {
@@ -79,5 +80,10 @@ export const moyaiUpgrades: MoyaiUpgrades[] = [
 // Rattachement par nom : les améliorations vivent dans leur propre fichier,
 // et la liste des pièces reste lisible.
 for (const upgrade of moyaiUpgrades) {
-    upgrade.upgrades = outfitUpgrades[upgrade.name] ?? [];
+    upgrade.upgrades = sortByPrice(outfitUpgrades[upgrade.name] ?? []);
 }
+
+// Les pièces étaient écrites dans l'ordre où elles ont été imaginées, pas dans
+// celui où on peut se les offrir : la branche Outfit sautait de 2 000 à
+// 30 millions pour revenir à 25 000.
+sortByPrice(moyaiUpgrades);

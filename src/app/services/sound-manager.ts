@@ -31,6 +31,25 @@ export class SoundManager {
     this.sounds[sound].play();
   }
 
+  /**
+   * Joue un effet à une hauteur donnée : `rate` vaut 1 pour le son d'origine,
+   * davantage pour le monter.
+   *
+   * L'élément est cloné, sinon deux coups rapprochés se couperaient l'un
+   * l'autre — et c'est justement l'enchaînement qu'on veut entendre.
+   * `preservesPitch` garde la hauteur d'origine par défaut : le désactiver est
+   * tout l'intérêt de la méthode.
+   */
+  public playPitched(sound: Sound, rate: number): void {
+    const audio = this.sounds[sound].cloneNode() as HTMLAudioElement & {
+      preservesPitch?: boolean;
+    };
+    audio.volume = this.fxVolume();
+    audio.preservesPitch = false;
+    audio.playbackRate = rate;
+    audio.play();
+  }
+
   public changeMusic(newSound: Sound): void {
     if (this.currentMusic) {
       this.currentMusic.pause();

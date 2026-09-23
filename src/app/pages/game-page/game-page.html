@@ -1,4 +1,4 @@
-<div class="game-screen">
+<div class="game-screen" [class.go-fast]="goFast()">
   <!-- La scène est posée en fond, les informations par-dessus. -->
   <app-moyai-viewer
     #btn
@@ -7,6 +7,7 @@
     [idleSpin]="0"
     [spinReporter]="reportSpin"
     [backFacingReporter]="reportBackFacing"
+    [weakPointMissedReporter]="reportWeakPointMissed"
     [cosmetics]="wardrobeManager.equipped()"
     [background]="backgroundManager.selected()"
     [distance]="heroDistance()"
@@ -16,6 +17,16 @@
     [autoSpin]="utilityManager.autoSpin()"
     (clicked)="increment($event)"
   ></app-moyai-viewer>
+
+  @if (goFast()) {
+    <!-- Traînées de vitesse : elles ne disent rien de plus que le chiffre,
+         elles disent que ça va vite. -->
+    <div class="speed-lines" aria-hidden="true">
+      @for (line of speedLines; track line) {
+        <span class="speed-line" [style.--offset]="line"></span>
+      }
+    </div>
+  }
 
   <div class="overlay">
   <header class="counters">

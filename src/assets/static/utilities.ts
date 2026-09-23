@@ -1,4 +1,5 @@
 import type { Purchasable } from '../../app/services/shop-manager';
+import { sortByPrice } from './order';
 
 /**
  * Utilitaires vendus dans la branche du même nom : des achats qui ajoutent une
@@ -90,3 +91,10 @@ export const UTILITIES: UtilityDefinition[] = [
     ]
   }
 ];
+
+// La rotation, à 25 000, était écrite en dernier alors qu'elle s'offre avant
+// le doomscrolling : la branche se parcourt du moins cher au plus cher.
+sortByPrice(UTILITIES);
+for (const utility of UTILITIES) {
+  sortByPrice(utility.upgrades);
+}

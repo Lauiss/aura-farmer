@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { chisel, createRandom, loft, mesh } from '../geometry';
 import type { Purchasable } from '../../services/shop-manager';
+import { sortByPrice } from '../../../assets/static/order';
 
 /**
  * Décors de fond, en low poly.
@@ -48,11 +49,21 @@ function backgroundUpgrades(bonus: number, price: number): BackgroundUpgrade[] {
   }));
 }
 
-export const BACKGROUNDS: readonly BackgroundDefinition[] = [
+const CATALOGUE: BackgroundDefinition[] = [
   { id: 'city', sky: 0x1d2433, bonus: 0.25, price: 1000000, upgrades: backgroundUpgrades(0.25, 1000000) },
   { id: 'mountains', sky: 0x23303a, bonus: 0.5, price: 100000000, upgrades: backgroundUpgrades(0.5, 100000000) },
   { id: 'dusk', sky: 0x3a2233, bonus: 1, price: 10000000000, upgrades: backgroundUpgrades(1, 10000000000) }
 ];
+
+// Les décors sont déjà écrits dans l'ordre, mais le tri le garantit si l'on en
+// intercale un plus tard. Il se fait avant l'export, qui reste en lecture
+// seule pour les consommateurs.
+sortByPrice(CATALOGUE);
+for (const background of CATALOGUE) {
+  sortByPrice(background.upgrades);
+}
+
+export const BACKGROUNDS: readonly BackgroundDefinition[] = CATALOGUE;
 
 /** Repères de la scène de fond : assez large pour couvrir les écrans étirés. */
 const HALF_WIDTH = 26;

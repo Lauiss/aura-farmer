@@ -9,6 +9,7 @@ import { OfflineProgressAnnouncer } from '../components/offline-progress-announc
 import { createAchievements } from '../../assets/static/achievements';
 import { StyleBonus } from './style-bonus';
 import { SecretTracker } from './secret-tracker';
+import { SpinCombo } from './spin-combo';
 
 /**
  * Boucle de jeu : production d'aura passive, vérification des succès et
@@ -33,6 +34,7 @@ export class GameLoop {
   private readonly modalManager = inject(ModalManager);
   private readonly styleBonus = inject(StyleBonus);
   private readonly secretTracker = inject(SecretTracker);
+  private readonly spinCombo = inject(SpinCombo);
 
   private started = false;
 
@@ -71,9 +73,13 @@ export class GameLoop {
 
   private startAuraGain() {
     interval(1000).subscribe(() => {
-      if(this.shopManager.getTotalValue() > 0){
-        this.auraManager.auraCount.update(current => current + this.shopManager.getTotalValue());
-        this.auraManager.allTimeAura.update(total => total + this.shopManager.getTotalValue());
+      // Le combo ne dope plus seulement le clic : entretenir la rotation fait
+      // aussi monter la production passive, sans quoi le multiplicateur ne
+      // servait à rien dès qu'on cessait de cliquer.
+      const gain = this.shopManager.getTotalValue() * this.spinCombo.current();
+      if(gain > 0){
+        this.auraManager.auraCount.update(current => current + gain);
+        this.auraManager.allTimeAura.update(total => total + gain);
       }
       // Vérifier les achievements toutes les secondes
       this.achievementsManager.checkAchievements();
@@ -118,7 +124,11 @@ export class GameLoop {
       totalClicks: this.achievementsManager.totalClicks()
     }
 
-    if (moyaiUpgrades[0].unlocked){
+    // La progression hors-ligne ne démarre qu'une fois la partie vraiment
+    // lancée. Le test portait sur la première pièce de la liste : celle-ci
+    // étant désormais triée par prix, il faut dire ce qu'on voulait vraiment
+    // dire — qu'au moins une pièce a été achetée.
+    if (moyaiUpgrades.some(piece => piece.unlocked)){
       saveData.lastSaveTime = Date.now();
     }
 

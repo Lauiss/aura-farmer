@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { SpinCombo } from '../../services/spin-combo';
+import { CritStreak } from '../../services/crit-streak';
 
 /**
  * Affichage du combo de rotation : un gros multiplicateur qui gonfle avec
@@ -17,9 +18,10 @@ import { SpinCombo } from '../../services/spin-combo';
 export class ComboMeter {
 
   readonly combo = inject(SpinCombo);
+  readonly streak = inject(CritStreak);
 
-  /** Visible dès que le combo dépasse le simple. */
-  readonly active = computed(() => this.combo.multiplier() > 1);
+  /** Visible dès que le combo dépasse le simple, ou qu'une série court. */
+  readonly active = computed(() => this.combo.multiplier() > 1 || this.streak.active());
 
   /** Palier, qui commande à la fois le libellé et l'intensité visuelle. */
   readonly tier = computed(() => {

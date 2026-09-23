@@ -24,7 +24,9 @@
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   color: $menu-accent;
-  text-shadow: 0 0 24px rgba(232, 184, 75, 0.45);
+  // Ombre portée sombre et non halo coloré : elle sert à détacher le chiffre
+  // du décor, comme les compteurs, pas à le faire briller.
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75);
 }
 
 .tier {
@@ -33,6 +35,20 @@
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: $menu-text-dim;
+}
+
+.streak {
+  font-size: 0.9rem;
+  font-weight: $menu-weight-strong;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #5fd4ff;
+  font-variant-numeric: tabular-nums;
+}
+
+// Série au plafond : elle passe à l'ambre, comme le chiffre du combo.
+.streak.maxed {
+  color: $menu-accent;
 }
 
 .turns {
@@ -45,20 +61,19 @@
 }
 
 /* --- Paliers : la couleur chauffe avec l'élan --- */
+// Seules la couleur et la taille marquent le palier. Les halos ont été
+// retirés : ils noyaient le chiffre au lieu de le mettre en avant.
 .tier-locked .value {
   color: #ffd166;
-  text-shadow: 0 0 28px rgba(255, 209, 102, 0.55);
 }
 
 .tier-cracked .value {
   color: #ff9f45;
-  text-shadow: 0 0 34px rgba(255, 159, 69, 0.6);
   font-size: 3.6rem;
 }
 
 .tier-ascended .value {
   color: #ff6b3d;
-  text-shadow: 0 0 44px rgba(255, 107, 61, 0.7);
   font-size: 4rem;
   animation: throb 0.6s ease-in-out infinite alternate;
 }

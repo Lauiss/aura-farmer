@@ -1,12 +1,18 @@
-name: Build and Deploy to Itch.io
+name: Build and Deploy
 
 on:
   push:
     branches:
       - main
 
+# Nécessaires au dépôt sur GitHub Pages : l'action publie via OIDC.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,6 +30,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # `--base-href ./` rend tous les liens relatifs : la même archive sert
+      # sur itch (`/html/<id>/`) comme sur Pages (`/aura-farmer/`).
       - name: Build Angular app
         run: npm run build -- --configuration production --base-href ./ --output-path=dist/aura-farmer
 
@@ -56,3 +64,29 @@ jobs:
           echo "User: $ITCH_USER | Game: $ITCH_GAME | Channel: $ITCH_CHANNEL"
           test -f dist/aura-farmer/browser/index.html
           butler push "dist/aura-farmer/browser" "$ITCH_USER/$ITCH_GAME:$ITCH_CHANNEL"
+
+      # 7. Préparer la même archive pour GitHub Pages
+      # `.nojekyll` désactive Jekyll, qui ignorerait tout fichier ou dossier
+      # commençant par un souligné.
+      - name: Prepare GitHub Pages artifact
+        run: touch dist/aura-farmer/browser/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/aura-farmer/browser
+
+  # Le dépôt sur Pages se fait dans un job à part : c'est ce qu'exige
+  # `deploy-pages`, qui publie dans l'environnement `github-pages`. Il réutilise
+  # l'archive du build, si bien qu'itch et Pages servent exactement les mêmes
+  # fichiers.
+  github-pages:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

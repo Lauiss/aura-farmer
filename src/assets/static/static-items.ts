@@ -1,5 +1,6 @@
 import { computed, signal } from "@angular/core";
 import { Item } from "../../app/services/shop-manager";
+import { sortByPrice } from "./order";
 import { bicepsUpgrades, fartUpgrades, gamingUpgrades, jawlineUpgrades, mewingUpgrades, monetizeUpgrades, rizzUpgrades, silenceUpgrades } from "./item_upgrades";
 
 export const shopItems: Item[] = [
@@ -159,3 +160,11 @@ export const shopItems: Item[] = [
     icon: 'assets/imgs/upgrades/monetize_aura.png'
   },
 ];
+
+// Chaque chaîne d'améliorations se déroule du moins cher au plus cher.
+// La liste des articles, elle, n'est pas triée : ses `displayCondition` se
+// renvoient l'une à l'autre par position (`shopItems[6]`), et elle est déjà
+// écrite dans l'ordre des prix.
+for (const item of shopItems) {
+  if (item.upgrades) sortByPrice(item.upgrades);
+}
