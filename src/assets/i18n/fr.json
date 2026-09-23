@@ -333,5 +333,12 @@
     "STAT_COMBO_SPEED": "Bonus de vitesse : +{{from}} → +{{to}}",
     "STAT_COMBO_TURN": "Bonus par tour : +{{from}} → +{{to}}",
     "STAT_COMBO_FLOOR": "Multiplicateur de base : ×{{from}} → ×{{to}}",
-    "STAT_COMBO_HOLD": "Tenue du combo : {{from}} % → {{to}} %"
+    "STAT_COMBO_HOLD": "Tenue du combo : {{from}} % → {{to}} %",
+    "HINT_AND_MORE": "…et {{count}} autres !",
+    "BACKGROUND_SHORE": "Rivage",
+    "BACKGROUND_VOID": "Le Vide",
+    "WARDROBE_BRAINROTS": "Brainrots",
+    "WARDROBE_BRAINROTS_NOTE": "Ceux que tu as vaincus prennent la place de la statue. Les accessoires ne les suivent pas.",
+    "WARDROBE_MOYAI": "Moyai d'origine",
+    "BATTLE_OWNED": "Vaincu — porte-le dans la garde-robe"
 }

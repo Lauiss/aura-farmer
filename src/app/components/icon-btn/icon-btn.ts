@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
+import { Sound, SoundManager } from '../../services/sound-manager';
 import { TranslatePipe } from '@ngx-translate/core';
 
 /**
@@ -16,6 +17,10 @@ import { TranslatePipe } from '@ngx-translate/core';
  *   n'apparaît jamais au clavier et son annonce dépend du lecteur d'écran ;
  * - un cadre, un curseur de pointage et une réaction au survol, pour que le
  *   bouton se lise comme tel avant même d'être survolé.
+ *
+ * Le petit bruit de clic part d'ici plutôt que de chaque appelant : il ne peut
+ * ainsi être oublié nulle part, et sa hauteur est légèrement tirée au sort à
+ * chaque fois pour qu'une série d'appuis ne sonne pas comme un métronome.
  */
 @Component({
   selector: 'app-icon-btn',
@@ -35,7 +40,11 @@ export class IconBtn {
 
   readonly activate = output<void>();
 
+  private readonly soundManager = inject(SoundManager);
+
   onClick(): void {
-    if (!this.disabled()) this.activate.emit();
+    if (this.disabled()) return;
+    this.soundManager.playPitched(Sound.Plop, 1.35 + Math.random() * 0.12);
+    this.activate.emit();
   }
 }

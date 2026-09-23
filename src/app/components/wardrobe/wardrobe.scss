@@ -85,3 +85,10 @@
     color: $menu-text-dim;
   }
 }
+
+// Précision sous un intitulé de section, quand le libellé seul ne suffit pas.
+.section-note {
+  margin-bottom: $spacing-100;
+  font-size: $menu-size-small;
+  color: $menu-text-dim;
+}

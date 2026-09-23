@@ -551,3 +551,10 @@
   flex-direction: column;
   gap: $spacing-50;
 }
+
+// Boss déjà vaincu : on dit où se règle le port, faute de le régler ici.
+.owned-note {
+  font-size: 0.75rem;
+  color: $menu-accent;
+  text-align: center;
+}

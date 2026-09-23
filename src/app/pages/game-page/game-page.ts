@@ -141,39 +141,32 @@ export class GamePage {
   readonly gearIcon = this.modelIcons.gear();
 
   openShop() {
-    this.soundManager.playFX(Sound.Plop);
     this.router.navigate(['/shop']);
   }
 
   openWardrobe() {
-    this.soundManager.playFX(Sound.Plop);
     this.modalManager.open(Wardrobe);
   }
 
   openBattles() {
     // Cliquer la cible éteint le projecteur : l'explication a porté.
     this.onboarding.dismiss();
-    this.soundManager.playFX(Sound.Plop);
     this.router.navigate(['/battle']);
   }
 
   openStore() {
-    this.soundManager.playFX(Sound.Plop);
     this.router.navigate(['/store']);
   }
 
   openCollection() {
-    this.soundManager.playFX(Sound.Plop);
     this.router.navigate(['/collection']);
   }
 
   openAchievements() {
-    this.soundManager.playFX(Sound.Plop);
     this.modalManager.open(AchievementsList, undefined, 'xl');
   }
 
   openSettings() {
-    this.soundManager.playFX(Sound.Plop);
     this.modalManager.open(Settings);
   }
 

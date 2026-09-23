@@ -192,9 +192,9 @@
               </button>
 
               @if (battles.isDefeated(entry.id)) {
-                <button type="button" class="action" (click)="wear(entry)">
-                  {{ (battles.worn() === entry.id ? 'BATTLE_WORN' : 'BATTLE_WEAR') | translate }}
-                </button>
+                <!-- Le port se règle dans la garde-robe, avec le reste de ce
+                     qu'on peut arborer : ici on se bat, on ne s'habille pas. -->
+                <p class="owned-note">{{ 'BATTLE_OWNED' | translate }}</p>
               }
             } @else {
               <p class="recommended">{{ 'BATTLE_LOCKED' | translate }}</p>

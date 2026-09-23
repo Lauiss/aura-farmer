@@ -9,6 +9,8 @@ export interface MoyaiMessage {
   body?: string;
   /** Clé de traduction du corps du message. */
   bodyKey?: string;
+  /** Paramètres d'interpolation de `bodyKey`, s'il en attend. */
+  params?: Record<string, unknown>;
   /** Image à afficher à la place de la tête, par exemple un trophée. */
   icon?: string;
   durationMs: number;
@@ -35,6 +37,22 @@ export class HintManager {
   private timer?: ReturnType<typeof setTimeout>;
   private nextId = 1;
 
+  /**
+   * Durée plancher d'un message, et longueur de file au-delà de laquelle on y
+   * tend. Débloquer dix succès d'un coup enchaînait dix messages de quatre
+   * secondes et demie : trois quarts de minute à regarder défiler avant de
+   * pouvoir rejouer.
+   */
+  private static readonly MIN_DURATION_MS = 1100;
+  private static readonly RUSH_AT = 4;
+
+  /**
+   * Au-delà de cette longueur, la file est résumée en un seul message. Les
+   * annonces au-delà de la dizaine n'apprennent plus rien, elles font juste
+   * attendre.
+   */
+  private static readonly MAX_QUEUE = 6;
+
   /** Indication simple, à partir d'une clé de traduction. */
   show(bodyKey: string, durationMs = 4000): void {
     this.enqueue({ id: this.nextId++, bodyKey, durationMs });
@@ -50,7 +68,20 @@ export class HintManager {
     clearTimeout(this.timer);
     const following = this.queue.shift() ?? null;
     this.current.set(following);
-    if (following) this.timer = setTimeout(() => this.next(), following.durationMs);
+    if (following) this.timer = setTimeout(() => this.next(), this.displayTime(following));
+  }
+
+  /**
+   * Temps d'affichage réel : d'autant plus court que la file est longue. Un
+   * message isolé garde sa durée pleine, une avalanche défile au pas de
+   * course sans jamais descendre sous le seuil de lisibilité.
+   */
+  private displayTime(message: MoyaiMessage): number {
+    if (this.queue.length === 0) return message.durationMs;
+    const rush = Math.min(1, this.queue.length / HintManager.RUSH_AT);
+    return Math.round(
+      message.durationMs + (HintManager.MIN_DURATION_MS - message.durationMs) * rush
+    );
   }
 
   hide(): void {
@@ -64,9 +95,35 @@ export class HintManager {
     // d'un coup doit les montrer tous les trois.
     if (this.current()) {
       this.queue.push(message);
+      this.collapse();
       return;
     }
     this.current.set(message);
-    this.timer = setTimeout(() => this.next(), message.durationMs);
+    this.timer = setTimeout(() => this.next(), this.displayTime(message));
+  }
+
+  /**
+   * Replie une file trop longue en un unique décompte. On garde les premiers
+   * messages, qui portent l'information, et on remplace la traîne par « et N
+   * autres » plutôt que de la faire défiler.
+   */
+  private collapse(): void {
+    if (this.queue.length <= HintManager.MAX_QUEUE) return;
+
+    const kept = this.queue.slice(0, HintManager.MAX_QUEUE - 1);
+    // Le décompte s'additionne au lieu de repartir de zéro : un résumé déjà
+    // présent dans la traîne emporte son propre total avec lui, sinon replier
+    // deux fois de suite annonçait « et 2 autres » après en avoir masqué dix.
+    const dropped = this.queue
+      .slice(kept.length)
+      .reduce((total, message) => total + ((message.params?.['count'] as number) ?? 1), 0);
+
+    kept.push({
+      id: this.nextId++,
+      bodyKey: 'HINT_AND_MORE',
+      params: { count: dropped },
+      durationMs: 2600
+    });
+    this.queue = kept;
   }
 }

@@ -333,5 +333,12 @@
     "STAT_COMBO_SPEED": "Speed bonus: +{{from}} → +{{to}}",
     "STAT_COMBO_TURN": "Bonus per spin: +{{from}} → +{{to}}",
     "STAT_COMBO_FLOOR": "Base multiplier: ×{{from}} → ×{{to}}",
-    "STAT_COMBO_HOLD": "Combo hold: {{from}} % → {{to}} %"
+    "STAT_COMBO_HOLD": "Combo hold: {{from}} % → {{to}} %",
+    "HINT_AND_MORE": "…and {{count}} more!",
+    "BACKGROUND_SHORE": "Shore",
+    "BACKGROUND_VOID": "The Void",
+    "WARDROBE_BRAINROTS": "Brainrots",
+    "WARDROBE_BRAINROTS_NOTE": "The ones you beat take the statue's place. Accessories do not follow them.",
+    "WARDROBE_MOYAI": "Original moyai",
+    "BATTLE_OWNED": "Beaten — wear it from the wardrobe"
 }

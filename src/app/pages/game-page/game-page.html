@@ -48,6 +48,7 @@
       <app-moyai-viewer
         class="aura-mark"
         [interactive]="false"
+        [maxFps]="20"
         [idleSpin]="0.9"
         [distance]="4.4"
         aria-hidden="true"
@@ -60,6 +61,7 @@
       <app-moyai-viewer
         class="aura-mark small"
         [interactive]="false"
+        [maxFps]="20"
         [idleSpin]="0.9"
         [distance]="4.4"
         aria-hidden="true"
@@ -84,7 +86,7 @@
 
   <nav class="actions">
     <app-icon-btn [icon]="shopIcon" label="SHOP" (activate)="openShop()"></app-icon-btn>
-    @if (wardrobeManager.hasAny() || backgroundManager.hasAny()) {
+    @if (wardrobeManager.hasAny() || backgroundManager.hasAny() || battles.defeatedCount() > 0) {
       <app-icon-btn [icon]="hangerIcon" label="WARDROBE" (activate)="openWardrobe()"></app-icon-btn>
     }
     @if (showBattles()) {

@@ -24,6 +24,45 @@
     </ul>
   }
 
+  @if (defeated().length) {
+    <section class="scenery">
+      <h3>{{ 'WARDROBE_BRAINROTS' | translate }}</h3>
+      <p class="section-note">{{ 'WARDROBE_BRAINROTS_NOTE' | translate }}</p>
+      <ul class="pieces">
+        <li>
+          <button
+            type="button"
+            class="piece"
+            [class.worn]="battles.worn() === null"
+            [attr.aria-pressed]="battles.worn() === null"
+            (click)="selectBrainrot(null)"
+          >
+            <span class="name">{{ 'WARDROBE_MOYAI' | translate }}</span>
+            <span class="state">
+              {{ (battles.worn() === null ? 'WARDROBE_WORN' : 'WARDROBE_STORED') | translate }}
+            </span>
+          </button>
+        </li>
+        @for (boss of defeated(); track boss.id) {
+          <li>
+            <button
+              type="button"
+              class="piece"
+              [class.worn]="battles.worn() === boss.id"
+              [attr.aria-pressed]="battles.worn() === boss.id"
+              (click)="selectBrainrot(boss.id)"
+            >
+              <span class="name">{{ ('BOSS_' + boss.id.toUpperCase()) | translate }}</span>
+              <span class="state">
+                {{ (battles.worn() === boss.id ? 'WARDROBE_WORN' : 'WARDROBE_STORED') | translate }}
+              </span>
+            </button>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+
   @if (backgrounds.hasAny()) {
     <section class="scenery">
       <h3>{{ 'BACKGROUNDS' | translate }}</h3>

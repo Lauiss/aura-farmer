@@ -85,3 +85,30 @@
     transform: none;
   }
 }
+
+/* --- Réaction à l'appui ------------------------------------------------ */
+// Le bouton s'enfonce sous le doigt et se relève au survol. Les deux gestes
+// sont brefs : on les sent sans les regarder.
+.icon-btn {
+  transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.15s ease;
+}
+
+.icon-btn:hover:not(:disabled),
+.icon-btn:focus-visible:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.icon-btn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.94);
+  transition-duration: 0.05s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-btn,
+  .icon-btn:hover:not(:disabled),
+  .icon-btn:focus-visible:not(:disabled),
+  .icon-btn:active:not(:disabled) {
+    transform: none;
+    transition: none;
+  }
+}

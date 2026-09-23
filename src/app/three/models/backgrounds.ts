@@ -11,7 +11,7 @@ import { sortByPrice } from '../../../assets/static/order';
  * puisque c'est la caméra qui orbite et non la statue.
  */
 
-export type BackgroundId = 'city' | 'mountains' | 'dusk';
+export type BackgroundId = 'city' | 'mountains' | 'dusk' | 'shore' | 'void';
 
 export interface BackgroundDefinition {
   id: BackgroundId;
@@ -52,7 +52,9 @@ function backgroundUpgrades(bonus: number, price: number): BackgroundUpgrade[] {
 const CATALOGUE: BackgroundDefinition[] = [
   { id: 'city', sky: 0x2b3a57, bonus: 0.25, price: 1000000, upgrades: backgroundUpgrades(0.25, 1000000) },
   { id: 'mountains', sky: 0x3b5068, bonus: 0.5, price: 100000000, upgrades: backgroundUpgrades(0.5, 100000000) },
-  { id: 'dusk', sky: 0x2a1b33, bonus: 1, price: 10000000000, upgrades: backgroundUpgrades(1, 10000000000) }
+  { id: 'dusk', sky: 0x2a1b33, bonus: 1, price: 10000000000, upgrades: backgroundUpgrades(1, 10000000000) },
+  { id: 'shore', sky: 0x3f6f8c, bonus: 2, price: 8e11, upgrades: backgroundUpgrades(2, 8e11) },
+  { id: 'void', sky: 0x0d0b16, bonus: 4, price: 6e13, upgrades: backgroundUpgrades(4, 6e13) }
 ];
 
 // Les décors sont déjà écrits dans l'ordre, mais le tri le garantit si l'on en
@@ -230,10 +232,138 @@ function createDusk(random: () => number): THREE.Group {
   return group;
 }
 
+/**
+ * Rivage : une mer facettée jusqu'à l'horizon, quelques îlots et des palmiers.
+ * L'eau est le seul plan clair du jeu, ce qui change franchement l'ambiance.
+ */
+function createShore(random: () => number): THREE.Group {
+  const group = new THREE.Group();
+  group.add(sky(0x3f6f8c));
+
+  // La mer : des bandes de plus en plus claires vers l'horizon, ce qui suffit
+  // à donner la profondeur sans reflets.
+  const bands: [number, number, number][] = [
+    [-34, -18, 0x1d4a63],
+    [-18, -6, 0x246079],
+    [-6, 6, 0x2d7791]
+  ];
+  for (const [from, to, color] of bands) {
+    const water = mesh(new THREE.PlaneGeometry(SKY_WIDTH, to - from), flat(color), [0, GROUND_Y, (from + to) / 2]);
+    water.rotation.x = -Math.PI / 2;
+    group.add(water);
+  }
+
+  // Îlots, chacun coiffé d'un palmier sommaire : un fût penché et une
+  // couronne de palmes.
+  for (let i = 0; i < 6; i++) {
+    const x = -HALF_WIDTH + (i / 5) * HALF_WIDTH * 2 + (random() - 0.5) * 3;
+    const z = -20 + random() * 10;
+    const width = 1.6 + random() * 1.4;
+
+    group.add(
+      mesh(
+        chisel(loft([
+          { y: GROUND_Y, halfWidth: width, front: width, back: -width, chamfer: 0.36 },
+          { y: GROUND_Y + 0.8, halfWidth: width * 0.7, front: width * 0.7, back: -width * 0.7, chamfer: 0.36 }
+        ]), 0.1, random),
+        flat(0xd8c48c),
+        [x, 0, z]
+      )
+    );
+
+    const lean = (random() - 0.5) * 0.4;
+    group.add(
+      mesh(
+        loft([
+          { y: GROUND_Y + 0.6, halfWidth: 0.16, front: 0.16, back: -0.16, chamfer: 0.34 },
+          { y: GROUND_Y + 3.4, halfWidth: 0.1, front: 0.1, back: -0.1, chamfer: 0.34 }
+        ]),
+        flat(0x6b5539),
+        [x, 0, z],
+        [0, 0, lean]
+      )
+    );
+    for (let p = 0; p < 4; p++) {
+      group.add(
+        mesh(
+          loft([
+            { y: GROUND_Y + 3.3, halfWidth: 0.9, front: 0.3, back: -0.3, chamfer: 0.4 },
+            { y: GROUND_Y + 3.6, halfWidth: 0.7, front: 0.22, back: -0.22, chamfer: 0.4 }
+          ]),
+          flat(0x4e8f4a),
+          [x + Math.cos((p * Math.PI) / 2) * 0.7 + lean * -3, 0, z + Math.sin((p * Math.PI) / 2) * 0.7],
+          [0, (p * Math.PI) / 2, 0.25]
+        )
+      );
+    }
+  }
+
+  return group;
+}
+
+/**
+ * Le Vide : pas d'horizon, pas de sol, des éclats de pierre qui flottent dans
+ * le noir. C'est le décor le plus cher, donc celui qui doit le moins
+ * ressembler aux autres — il est le seul sans ligne d'horizon.
+ */
+function createVoid(random: () => number): THREE.Group {
+  const group = new THREE.Group();
+  group.add(sky(0x0d0b16));
+
+  // Étoiles : de simples points clairs, semés loin derrière.
+  const star = new THREE.MeshBasicMaterial({ color: 0xcfd6ff });
+  for (let i = 0; i < 90; i++) {
+    group.add(
+      mesh(new THREE.SphereGeometry(0.06 + random() * 0.09, 4, 3), star, [
+        (random() - 0.5) * 90,
+        -14 + random() * 34,
+        -28 + random() * 6
+      ])
+    );
+  }
+
+  // Éclats de roche en suspension, du plus lointain au plus proche.
+  for (let i = 0; i < 16; i++) {
+    const size = 0.5 + random() * 1.8;
+    const depth = -26 + random() * 16;
+    group.add(
+      mesh(
+        chisel(loft([
+          { y: -size, halfWidth: size * 0.5, front: size * 0.5, back: -size * 0.5, chamfer: 0.3 },
+          { y: 0, halfWidth: size, front: size * 0.8, back: -size * 0.8, chamfer: 0.26 },
+          { y: size * 0.7, halfWidth: size * 0.4, front: size * 0.4, back: -size * 0.4, chamfer: 0.32 }
+        ]), 0.22, random),
+        flat(0x2e2a3d),
+        [(random() - 0.5) * 46, -12 + random() * 26, depth],
+        [random() * 3, random() * 3, random() * 3]
+      )
+    );
+  }
+
+  // Une lueur violette au centre, qui détache la silhouette de la statue.
+  group.add(
+    mesh(
+      new THREE.CircleGeometry(7, 12),
+      new THREE.MeshBasicMaterial({
+        color: 0x3b2359,
+        transparent: true,
+        opacity: 0.55,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      }),
+      [0, 0, -24]
+    )
+  );
+
+  return group;
+}
+
 const FACTORIES: Record<BackgroundId, (random: () => number) => THREE.Group> = {
   city: createCity,
   mountains: createMountains,
-  dusk: createDusk
+  dusk: createDusk,
+  shore: createShore,
+  void: createVoid
 };
 
 export function createBackground(id: BackgroundId, seed = 9001): THREE.Group {

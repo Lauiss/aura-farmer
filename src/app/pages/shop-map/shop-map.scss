@@ -28,7 +28,11 @@
 .shop-map {
   display: grid;
   grid-template-rows: auto 1fr;
-  height: 100vh;
+  // `dvh` plutôt que `vh` : sur mobile, `100vh` compte la barre d'adresse et
+  // dépasse d'autant, ce qui faisait défiler la page sous la carte.
+  height: 100dvh;
+  // Comme l'écran de clic : rien ne défile ici, on se déplace en glissant.
+  overflow: hidden;
   background-color: $menu-bg;
   color: $menu-text;
 }

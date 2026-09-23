@@ -88,6 +88,18 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
    */
   readonly creature = input<BossId | null>(null);
 
+  /**
+   * Images par seconde maximales. 0 laisse la scène tourner au rythme de
+   * l'écran.
+   *
+   * Les vignettes décoratives — la statue des compteurs, la tête qui parle, le
+   * marchand — tournent lentement ou pas du tout : les rendre soixante fois
+   * par seconde pour trente pixels est du travail perdu, et c'est ce qui
+   * faisait ramer les machines modestes, l'écran de jeu à lui seul faisant
+   * vivre trois contextes WebGL.
+   */
+  readonly maxFps = input(0);
+
   /** Émis au clic sur la statue, pour l'utiliser comme cible de jeu. */
   readonly clicked = output<MouseEvent>();
 
@@ -283,7 +295,10 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     const container = this.host.nativeElement as HTMLElement;
 
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // Une vignette décorative n'a pas besoin de la pleine densité de l'écran :
+    // à 2x, un canevas de trente pixels en dessine quatre fois trop.
+    const maxRatio = this.interactive() ? 2 : 1.25;
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxRatio));
 
     this.scene = new THREE.Scene();
 
@@ -677,26 +692,35 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
 
     if (!this.sniper) {
       this.sniper = createSniper();
-      this.sniper.scale.setScalar(0.42);
+      // Plus gros qu'avant : il est désormais loin de la statue, un fusil à
+      // 0,42 n'y était plus qu'un point.
+      this.sniper.scale.setScalar(0.75);
       this.bullet = createBullet();
       this.scene.add(this.sniper);
       this.scene.add(this.bullet);
     }
 
-    // Le tir se cale sur la caméra au moment où il part : c'est elle qui
-    // orbite autour de la statue, et un fusil posé à un endroit fixe du monde
-    // sortait du cadre dès qu'on avait tourné le moyai. Il vient ainsi
-    // toujours se coller à la tête, en haut à droite de l'écran.
+    // Le tireur est **en face** de la statue et la vise : c'est lui qui tire,
+    // la balle part de loin et vient frapper la tête. Il colle auparavant à la
+    // tempe du moyai, ce qui se lisait comme un accessoire plutôt que comme un
+    // tir venu d'ailleurs.
+    //
+    // Sa position reste calée sur la caméra au moment du tir : c'est elle qui
+    // orbite autour de la statue, et un fusil posé à un point fixe du monde
+    // sortait du cadre dès qu'on avait tourné le moyai.
     const camera = this.camera;
     const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
     const up = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
-    const toward = camera.position.clone().normalize();
-    this.shotTo.copy(toward).multiplyScalar(0.55).addScaledVector(up, 0.6);
+
+    // La cible : le haut du crâne, là où la balle sera visible.
+    this.shotTo.set(0, 0.55, 0);
+    // Le tireur, à distance sur le côté et légèrement en hauteur. Le côté est
+    // tiré au sort pour que deux tirs de suite ne se ressemblent pas.
+    const side = Math.random() < 0.5 ? -1 : 1;
     this.shotFrom
       .copy(this.shotTo)
-      .addScaledVector(right, 1.25)
-      .addScaledVector(up, 0.75)
-      .addScaledVector(toward, 0.5);
+      .addScaledVector(right, side * 4.6)
+      .addScaledVector(up, 1.8);
 
     this.trickshotElapsed = 0;
     this.sniper.visible = true;
@@ -937,10 +961,27 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.controls?.handleResize();
   }
 
+  /** Temps accumulé depuis la dernière image rendue, pour le plafond d'images. */
+  private sinceRender = 0;
+
   private renderFrame = (): void => {
     this.frameId = requestAnimationFrame(this.renderFrame);
 
     const delta = this.clock.getDelta();
+
+    // Onglet caché : le navigateur ralentit déjà `requestAnimationFrame`, mais
+    // rien ne garantit qu'il l'arrête. Inutile de peindre ce que personne ne
+    // regarde.
+    if (document.hidden) return;
+
+    // Plafond d'images : on laisse le temps s'écouler mais on saute le rendu.
+    // Les animations restent justes, elles se fondent sur `delta`.
+    const fps = this.maxFps();
+    if (fps > 0) {
+      this.sinceRender += delta;
+      if (this.sinceRender < 1 / fps) return;
+      this.sinceRender = 0;
+    }
     if (!this.userInteracted && this.moyai) {
       this.moyai.rotation.y += this.idleSpin() * delta;
     }

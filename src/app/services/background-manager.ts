@@ -14,8 +14,8 @@ interface BackgroundSave {
 /**
  * Décors de fond : lesquels sont acquis, et lequel est affiché.
  *
- * Le décor choisi accorde un bonus de production qui se cumule avec tout le
- * reste ; c'est ce qui donne une raison d'en changer.
+ * Le meilleur décor **possédé** accorde un bonus de production qui se cumule
+ * avec tout le reste ; l'affichage, lui, est une simple préférence.
  */
 @Injectable({
   providedIn: 'root'
@@ -50,10 +50,20 @@ export class BackgroundManager {
   readonly owned = computed<BackgroundId[]>(() => [...this.ownedIds()]);
   readonly hasAny = computed(() => this.ownedIds().size > 0);
 
-  /** Bonus du décor affiché ; 1 quand aucun n'est choisi. */
+  /**
+   * Bonus du **meilleur** décor possédé, qu'il soit affiché ou non.
+   *
+   * Il portait auparavant sur le seul décor affiché, ce qui punissait le
+   * joueur d'afficher celui qu'il préfère : on ne doit pas avoir à choisir
+   * entre ce qu'on trouve beau et ce qui rapporte. Un décor s'achète une fois
+   * et compte pour toujours ; l'affichage n'est plus qu'une préférence.
+   */
   readonly bonus = computed(() => {
-    const id = this.selected();
-    return id ? 1 + this.backgroundBonus(id) : 1;
+    let best = 0;
+    for (const id of this.ownedIds()) {
+      best = Math.max(best, this.backgroundBonus(id));
+    }
+    return 1 + best;
   });
 
   /** Bonus d'un décor, améliorations comprises, qu'il soit affiché ou non. */

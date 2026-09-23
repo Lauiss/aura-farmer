@@ -82,3 +82,21 @@ button.ghost:disabled {
 	border: none;
 	color: $menu-text-faint;
 }
+
+/* --- Réaction à l'appui ------------------------------------------------ */
+button {
+  transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.96);
+  transition-duration: 0.05s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  button:active:not(:disabled) {
+    transform: none;
+    transition: none;
+  }
+}

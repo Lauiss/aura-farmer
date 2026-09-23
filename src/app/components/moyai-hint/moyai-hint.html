@@ -9,6 +9,7 @@
         <app-moyai-viewer
           [interactive]="false"
           [idleSpin]="0"
+          [maxFps]="8"
           [rotation]="[0.05, 0.55, 0]"
           [distance]="4.4"
         ></app-moyai-viewer>
@@ -19,7 +20,7 @@
       @if (message.titleKey) {
         <p class="title">{{ message.titleKey | translate }}</p>
       }
-      <p class="body">{{ message.body ?? (message.bodyKey! | translate) }}</p>
+      <p class="body">{{ message.body ?? (message.bodyKey! | translate: message.params) }}</p>
     </div>
   </div>
 }
