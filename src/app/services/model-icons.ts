@@ -3,10 +3,16 @@ import { createArrow } from '../three/models/arrow';
 import { createGear } from '../three/models/gear';
 import { createHanger } from '../three/models/hanger';
 import { createMoyai } from '../three/models/moyai';
+import { createChest } from '../three/models/chest';
+import { ChestTier, collectibleDefinition } from '../../assets/static/collectibles';
 import { createQuestionMark } from '../three/models/question-mark';
 import { createBuilding } from '../three/models/building';
 import { createTrophy } from '../three/models/trophy';
+import { createPhone } from '../three/models/phone';
+import { createSniper } from '../three/models/sniper';
+import { createWeakPoint } from '../three/models/weak-point';
 import { renderToDataUrl } from '../three/snapshot';
+import * as THREE from 'three';
 
 /**
  * Rend les modèles 3D utilisés comme icônes, une seule fois chacun, et
@@ -27,7 +33,10 @@ export class ModelIcons {
     moyai: 'assets/imgs/moyai/moyai_base.png',
     question: 'assets/imgs/upgrades/unknown_upgrade.png',
     arrow: 'assets/imgs/upgrades/upgrade_generic.png',
-    hanger: 'assets/imgs/moyai/moyai_tuxedo.png'
+    hanger: 'assets/imgs/moyai/moyai_tuxedo.png',
+    phone: 'assets/imgs/upgrades/upgrade_generic.png',
+    'weak-point': 'assets/imgs/upgrades/upgrade_generic.png',
+    sniper: 'assets/imgs/upgrades/upgrade_generic.png'
   };
 
   private cache = new Map<string, string>();
@@ -81,6 +90,49 @@ export class ModelIcons {
     );
   }
 
+  /** Statuette de la collection : le moyai dans la matière voulue. */
+  moyaiSkin(id: string): string {
+    return this.render(`moyai-${id}`, () =>
+      renderToDataUrl(createMoyai({ palette: collectibleDefinition(id)?.palette }), {
+        size: 192,
+        distance: 5.4,
+        rotation: [0.06, 0.5, 0]
+      })
+    );
+  }
+
+  /** Coffre fermé d'un tier donné. */
+  chest(tier: ChestTier): string {
+    return this.render(`chest-${tier}`, () =>
+      renderToDataUrl(createChest(tier), { size: 192, distance: 3.4, rotation: [0.45, -0.6, 0] })
+    );
+  }
+
+  /** Téléphone du doomscrolling, écran éteint. */
+  phone(): string {
+    return this.render('phone', () => {
+      const screen = new THREE.DataTexture(new Uint8Array([22, 22, 21, 255]), 1, 1);
+      screen.needsUpdate = true;
+      const icon = renderToDataUrl(createPhone(screen), { size: 192, distance: 4.4, rotation: [0.1, -0.45, 0.12] });
+      screen.dispose();
+      return icon;
+    });
+  }
+
+  /** Point faible, vu de face. */
+  weakPoint(): string {
+    return this.render('weak-point', () =>
+      renderToDataUrl(createWeakPoint(), { size: 192, distance: 1.25, rotation: [0, 0, 0] })
+    );
+  }
+
+  /** Fusil du trickshot. */
+  sniper(): string {
+    return this.render('sniper', () =>
+      renderToDataUrl(createSniper(), { size: 192, distance: 6.2, rotation: [0.2, 0.5, 0.25] })
+    );
+  }
+
   private render(key: string, draw: () => string): string {
     const cached = this.cache.get(key);
     if (cached) return cached;
@@ -89,7 +141,11 @@ export class ModelIcons {
     try {
       icon = draw();
     } catch {
-      icon = ModelIcons.FALLBACK[key];
+      // Les statuettes et les coffres, trop nombreux pour avoir chacun une
+      // image de secours, se rabattent sur celle du moyai ou de l'engrenage.
+      icon =
+        ModelIcons.FALLBACK[key] ??
+        (key.startsWith('moyai-') ? ModelIcons.FALLBACK['moyai'] : ModelIcons.FALLBACK['gear']);
     }
     this.cache.set(key, icon);
     return icon;

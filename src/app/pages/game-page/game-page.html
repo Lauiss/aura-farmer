@@ -10,6 +10,10 @@
     [cosmetics]="wardrobeManager.equipped()"
     [background]="backgroundManager.selected()"
     [distance]="heroDistance()"
+    [weakPoints]="utilityManager.weakPointConfig()"
+    [palette]="collection.skinPalette()"
+    [inertia]="utilityManager.inertia()"
+    [autoSpin]="utilityManager.autoSpin()"
     (clicked)="increment($event)"
   ></app-moyai-viewer>
 
@@ -42,10 +46,22 @@
 
     <app-combo-meter class="combo"></app-combo-meter>
 
+  @if (utilityManager.isOwned('doomscroll')) {
+    <app-doom-phone class="phone"></app-doom-phone>
+  }
+
   <nav class="actions">
     <app-icon-btn [icon]="shopIcon" label="SHOP" (activate)="openShop()"></app-icon-btn>
     @if (wardrobeManager.hasAny() || backgroundManager.hasAny()) {
       <app-icon-btn [icon]="hangerIcon" label="WARDROBE" (activate)="openWardrobe()"></app-icon-btn>
+    }
+    @if (showCollection()) {
+      <span class="with-badge">
+        <app-icon-btn [icon]="chestIcon" label="COLLECTION" (activate)="openCollection()"></app-icon-btn>
+        @if (collection.pendingChests() > 0) {
+          <span class="badge" aria-hidden="true">{{ collection.pendingChests() }}</span>
+        }
+      </span>
     }
     <app-icon-btn [icon]="trophyIcon" label="ACHIEVEMENTS" (activate)="openAchievements()"></app-icon-btn>
     <app-icon-btn [icon]="gearIcon" label="SETTINGS" (activate)="openSettings()"></app-icon-btn>

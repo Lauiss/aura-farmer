@@ -36,7 +36,8 @@
 
 .counters,
 .actions,
-.combo {
+.combo,
+.phone {
   pointer-events: auto;
 }
 
@@ -102,6 +103,50 @@
 .combo {
   justify-self: center;
   align-self: start;
+}
+
+/* --- Pastille des coffres à ouvrir, sur l'accès à la collection --- */
+.with-badge {
+  position: relative;
+  display: inline-flex;
+}
+
+.badge {
+  position: absolute;
+  top: -0.4rem;
+  right: -0.4rem;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  padding: 0 0.35rem;
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: $menu-bg;
+  background: $menu-accent;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+/* --- Téléphone du doomscrolling, à droite de la statue --- */
+// Hors de la grille : il flotte à côté de la statue sans décaler les compteurs.
+.phone {
+  position: absolute;
+  right: clamp(1rem, 6vw, 7rem);
+  top: 50%;
+  width: clamp(11rem, 21vw, 18rem);
+  aspect-ratio: 9 / 16;
+  transform: translateY(-50%);
+}
+
+@media (max-width: 40rem) {
+  .phone {
+    right: 0.5rem;
+    top: auto;
+    bottom: 7rem;
+    width: 9rem;
+    transform: none;
+  }
 }
 
 /* --- Accès boutique, garde-robe, succès et options --- */

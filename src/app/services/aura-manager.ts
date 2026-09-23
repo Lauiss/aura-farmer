@@ -15,9 +15,17 @@ export class AuraManager {
 
   /** `multiplier` porte le combo de rotation ; 1 quand la statue est immobile. */
   increment(multiplier = 1) {
-    const gain = this.clickValue() * multiplier;
-    this.auraCount.update(current => current + gain);
-    this.allTimeAura.update(total => total + gain);
+    this.gain(this.clickValue() * multiplier);
+  }
+
+  /**
+   * Crédite (ou débite, si négatif) un montant gagné en jouant. Le cumul de
+   * toute la partie ne compte que les gains : une perte au doomscrolling ne
+   * doit pas effacer l'aura déjà farmée.
+   */
+  gain(amount: number) {
+    this.auraCount.update(current => current + amount);
+    if (amount > 0) this.allTimeAura.update(total => total + amount);
   }
 
   defineAllTimeAura(amount: number) {

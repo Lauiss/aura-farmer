@@ -8,7 +8,7 @@
 
     <div class="tools">
       <button type="button" class="tool wide" (click)="cycleBuyAmount()">
-        {{ 'BUY' | translate }} {{ buyAmount() }}
+        {{ 'BUY' | translate }} &times;{{ buyAmount() === 'MAX' ? ('BUY_MAX' | translate) : buyAmount() }}
       </button>
       <button type="button" class="tool" [attr.aria-label]="'ZOOM_OUT' | translate" (click)="zoomBy(1 / 1.25)">&minus;</button>
       <button type="button" class="tool" [attr.aria-label]="'ZOOM_IN' | translate" (click)="zoomBy(1.25)">+</button>
@@ -35,7 +35,7 @@
               [attr.y1]="node.parent.y"
               [attr.x2]="node.x"
               [attr.y2]="node.y"
-              [class.dim]="!isRevealed(node)"
+              [class.dim]="state(node) === 'locked' || state(node) === 'blocked'"
             />
           }
         }
@@ -44,15 +44,19 @@
       @for (node of nodes(); track node.key) {
         <button
           type="button"
-          [class]="'node kind-' + node.kind"
-          [class.locked]="!isRevealed(node)"
-          [class.owned]="isOwned(node)"
-          [class.poor]="isRevealed(node) && !isOwned(node) && !affordable(node)"
+          [class]="'node kind-' + node.kind + ' branch-' + node.branch + ' state-' + state(node)"
+          [class.hub]="isHub(node)"
           [class.burst-buy]="burstState(node) === 'buy'"
           [class.burst-first]="burstState(node) === 'first'"
           [style.left.px]="node.x"
           [style.top.px]="node.y"
-          (click)="activate(node)"
+          [attr.aria-label]="nodeName(node)"
+          [attr.aria-describedby]="hovered() === node.key ? 'shop-tooltip' : null"
+          (click)="activate(node, $event)"
+          (mouseenter)="showTooltip(node)"
+          (mouseleave)="hideTooltip(node)"
+          (focus)="showTooltip(node)"
+          (blur)="hideTooltip(node)"
         >
           @if (burstState(node) !== 'none') {
             <span class="sparks" aria-hidden="true">
@@ -61,72 +65,78 @@
               }
             </span>
           }
-          @if (node.kind === 'root' || node.kind === 'category') {
-            <img [src]="node.kind === 'root' ? moyaiIcon : buildingIcon" alt="" class="mark">
-            <span class="name">{{ node.labelKey! | translate }}</span>
-            @if (node.comingSoon) {
-              <span class="cost soon">{{ 'SHOP_COMING_SOON' | translate }}</span>
+          <span class="tile">
+            <img [src]="icon(node)" alt="" class="mark">
+            @if (levelOf(node); as level) {
+              <span class="level">{{ 'LEVEL_SHORT' | translate }} {{ level.current }}/{{ level.max }}</span>
             }
-          } @else if (!isRevealed(node)) {
-            <img [src]="questionIcon" alt="" class="mark">
-            <span class="name">?????</span>
-          } @else if (node.kind === 'item') {
-            <img [src]="moyaiIcon" alt="" class="mark">
-            <span class="name">{{ node.item!.name() }}</span>
-            <span class="meta">
-              {{ 'LEVEL' | translate }} {{ node.item!.level() | number:'1.0-0' }} / {{ node.item!.maxLevel }}
-            </span>
-            @if (isMaxed(node)) {
-              <span class="cost maxed">{{ 'MAXED' | translate }}</span>
-            } @else {
-              <span class="cost">
-                {{ price(node) | formatAura }}
-                <small>{{ 'AURA' | translate }}</small>
-              </span>
-              <span class="meta">&times;{{ amountFor(node.item!) }}</span>
-            }
-          } @else if (node.kind === 'background' || node.kind === 'utility') {
-            <img [src]="node.kind === 'background' ? buildingIcon : arrowIcon" alt="" class="mark">
-            <span class="name">{{ nodeName(node) | translate }}</span>
-            @if (isOwned(node)) {
-              <span class="cost owned-label">{{ 'UNLOCKED' | translate }}</span>
-            } @else {
-              <span class="cost">
-                {{ price(node) | formatAura }}
-                <small>{{ 'AURA' | translate }}</small>
-              </span>
-            }
-          } @else if (node.kind === 'outfit') {
-            <img [src]="hangerIcon" alt="" class="mark">
-            <span class="name">{{ nodeName(node) | translate }}</span>
-            @if (isOwned(node)) {
-              <span class="cost owned-label">{{ 'UNLOCKED' | translate }}</span>
-            } @else {
-              <span class="cost">
-                {{ price(node) | formatAura }}
-                <small>{{ 'AURA' | translate }}</small>
-              </span>
-            }
-          } @else {
-            <img [src]="arrowIcon" alt="" class="mark">
-            <span class="name">{{ node.upgrade!.name | translate }}</span>
-            <span class="meta">{{ upgradeCount(node) }}</span>
-            @if (isOwned(node)) {
-              <span class="cost owned-label">{{ 'MAXED' | translate }}</span>
-            } @else {
-              <span class="cost">
-                {{ price(node) | formatAura }}
-                <small>{{ 'AURA' | translate }}</small>
-              </span>
-            }
-          }
+          </span>
+          <span class="name">{{ nodeName(node) }}</span>
         </button>
       }
     </div>
+
+    @if (hoveredNode(); as node) {
+      @if (tooltipPosition(); as position) {
+        <aside
+          id="shop-tooltip"
+          role="tooltip"
+          [class]="'tooltip branch-' + node.branch + ' side-' + position.side"
+          [style.left.px]="position.left"
+          [style.top.px]="position.top"
+        >
+          <header class="tooltip-head">
+            <p class="tooltip-kind">{{ kindLabel(node) | translate }}</p>
+            <h2 class="tooltip-title">{{ nodeName(node) }}</h2>
+            @if (levelOf(node); as level) {
+              <p class="tooltip-level">{{ 'LEVEL' | translate }} {{ level.current }} / {{ level.max }}</p>
+              @if (pips(node).length) {
+                <div class="pips" aria-hidden="true">
+                  @for (filled of pips(node); track $index) {
+                    <span class="pip" [class.filled]="filled"></span>
+                  }
+                </div>
+              } @else {
+                <div class="gauge" aria-hidden="true">
+                  <span [style.width.%]="levelRatio(node) * 100"></span>
+                </div>
+              }
+            }
+          </header>
+
+          @if (state(node) === 'locked') {
+            <p class="tooltip-effect">{{ 'SHOP_TOOLTIP_LOCKED_DESC' | translate }}</p>
+          } @else {
+            @for (line of effectLines(node); track line.key) {
+              <p class="tooltip-effect">{{ line.key | translate: line.params }}</p>
+            }
+          }
+
+          @if (!isHub(node) && state(node) !== 'locked') {
+            @if (state(node) === 'owned') {
+              <p class="tooltip-price done">{{ (node.kind === 'item' || levelOf(node)!.max > 1 ? 'MAXED' : 'UNLOCKED') | translate }}</p>
+            } @else {
+              <p class="tooltip-price" [class.poor]="!affordable(node)">
+                {{ price(node) | formatAura }} <small>{{ 'AURA' | translate }}</small>
+                @if (node.kind === 'item' && amountFor(node.item!) > 1) {
+                  <span class="batch">&times;{{ amountFor(node.item!) }}</span>
+                }
+              </p>
+            }
+          }
+
+          @if (actionHint(node); as hint) {
+            <p class="tooltip-hint">{{ hint | translate }}</p>
+          }
+        </aside>
+      }
+    }
 
     <p class="progress">
       <span class="count">{{ progress().owned }}/{{ progress().total }}</span>
       <span class="caption">{{ 'SHOP_PROGRESS' | translate }}</span>
     </p>
+
+    <p class="help" aria-hidden="true">{{ 'SHOP_HELP' | translate }}</p>
   </div>
 </div>

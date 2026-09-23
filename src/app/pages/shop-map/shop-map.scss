@@ -1,6 +1,30 @@
 @use '../../../menu-theme' as *;
 @use '../../../variables' as *;
 
+// Couleur de chaque branche, comme les familles de Sludgneer : on sait d'un
+// coup d'œil dans quelle partie de la carte on se trouve. Portées par des
+// propriétés personnalisées pour que les tuiles et l'infobulle les partagent.
+.branch-root,
+.branch-teachings {
+  --branch: #{$menu-accent};
+  --branch-soft: rgba(232, 184, 75, 0.16);
+}
+
+.branch-outfit {
+  --branch: #ff8fb4;
+  --branch-soft: rgba(255, 143, 180, 0.16);
+}
+
+.branch-scenery {
+  --branch: #6cbcff;
+  --branch-soft: rgba(108, 188, 255, 0.16);
+}
+
+.branch-utilities {
+  --branch: #62d894;
+  --branch-soft: rgba(98, 216, 148, 0.16);
+}
+
 .shop-map {
   display: grid;
   grid-template-rows: auto 1fr;
@@ -98,15 +122,15 @@
 
 .links line {
   stroke: $menu-border-strong;
-  stroke-width: 2;
+  stroke-width: 4;
 }
 
 .links line.dim {
   stroke: $menu-border;
-  stroke-dasharray: 6 8;
+  stroke-dasharray: 10 12;
 }
 
-/* --- Avancement, épinglé sur la surface navigable --- */
+/* --- Pastilles épinglées sur la surface navigable --- */
 .progress {
   position: absolute;
   left: $spacing-300;
@@ -128,7 +152,7 @@
   }
 
   .caption {
-    font-size: 0.8rem;
+    font-size: $menu-size-small;
     font-weight: $menu-weight;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -136,72 +160,88 @@
   }
 }
 
-/* --- Nœuds --- */
-.node {
+.help {
   position: absolute;
-  // `left` et `top` désignent le centre du nœud, d'où le recentrage.
-  transform: translate(-50%, -50%);
+  right: $spacing-300;
+  bottom: $spacing-300;
+  font-size: $menu-size-small;
+  font-weight: $menu-weight;
+  color: $menu-text-faint;
+  pointer-events: none;
+}
+
+/* --- Nœuds : une tuile carrée, son niveau, et son nom dessous --- */
+// Les cotes sont en pixels du monde, mis à l'échelle par le zoom de la carte :
+// c'est ce qui fait que la carte se lit encore dézoomée.
+.node {
+  --tile: 120px;
+  position: absolute;
+  // `left` et `top` désignent le centre de la tuile, pas celui du bouton,
+  // qui porte aussi le nom en dessous.
+  transform: translate(-50%, calc(var(--tile) / -2));
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: $spacing-100;
-  width: 20rem;
-  padding: $spacing-300 $spacing-250;
-  text-align: center;
+  gap: 10px;
+  width: 220px;
+  padding: 0;
   color: $menu-text;
-  background-color: $menu-surface;
-  border: 1px solid $menu-border;
-  border-radius: $radius-100;
+  background: none;
+  border: none;
   cursor: pointer;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.node:hover,
-.node:focus-visible {
-  border-color: $menu-accent-border;
-  outline: none;
+.node.hub {
+  --tile: 170px;
+  width: 260px;
 }
 
-.node.kind-upgrade,
-.node.kind-outfit-upgrade {
-  width: 16rem;
-  padding: $spacing-250 $spacing-200;
-}
-
-.node.kind-outfit {
-  width: 18rem;
-}
-
-.node.owned {
-  background-color: $menu-accent-soft;
-  border-color: $menu-accent-border;
-  cursor: default;
-}
-
-.node.locked {
-  color: $menu-text-faint;
-  background-color: transparent;
-  border-style: dashed;
+.tile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--tile);
+  height: var(--tile);
+  background-color: $menu-surface;
+  border: 4px solid color-mix(in srgb, var(--branch) 55%, transparent);
+  border-radius: 18px;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .mark {
   display: block;
-  width: 5.5rem;
-  height: 5.5rem;
+  width: 74%;
+  height: 74%;
+  margin-top: -8%;
   object-fit: contain;
+  pointer-events: none;
 }
 
-.node.kind-upgrade .mark,
-.node.kind-outfit-upgrade .mark {
-  width: 4rem;
-  height: 4rem;
+.level {
+  position: absolute;
+  left: 50%;
+  bottom: -14px;
+  transform: translateX(-50%);
+  padding: 2px 10px;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  color: $menu-text;
+  background-color: $menu-bg;
+  border: 3px solid color-mix(in srgb, var(--branch) 55%, transparent);
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
 }
 
 .name {
-  font-size: $menu-size-subtitle;
+  margin-top: 12px;
+  font-size: 20px;
   font-weight: $menu-weight-strong;
-  line-height: 1.25;
-  // Deux lignes au maximum : tous les nœuds gardent la même hauteur.
+  line-height: 1.2;
+  text-align: center;
+  // Deux lignes au maximum : toutes les tuiles gardent le même encombrement.
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -209,111 +249,265 @@
   overflow: hidden;
 }
 
-.meta {
+.node.hub .name {
+  font-size: 26px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* --- États d'une tuile --- */
+// Achetable : la couleur de la branche en plein, et un halo.
+.state-ready .tile {
+  border-color: var(--branch);
+  background-color: var(--branch-soft);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35), 0 0 28px color-mix(in srgb, var(--branch) 45%, transparent);
+}
+
+.state-ready .level {
+  border-color: var(--branch);
+}
+
+// Acquis ou maxxé : la tuile est pleine, le niveau passe à la couleur.
+.state-owned .tile {
+  border-color: var(--branch);
+  background-color: color-mix(in srgb, var(--branch) 38%, $menu-surface);
+}
+
+.state-owned .level {
+  color: $menu-bg;
+  background-color: var(--branch);
+  border-color: var(--branch);
+}
+
+// Trop cher : on devine la branche, mais la tuile ne se présente pas en offre.
+.state-poor .mark {
+  opacity: 0.75;
+}
+
+// Pas encore dévoilé, ou prérequis manquant : gris et en pointillés.
+.state-locked,
+.state-blocked {
+  color: $menu-text-faint;
+
+  .tile,
+  .level {
+    border-color: $menu-border-strong;
+    border-style: dashed;
+    background-color: $menu-bg;
+    box-shadow: none;
+  }
+
+  .mark {
+    opacity: 0.5;
+    filter: grayscale(1);
+  }
+}
+
+.node:hover .tile,
+.node:focus-visible .tile {
+  border-color: var(--branch);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35), 0 0 0 4px color-mix(in srgb, var(--branch) 35%, transparent);
+}
+
+.node:focus-visible {
+  outline: none;
+}
+
+/* --- Infobulle, au survol et au focus clavier --- */
+// Hors du monde mis à l'échelle : elle garde sa taille quel que soit le zoom.
+.tooltip {
+  position: absolute;
+  z-index: 5;
+  width: 320px;
+  transform: translateY(-50%);
+  overflow: hidden;
+  color: $menu-text;
+  background-color: $menu-surface;
+  border: 2px solid var(--branch);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  animation: tooltip-in 0.12s ease-out;
+}
+
+// Petite flèche vers la tuile, du côté où l'infobulle s'est ouverte.
+.tooltip::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  background-color: var(--branch);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.tooltip.side-right::before {
+  left: -7px;
+}
+
+.tooltip.side-left::before {
+  right: -7px;
+}
+
+.tooltip-head {
+  padding: $spacing-150 $spacing-200;
+  text-align: center;
+  background-color: var(--branch-soft);
+  border-bottom: 1px solid $menu-border;
+}
+
+.tooltip-kind {
+  font-size: 0.75rem;
+  font-weight: $menu-weight-strong;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--branch);
+}
+
+.tooltip-title {
+  margin-top: $spacing-50;
+  font-size: $menu-size-title;
+  font-weight: $menu-weight-strong;
+  line-height: 1.2;
+}
+
+.tooltip-level {
+  margin-top: $spacing-50;
   font-size: $menu-size-small;
   font-weight: $menu-weight;
   color: $menu-text-dim;
   font-variant-numeric: tabular-nums;
 }
 
-// Le coût est l'information qui décide de l'achat : il doit se lire d'un coup
-// d'œil, même carte dézoomée.
-.cost {
-  display: inline-flex;
-  align-items: baseline;
-  gap: $spacing-50;
-  margin-top: $spacing-50;
-  padding: $spacing-50 $spacing-150;
-  font-size: 1.25rem;
-  font-weight: $menu-weight-strong;
-  color: $menu-accent;
-  background-color: $menu-accent-soft;
-  border: 1px solid $menu-accent-border;
-  border-radius: $radius-100;
-  font-variant-numeric: tabular-nums;
+.pips {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: $spacing-100;
+}
 
-  small {
-    font-size: 0.7rem;
-    font-weight: $menu-weight;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0.8;
+.pip {
+  width: 18px;
+  height: 22px;
+  border: 2px solid var(--branch);
+  border-radius: 3px;
+}
+
+.pip.filled {
+  background-color: var(--branch);
+}
+
+.gauge {
+  height: 8px;
+  margin: $spacing-100 auto 0;
+  width: 80%;
+  background-color: $menu-bg;
+  border: 1px solid $menu-border;
+  border-radius: 999px;
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    background-color: var(--branch);
   }
 }
 
-// Hors budget : le prix reste lisible mais ne se présente plus comme une offre.
-.node.poor .cost {
-  color: $menu-text-dim;
-  background-color: transparent;
-  border-color: $menu-border;
+.tooltip-effect {
+  padding: $spacing-100 $spacing-200 0;
+  font-size: $menu-size-body;
+  font-weight: $menu-weight;
+  line-height: 1.4;
+  text-align: center;
 }
 
-.cost.maxed,
-.cost.owned-label {
-  font-size: $menu-size-small;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.tooltip-effect:first-of-type {
+  padding-top: $spacing-150;
 }
 
-/* --- Racine et catégories : plus larges, elles structurent la carte --- */
-.node.kind-root,
-.node.kind-category {
-  width: 22rem;
-  padding: $spacing-400 $spacing-300;
-}
-
-.node.kind-root {
-  border-color: $menu-accent-border;
-  background-color: $menu-accent-soft;
-}
-
-.node.kind-root .name,
-.node.kind-category .name {
+.tooltip-price {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: $spacing-50;
+  padding: $spacing-150 $spacing-200 0;
   font-size: $menu-size-title;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-weight: $menu-weight-strong;
+  color: $menu-accent;
+  font-variant-numeric: tabular-nums;
+
+  small {
+    font-size: 0.75rem;
+    font-weight: $menu-weight;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .batch {
+    margin-left: $spacing-100;
+    font-size: $menu-size-small;
+    color: $menu-text-dim;
+  }
 }
 
-.node.kind-root .mark {
-  width: 7rem;
-  height: 7rem;
-}
-
-.cost.soon {
-  font-size: $menu-size-small;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+.tooltip-price.poor {
   color: $menu-text-dim;
-  background-color: transparent;
-  border-color: $menu-border;
+}
+
+.tooltip-price.done {
+  font-size: $menu-size-small;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--branch);
+}
+
+.tooltip-hint {
+  margin-top: $spacing-150;
+  padding: $spacing-100 $spacing-200;
+  font-size: $menu-size-small;
+  font-weight: $menu-weight;
+  text-align: center;
+  color: $menu-text-dim;
+  background-color: $menu-surface-raised;
+  border-top: 1px solid $menu-border;
+}
+
+@keyframes tooltip-in {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.96);
+  }
 }
 
 /* --- À-coup d'achat ---------------------------------------------------- */
-// Deux intensités : un achat ordinaire fait tressaillir le nœud, un premier
-// déblocage y ajoute une onde et un éclat d'ambre.
-.node.burst-buy {
+// Deux intensités : un achat ordinaire fait tressaillir la tuile, un premier
+// déblocage y ajoute une onde et un éclat. L'animation porte sur la tuile et
+// non sur le bouton, dont la transformation sert au placement.
+.node.burst-buy .tile {
   animation: buy-pop 0.5s cubic-bezier(0.2, 1.5, 0.35, 1);
 }
 
 .node.burst-first {
-  animation: first-pop 1s cubic-bezier(0.2, 1.4, 0.3, 1);
   z-index: 2;
 }
 
-.node.burst-first::after {
+.node.burst-first .tile {
+  animation: first-pop 1s cubic-bezier(0.2, 1.4, 0.3, 1);
+}
+
+.node.burst-first .tile::after {
   content: '';
   position: absolute;
-  inset: -4px;
-  border: 2px solid $menu-accent;
-  border-radius: $radius-100;
+  inset: -6px;
+  border: 3px solid var(--branch);
+  border-radius: 20px;
   animation: ring 1s cubic-bezier(0.1, 0.8, 0.3, 1);
   pointer-events: none;
 }
 
 @keyframes buy-pop {
   40% {
-    transform: translate(-50%, -50%) scale(1.09);
-    border-color: $menu-accent;
+    transform: scale(1.12);
   }
 }
 
@@ -322,9 +516,8 @@
     box-shadow: 0 0 0 rgba(232, 184, 75, 0);
   }
   30% {
-    transform: translate(-50%, -50%) scale(1.16);
-    border-color: $menu-accent;
-    box-shadow: 0 0 60px rgba(232, 184, 75, 0.7);
+    transform: scale(1.2);
+    box-shadow: 0 0 60px var(--branch);
   }
   100% {
     box-shadow: 0 0 0 rgba(232, 184, 75, 0);
@@ -342,71 +535,68 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .node.burst-buy,
-  .node.burst-first,
-  .node.burst-first::after {
-    animation: none;
-  }
-}
-
 /* --- Éclats projetés à l'achat --------------------------------------- */
-// Chaque éclat part du centre du nœud selon son propre angle. La rotation est
-// portée par un conteneur pour que la translation reste simple à écrire.
+// Chaque éclat part du centre de la tuile selon son propre angle.
 .sparks {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 50%;
+  width: 0;
+  height: var(--tile);
   pointer-events: none;
 }
 
 .spark {
   position: absolute;
   top: 50%;
-  left: 50%;
-  width: 6px;
-  height: 6px;
-  margin: -3px 0 0 -3px;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
   border-radius: 50%;
-  background-color: $menu-accent;
+  background-color: var(--branch);
   transform: rotate(var(--angle)) translateX(0);
   opacity: 0;
   animation: spark 0.55s ease-out forwards;
 }
 
 .node.burst-first .spark {
-  width: 9px;
-  height: 9px;
-  margin: -4.5px 0 0 -4.5px;
-  animation-duration: 0.9s;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  animation: spark-far 0.9s ease-out forwards;
 }
 
 @keyframes spark {
   0% {
-    transform: rotate(var(--angle)) translateX(10px) scale(1);
+    transform: rotate(var(--angle)) translateX(20px) scale(1);
     opacity: 1;
   }
   100% {
-    transform: rotate(var(--angle)) translateX(130px) scale(0.2);
+    transform: rotate(var(--angle)) translateX(150px) scale(0.2);
     opacity: 0;
   }
 }
 
-.node.burst-first .spark {
-  animation-name: spark-far;
-}
-
 @keyframes spark-far {
   0% {
-    transform: rotate(var(--angle)) translateX(14px) scale(1.2);
+    transform: rotate(var(--angle)) translateX(24px) scale(1.2);
     opacity: 1;
   }
   100% {
-    transform: rotate(var(--angle)) translateX(210px) scale(0.2);
+    transform: rotate(var(--angle)) translateX(240px) scale(0.2);
     opacity: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .node.burst-buy .tile,
+  .node.burst-first .tile,
+  .node.burst-first .tile::after,
+  .tooltip {
+    animation: none;
+  }
+
   .spark {
     animation: none;
     opacity: 0;

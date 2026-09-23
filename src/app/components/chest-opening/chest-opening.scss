@@ -1,0 +1,220 @@
+@use '../../../menu-theme' as *;
+@use '../../../variables' as *;
+
+.chest-opening {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-150;
+  text-align: center;
+}
+
+.close {
+  position: absolute;
+  top: -$spacing-200;
+  right: -$spacing-200;
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: $menu-size-title;
+  color: $menu-text-dim;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus-visible {
+  color: $menu-accent;
+  outline: none;
+}
+
+.kind {
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: $menu-text-dim;
+}
+
+/* --- Scène : rayons tournants derrière le coffre --- */
+.stage {
+  --ray: #6b665c;
+  --ray-strength: 0.35;
+  position: relative;
+  width: 100%;
+  height: 18rem;
+  overflow: hidden;
+  border-radius: $radius-100;
+}
+
+.rays {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 46rem;
+  height: 46rem;
+  margin: -23rem 0 0 -23rem;
+  background: repeating-conic-gradient(var(--ray) 0deg 7deg, transparent 7deg 18deg);
+  opacity: var(--ray-strength);
+  // Les rayons s'estompent vers l'extérieur : un soleil, pas un damier.
+  mask-image: radial-gradient(circle, #000 0%, transparent 55%);
+  animation: spin 12s linear infinite;
+  transition: opacity 0.2s ease;
+}
+
+.stage.active .rays {
+  animation-duration: 3s;
+}
+
+.stage.legendary {
+  animation: flash 0.9s ease-out;
+}
+
+canvas {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+canvas.clickable {
+  cursor: pointer;
+}
+
+// Éclats projetés à l'ouverture, créés à la volée par le composant.
+.stage ::ng-deep .spark {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* --- Récompense --- */
+.reward {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-50;
+  width: 100%;
+  padding: $spacing-200;
+  border: 2px solid var(--rarity);
+  border-radius: $radius-100;
+  background: color-mix(in srgb, var(--rarity) 12%, transparent);
+  box-shadow: 0 0 40px color-mix(in srgb, var(--rarity) 35%, transparent);
+  animation: rise 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.rarity {
+  font-size: $menu-size-small;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--rarity);
+}
+
+.figure {
+  width: 7rem;
+  height: 7rem;
+  object-fit: contain;
+}
+
+.new {
+  padding: 0 $spacing-100;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: $menu-bg;
+  background: var(--rarity);
+  border-radius: 999px;
+}
+
+.title {
+  font-size: $menu-size-title;
+  font-weight: $menu-weight-strong;
+
+  small {
+    font-size: $menu-size-small;
+    color: $menu-text-dim;
+    text-transform: uppercase;
+  }
+}
+
+.gems {
+  font-size: $menu-size-subtitle;
+  font-weight: $menu-weight-strong;
+  color: $menu-text-dim;
+}
+
+.caption {
+  font-size: $menu-size-small;
+  font-weight: $menu-weight;
+  color: $menu-text-dim;
+}
+
+.actions {
+  display: flex;
+  gap: $spacing-150;
+}
+
+.action {
+  padding: $spacing-100 $spacing-300;
+  font-size: $menu-size-body;
+  font-weight: $menu-weight-strong;
+  color: $menu-text;
+  background: $menu-surface-raised;
+  border: 1px solid $menu-border;
+  border-radius: $radius-100;
+  cursor: pointer;
+}
+
+.action.primary {
+  color: $menu-bg;
+  background: $menu-accent;
+  border-color: $menu-accent;
+}
+
+.action:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.action:not(:disabled):hover,
+.action:focus-visible {
+  outline: 2px solid $menu-accent-border;
+  outline-offset: 2px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.94);
+  }
+}
+
+@keyframes flash {
+  0% {
+    background: rgba(255, 216, 120, 0.7);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rays,
+  .reward,
+  .stage.legendary {
+    animation: none;
+  }
+}

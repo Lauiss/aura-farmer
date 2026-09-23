@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { chisel, createRandom, loft, mesh } from '../geometry';
+import type { Purchasable } from '../../services/shop-manager';
 
 /**
  * Décors de fond, en low poly.
@@ -18,12 +19,39 @@ export interface BackgroundDefinition {
   /** Bonus de production accordé tant que le décor est choisi. */
   bonus: number;
   price: number;
+  /** Améliorations propres au décor, qui en augmentent le bonus. */
+  upgrades: BackgroundUpgrade[];
+}
+
+/** Amélioration d'un décor : chaque exemplaire ajoute `value` à son bonus. */
+export interface BackgroundUpgrade extends Purchasable {
+  value: number;
+}
+
+/**
+ * Trois améliorations par décor, sur la même courbe que celles de l'outfit :
+ * leur prix part de celui du décor, leur effet de son bonus.
+ */
+function backgroundUpgrades(bonus: number, price: number): BackgroundUpgrade[] {
+  const steps = [
+    { share: 0.2, cost: 3 },
+    { share: 0.3, cost: 12 },
+    { share: 0.5, cost: 50 }
+  ];
+  return steps.map((step, index) => ({
+    id: index + 1,
+    name: `BACKGROUND_UP_${index + 1}`,
+    value: bonus * step.share,
+    price: price * step.cost,
+    unlocked: false,
+    purchases: 0
+  }));
 }
 
 export const BACKGROUNDS: readonly BackgroundDefinition[] = [
-  { id: 'city', sky: 0x1d2433, bonus: 0.25, price: 250000 },
-  { id: 'mountains', sky: 0x23303a, bonus: 0.5, price: 2000000 },
-  { id: 'dusk', sky: 0x3a2233, bonus: 1, price: 25000000 }
+  { id: 'city', sky: 0x1d2433, bonus: 0.25, price: 1000000, upgrades: backgroundUpgrades(0.25, 1000000) },
+  { id: 'mountains', sky: 0x23303a, bonus: 0.5, price: 100000000, upgrades: backgroundUpgrades(0.5, 100000000) },
+  { id: 'dusk', sky: 0x3a2233, bonus: 1, price: 10000000000, upgrades: backgroundUpgrades(1, 10000000000) }
 ];
 
 /** Repères de la scène de fond : assez large pour couvrir les écrans étirés. */

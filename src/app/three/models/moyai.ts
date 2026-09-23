@@ -17,30 +17,48 @@ export const MOYAI_PALETTE = {
   cavity: 0x2b2a27
 } as const;
 
+/** Couleurs d'une matière, une par matériau du moyai. */
+export interface MoyaiPalette {
+  stone: number;
+  stoneDark: number;
+  cavity: number;
+  /** Lueur propre des creux (yeux, bouche), pour les matières magiques. */
+  glow?: number;
+  /** Lueur propre de la pierre, discrète : l'or et le diamant scintillent. */
+  sheen?: number;
+}
+
 export interface MoyaiOptions {
   /** Amplitude du bruit appliqué aux sommets pour l'aspect taillé au burin. */
   roughness?: number;
   /** Graine du bruit : une même graine redonne exactement la même tête. */
   seed?: number;
+  /** Matière de la statue ; la pierre grise d'origine par défaut. */
+  palette?: MoyaiPalette;
 }
 
 export function createMoyai(options: MoyaiOptions = {}): THREE.Group {
   const { roughness = 0.035, seed = 1722 } = options;
   const random = createRandom(seed);
 
+  // Les matériaux sont nommés : `applyMoyaiPalette` les retrouve ainsi pour
+  // changer la matière d'une statue déjà construite.
   const stone = new THREE.MeshStandardMaterial({
+    name: 'stone',
     color: MOYAI_PALETTE.stone,
     flatShading: true,
     roughness: 0.95,
     metalness: 0
   });
   const stoneDark = new THREE.MeshStandardMaterial({
+    name: 'stoneDark',
     color: MOYAI_PALETTE.stoneDark,
     flatShading: true,
     roughness: 1,
     metalness: 0
   });
   const cavity = new THREE.MeshStandardMaterial({
+    name: 'cavity',
     color: MOYAI_PALETTE.cavity,
     flatShading: true,
     roughness: 1,
@@ -142,5 +160,33 @@ export function createMoyai(options: MoyaiOptions = {}): THREE.Group {
   const center = bounds.getCenter(new THREE.Vector3());
   moyai.children.forEach(child => child.position.sub(center));
 
+  if (options.palette) applyMoyaiPalette(moyai, options.palette);
   return moyai;
+}
+
+/**
+ * Change la matière d'une statue en place, sans la reconstruire. `null`
+ * revient à la pierre d'origine. Les accessoires, qui ont leurs propres
+ * matériaux, ne sont pas touchés.
+ */
+export function applyMoyaiPalette(moyai: THREE.Object3D, palette: MoyaiPalette | null): void {
+  const colors: MoyaiPalette = palette ?? MOYAI_PALETTE;
+  moyai.traverse(child => {
+    const material = (child as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
+    if (!material || !('emissive' in material)) return;
+    switch (material.name) {
+      case 'stone':
+        material.color.setHex(colors.stone);
+        material.emissive.setHex(colors.sheen ?? 0);
+        break;
+      case 'stoneDark':
+        material.color.setHex(colors.stoneDark);
+        material.emissive.setHex(colors.sheen ?? 0);
+        break;
+      case 'cavity':
+        material.color.setHex(colors.cavity);
+        material.emissive.setHex(colors.glow ?? 0);
+        break;
+    }
+  });
 }

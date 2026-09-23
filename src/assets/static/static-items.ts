@@ -6,12 +6,13 @@ export const shopItems: Item[] = [
   {
     id: 1,
     name: signal('Jawline Check'),
-    value: signal(0.6),
+    value: signal(0.1),
+    baseValue: 0.1,
     level: signal(0),
-    price: signal(10),
-    factor: 1.3,
+    price: signal(15),
+    factor: 1.28,
     maxLevel: 25,
-    basePrice: 10,
+    basePrice: 15,
     displayCondition: signal(true),
     unlocked: true,
     upgrades: jawlineUpgrades,
@@ -20,12 +21,13 @@ export const shopItems: Item[] = [
   {
     id: 2,
     name: signal('Rizz'),
-    value: signal(6),
+    value: signal(1),
+    baseValue: 1,
     level: signal(0),
-    price: signal(100),
-    factor: 1.31,
+    price: signal(220),
+    factor: 1.285,
     maxLevel: 25,
-    basePrice: 100,
+    basePrice: 220,
     displayCondition: computed(() => {
         if(shopItems[0].level() >= 10){
           return true;
@@ -39,12 +41,13 @@ export const shopItems: Item[] = [
   {
     id: 3,
     name: signal('Biceps Flexing'),
-    value: signal(30),
+    value: signal(8),
+    baseValue: 8,
     level: signal(0),
-    price: signal(500),
-    factor: 1.32,
+    price: signal(3000),
+    factor: 1.29,
     maxLevel: 25,
-    basePrice: 500,
+    basePrice: 3000,
     displayCondition: computed(() => {
         if(shopItems[1].level() >= 10){
           return true;
@@ -58,12 +61,13 @@ export const shopItems: Item[] = [
   {
     id: 4,
     name: signal('Mewing'),
-    value: signal(90),
+    value: signal(60),
+    baseValue: 60,
     level: signal(0),
-    price: signal(3000),
-    factor: 1.33,
+    price: signal(40000),
+    factor: 1.295,
     maxLevel: 25,
-    basePrice: 3000,
+    basePrice: 40000,
     displayCondition: computed(() => {
         if(shopItems[2].level() >= 10){
           return true;
@@ -77,12 +81,13 @@ export const shopItems: Item[] = [
   {
     id: 5,
     name: signal('Silence Farming'),
-    value: signal(300),
+    value: signal(420),
+    baseValue: 420,
     level: signal(0),
-    price: signal(20000),
-    factor: 1.34,
+    price: signal(550000),
+    factor: 1.3,
     maxLevel: 25,
-    basePrice: 20000,
+    basePrice: 550000,
     displayCondition: computed(() => {
         if(shopItems[3].level() >= 10){
           return true;
@@ -96,12 +101,13 @@ export const shopItems: Item[] = [
   {
     id: 6,
     name: signal('Gaming'),
-    value: signal(1500),
+    value: signal(3000),
+    baseValue: 3000,
     level: signal(0),
-    price: signal(120000),
-    factor: 1.36,
+    price: signal(7500000),
+    factor: 1.305,
     maxLevel: 25,
-    basePrice: 120000,
+    basePrice: 7500000,
     displayCondition: computed(() => {
         if(shopItems[4].level() >= 10){
           return true;
@@ -115,12 +121,13 @@ export const shopItems: Item[] = [
     {
     id: 7,
     name: signal('Farting in public'),
-    value: signal(9000),
+    value: signal(22000),
+    baseValue: 22000,
     level: signal(0),
-    price: signal(1000000),
-    factor: 1.38,
+    price: signal(100000000),
+    factor: 1.31,
     maxLevel: 25,
-    basePrice: 1000000,
+    basePrice: 100000000,
     displayCondition: computed(() => {
         if(shopItems[5].level() >= 10){
           return true;
@@ -134,12 +141,13 @@ export const shopItems: Item[] = [
       {
     id: 8,
     name: signal('Monetize Aura'),
-    value: signal(72000),
+    value: signal(160000),
+    baseValue: 160000,
     level: signal(0),
-    price: signal(15000000),
-    factor: 1.4,
+    price: signal(1400000000),
+    factor: 1.315,
     maxLevel: 25,
-    basePrice: 15000000,
+    basePrice: 1400000000,
     displayCondition: computed(() => {
         if(shopItems[6].level() >= 10){
           return true;

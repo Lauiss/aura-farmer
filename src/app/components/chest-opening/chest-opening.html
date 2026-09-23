@@ -1,0 +1,57 @@
+<div class="chest-opening">
+  <button type="button" class="close" [attr.aria-label]="'CLOSE' | translate" (click)="close()">&times;</button>
+
+  <p class="kind">{{ ('CHEST_' + tier.toUpperCase()) | translate }}</p>
+
+  <div
+    #stage
+    class="stage"
+    [class.active]="phase() !== 'idle'"
+    [class.legendary]="phase() !== 'idle' && phase() !== 'rolling' && reward()?.rarity === 'legendary'"
+  >
+    <span class="rays" aria-hidden="true"></span>
+    <canvas
+      #canvas
+      [class.clickable]="phase() === 'idle'"
+      [attr.aria-label]="'CHEST_OPEN' | translate"
+      (click)="open()"
+    ></canvas>
+  </div>
+
+  @switch (phase()) {
+    @case ('idle') {
+      <button type="button" class="action primary" [disabled]="remaining() <= 0" (click)="open()">
+        {{ 'CHEST_OPEN' | translate }}
+      </button>
+      <p class="caption">{{ 'CHEST_REMAINING' | translate: { count: remaining() } }}</p>
+    }
+    @case ('reveal') {
+      @if (reward(); as reward) {
+        <div class="reward" [style.--rarity]="rarityColors[reward.rarity]" role="status">
+          <p class="rarity">{{ ('RARITY_' + reward.rarity.toUpperCase()) | translate }}</p>
+
+          @if (reward.collectible; as collectible) {
+            <img [src]="rewardIcon()" alt="" class="figure">
+            <p class="new">{{ 'CHEST_NEW' | translate }}</p>
+            <h2 class="title">{{ ('COLLECTIBLE_' + collectible.id.toUpperCase()) | translate }}</h2>
+          } @else {
+            <h2 class="title">+{{ reward.aura | formatAura }} <small>{{ 'AURA' | translate }}</small></h2>
+          }
+          <p class="gems">+{{ reward.gems }} 💎</p>
+        </div>
+
+        <div class="actions">
+          @if (remaining() > 0) {
+            <button type="button" class="action primary" (click)="next()">
+              {{ 'CHEST_NEXT' | translate: { count: remaining() } }}
+            </button>
+          }
+          <button type="button" class="action" (click)="close()">{{ 'CLOSE' | translate }}</button>
+        </div>
+      }
+    }
+    @default {
+      <p class="caption suspense">…</p>
+    }
+  }
+</div>

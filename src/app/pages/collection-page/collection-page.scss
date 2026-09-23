@@ -1,0 +1,267 @@
+@use '../../../menu-theme' as *;
+@use '../../../variables' as *;
+
+.collection-page {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  background-color: $menu-bg;
+  color: $menu-text;
+}
+
+/* --- Barre supérieure, sur le modèle de la boutique --- */
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-200;
+  padding: $spacing-150 $spacing-300;
+  border-bottom: 1px solid $menu-border;
+}
+
+.heading {
+  font-size: $menu-size-title;
+  font-weight: $menu-weight-strong;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gems {
+  font-size: $menu-size-title;
+  font-weight: $menu-weight-strong;
+  font-variant-numeric: tabular-nums;
+}
+
+.back {
+  padding: $spacing-100 $spacing-150;
+  font-size: $menu-size-small;
+  font-weight: $menu-weight;
+  color: $menu-text-dim;
+  background: $menu-surface-raised;
+  border: 1px solid $menu-border;
+  border-radius: $radius-100;
+  cursor: pointer;
+}
+
+.back:hover,
+.back:focus-visible {
+  color: $menu-accent;
+  border-color: $menu-accent-border;
+  outline: none;
+}
+
+.content {
+  overflow-y: auto;
+  padding: $spacing-400 $spacing-300;
+}
+
+.section {
+  max-width: 66rem;
+  margin: 0 auto $spacing-600;
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: $spacing-200;
+  flex-wrap: wrap;
+}
+
+.section-title {
+  font-size: $menu-size-title;
+  font-weight: $menu-weight-strong;
+}
+
+.section-lead,
+.progress {
+  margin-top: $spacing-50;
+  font-size: $menu-size-small;
+  font-weight: $menu-weight;
+  color: $menu-text-dim;
+}
+
+/* --- Coffres --- */
+.chests {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: $spacing-200;
+  margin-top: $spacing-200;
+}
+
+.chest-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-100;
+  padding: $spacing-250 $spacing-200;
+  color: $menu-text;
+  background: $menu-surface;
+  border: 1px solid $menu-border;
+  border-radius: $radius-100;
+  font: inherit;
+}
+
+.chest-card.pending {
+  border-color: $menu-accent-border;
+  background: $menu-accent-soft;
+  cursor: pointer;
+  animation: glow 1.6s ease-in-out infinite alternate;
+}
+
+.chest-card.pending:hover,
+.chest-card.pending:focus-visible {
+  border-color: $menu-accent;
+  outline: none;
+}
+
+.chest-icon {
+  width: 7rem;
+  height: 7rem;
+  object-fit: contain;
+}
+
+.chest-name {
+  font-size: $menu-size-subtitle;
+  font-weight: $menu-weight-strong;
+}
+
+.count {
+  font-size: $menu-size-small;
+  color: $menu-text-dim;
+  font-variant-numeric: tabular-nums;
+}
+
+.odds {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: $spacing-50 $spacing-150;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8rem;
+  font-weight: $menu-weight-strong;
+}
+
+.cta {
+  margin-top: $spacing-50;
+  padding: $spacing-100 $spacing-300;
+  font-size: $menu-size-body;
+  font-weight: $menu-weight-strong;
+  color: $menu-bg;
+  background: $menu-accent;
+  border: 1px solid $menu-accent;
+  border-radius: $radius-100;
+}
+
+.cta.buy {
+  cursor: pointer;
+}
+
+.cta.buy:disabled {
+  color: $menu-text-dim;
+  background: transparent;
+  border-color: $menu-border;
+  cursor: default;
+}
+
+.cta.buy:not(:disabled):hover,
+.cta.buy:focus-visible {
+  outline: 2px solid $menu-accent-border;
+  outline-offset: 2px;
+}
+
+/* --- Collection --- */
+.rarity-title {
+  display: flex;
+  align-items: baseline;
+  gap: $spacing-100;
+  margin-top: $spacing-300;
+  font-size: $menu-size-subtitle;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  small {
+    font-size: 0.8rem;
+    font-weight: $menu-weight;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    color: $menu-text-dim;
+  }
+}
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: $spacing-150;
+  margin-top: $spacing-150;
+}
+
+.figure {
+  --rarity: #{$menu-border-strong};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-50;
+  padding: $spacing-150;
+  color: $menu-text-faint;
+  background: $menu-bg;
+  border: 2px dashed $menu-border-strong;
+  border-radius: $radius-100;
+  font: inherit;
+}
+
+.figure.owned {
+  color: $menu-text;
+  background: color-mix(in srgb, var(--rarity) 10%, $menu-surface);
+  border: 2px solid var(--rarity);
+  cursor: pointer;
+}
+
+.figure.worn {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--rarity) 45%, transparent), 0 0 24px color-mix(in srgb, var(--rarity) 35%, transparent);
+}
+
+.figure.owned:hover,
+.figure.owned:focus-visible {
+  outline: 2px solid var(--rarity);
+  outline-offset: 2px;
+}
+
+.figure-icon {
+  width: 5.5rem;
+  height: 5.5rem;
+  object-fit: contain;
+}
+
+.figure:not(.owned) .figure-icon {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+
+.figure-name {
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  text-align: center;
+}
+
+.figure-action {
+  font-size: 0.75rem;
+  font-weight: $menu-weight-strong;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rarity);
+}
+
+@keyframes glow {
+  to {
+    box-shadow: 0 0 24px rgba(232, 184, 75, 0.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chest-card.pending {
+    animation: none;
+  }
+}

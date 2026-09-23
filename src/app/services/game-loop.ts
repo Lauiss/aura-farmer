@@ -106,8 +106,11 @@ export class GameLoop {
     }));
 
     const saveData: SaveData = {
-      auraCount: parseInt(this.auraManager.auraCount().toFixed(2)),
-      allTimeAura: parseInt(this.auraManager.totalAllTime.toFixed(2)),
+      // `parseInt(x.toFixed(2))` ramenait 4e22 à 4 : au-delà de 1e21,
+      // `toFixed` passe en notation exponentielle et `parseInt` s'arrête au
+      // point.
+      auraCount: Math.floor(this.auraManager.auraCount()),
+      allTimeAura: Math.floor(this.auraManager.totalAllTime),
       shopItems: plainItems,
       moyaiUpgrades: moyaiUpgrades,
       counters: this.shopManager.getCountersValue(),

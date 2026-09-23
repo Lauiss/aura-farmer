@@ -20,6 +20,8 @@ import { UtilityManager } from '../../services/utility-manager';
 import { SecretTracker } from '../../services/secret-tracker';
 import { Wardrobe } from '../../components/wardrobe/wardrobe';
 import { ComboMeter } from '../../components/combo-meter/combo-meter';
+import { DoomPhone } from '../../components/doom-phone/doom-phone';
+import { CollectionManager } from '../../services/collection-manager';
 import { Router } from '@angular/router';
 
 @Component({
@@ -28,7 +30,7 @@ import { Router } from '@angular/router';
   templateUrl: './game-page.html',
   styleUrls: ['./game-page.scss'],
   changeDetection: ChangeDetectionStrategy.Eager,
-  imports: [MoyaiViewer, IconBtn, ComboMeter, TranslatePipe, forwardRef(() => FormatAuraPipe)]
+  imports: [MoyaiViewer, IconBtn, ComboMeter, DoomPhone, TranslatePipe, forwardRef(() => FormatAuraPipe)]
 })
 export class GamePage {
 
@@ -54,7 +56,22 @@ export class GamePage {
   private readonly gameLoop = inject(GameLoop);
   readonly wardrobeManager = inject(WardrobeManager);
   readonly backgroundManager = inject(BackgroundManager);
-  private readonly utilityManager = inject(UtilityManager);
+  readonly utilityManager = inject(UtilityManager);
+  readonly collection = inject(CollectionManager);
+
+  /** Chance qu'un coup critique rapporte une gemme. */
+  private static readonly CRIT_GEM_CHANCE = 0.02;
+
+  /** L'accès à la collection apparaît avec le premier coffre ou la première gemme. */
+  readonly showCollection = computed(
+    () =>
+      this.utilityManager.isOwned('doomscroll') ||
+      this.collection.gems() > 0 ||
+      this.collection.pendingChests() > 0 ||
+      this.collection.ownedCount() > 0
+  );
+
+  readonly chestIcon = this.modelIcons.chest('premium');
   private readonly secretTracker = inject(SecretTracker);
 
   readonly hangerIcon = this.modelIcons.hanger();
@@ -94,6 +111,11 @@ export class GamePage {
     this.modalManager.open(Wardrobe);
   }
 
+  openCollection() {
+    this.soundManager.playFX(Sound.Plop);
+    this.router.navigate(['/collection']);
+  }
+
   openAchievements() {
     this.soundManager.playFX(Sound.Plop);
     this.modalManager.open(AchievementsList, undefined, 'xl');
@@ -115,20 +137,30 @@ export class GamePage {
   }
 
   protected increment(e?: MouseEvent) {
-    const before = this.auraManager.auraCount();
     // Le combo de rotation dope le clic : cliquer une statue lancée rapporte
     // davantage que cliquer une statue immobile.
     const multiplier = this.spinCombo.current();
-    this.auraManager.increment(multiplier);
-    const after = this.auraManager.auraCount();
+    // Un point faible touché porte un coup critique, puis relance le combo.
+    const critical = !!e && (this.viewer?.tryHitWeakPoint(e) ?? false);
+    const critMultiplier = critical ? this.utilityManager.critMultiplier() : 1;
+
+    const delta = this.shopManager.clickValue() * multiplier * critMultiplier;
+    this.auraManager.gain(delta);
+    if (critical) {
+      this.spinCombo.boost(this.utilityManager.weakPointCombo());
+      // De loin en loin, un critique fait aussi tomber une gemme.
+      if (Math.random() < GamePage.CRIT_GEM_CHANCE) {
+        this.collection.addGems(1);
+        if (e) this.spawnGem(e.clientX, e.clientY);
+      }
+    }
 
     // Incrémenter le compteur de clics
     this.achievementsManager.incrementClicks();
 
-    const delta = +(after - before).toFixed(2);
     if (e && delta !== 0) {
       this.jellyButton(e);
-      this.spawnFloatingDelta(e.clientX, e.clientY, delta, multiplier);
+      this.spawnFloatingDelta(e.clientX, e.clientY, delta, multiplier, critical ? critMultiplier : 0);
     }
 
     if (this.hasMewing()) {
@@ -153,40 +185,46 @@ export class GamePage {
     return mewing?.displayCondition() ?? false;
   }
 
-  // Animation pour les clicks
+  /**
+   * Rebond au clic, incliné du côté cliqué. Il est joué par la statue elle-même
+   * dans la scène 3D : animer l'élément faisait rebondir le décor avec elle.
+   */
   private jellyButton(e: MouseEvent) {
-    const el = this.btnRef?.nativeElement ?? null;
+    const el = this.btnRef?.nativeElement;
     if (!el) return;
-
-    // Respecte prefers-reduced-motion
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      el.getAnimations().forEach(a => a.cancel());
-      el.animate([{ transform: 'scale(0.98)' }, { transform: 'scale(1)' }], {
-        duration: 120, easing: 'linear'
-      });
-      return;
-    }
-
-    // Tilt léger selon le côté cliqué
     const r = el.getBoundingClientRect();
-    const relX = (e.clientX - r.left) / r.width;  // 0..1
-    const tilt = (relX - 0.5) * 8;               // -4..4 deg
+    this.viewer?.bounce(((e.clientX - r.left) / r.width - 0.5) * 2);
+  }
 
-    el.getAnimations().forEach(a => a.cancel());
-    el.animate(
+  /** Petit « +1 💎 » qui s'envole à côté du clic. */
+  private spawnGem(clientX: number, clientY: number) {
+    const span = document.createElement('span');
+    span.textContent = '+1 💎';
+    Object.assign(span.style, {
+      position: 'fixed',
+      left: `${clientX + 40}px`,
+      top: `${clientY + 20}px`,
+      fontWeight: '800',
+      fontSize: '26px',
+      color: '#9fe6ff',
+      textShadow: '0 2px 8px rgba(0,0,0,.6)',
+      pointerEvents: 'none',
+      zIndex: '2147483647'
+    } as CSSStyleDeclaration);
+    document.body.appendChild(span);
+    const anim = span.animate(
       [
-        { transform: 'scale(1,1) rotate(0deg)' },
-        { transform: `scale(1.12,0.88) rotate(${tilt}deg)`, offset: 0.25 },
-        { transform: `scale(0.92,1.08) rotate(${-tilt * 0.6}deg)`, offset: 0.5 },
-        { transform: `scale(1.04,0.96) rotate(${tilt * 0.3}deg)`, offset: 0.75 },
-        { transform: 'scale(1,1) rotate(0deg)' },
+        { transform: 'translateY(0) scale(0.8)', opacity: 0 },
+        { transform: 'translateY(-20px) scale(1.1)', opacity: 1, offset: 0.2 },
+        { transform: 'translateY(-70px) scale(1)', opacity: 0 }
       ],
-      { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'none' }
+      { duration: 1100, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' }
     );
+    anim.onfinish = () => span.remove();
   }
 
   /** Crée un “+X” flottant à la position du clic (coordonnées écran) */
-  private spawnFloatingDelta(clientX: number, clientY: number, delta: number, multiplier = 1) {
+  private spawnFloatingDelta(clientX: number, clientY: number, delta: number, multiplier = 1, critical = 0) {
     const span = document.createElement('span');
     // tu peux réutiliser ton pipe si tu veux le même formatage :
     const formatted = new FormatAuraPipe().transform(delta >= 0 ? delta : -delta);
@@ -209,6 +247,22 @@ export class GamePage {
       span.appendChild(badge);
     }
 
+    // Le coup critique se voit de loin : plus gros, dans le bleu du point
+    // faible, avec son multiplicateur.
+    if (critical > 0) {
+      const crit = document.createElement('small');
+      crit.textContent = `${this.translate.instant('CRITICAL_HIT')} ×${critical}`;
+      Object.assign(crit.style, {
+        display: 'block',
+        fontSize: '18px',
+        fontWeight: '800',
+        letterSpacing: '0.16em',
+        textTransform: 'uppercase',
+        color: '#5fd4ff'
+      } as CSSStyleDeclaration);
+      span.prepend(crit);
+    }
+
     // Style inline pour éviter de toucher tes SCSS
     Object.assign(span.style, {
       position: 'fixed',
@@ -216,9 +270,9 @@ export class GamePage {
       top: `${clientY}px`,
       transform: 'translate(-50%, -50%)',
       fontWeight: '700',
-      fontSize: '40px',
+      fontSize: critical > 0 ? '54px' : '40px',
       textAlign: 'center',
-      color: 'white',
+      color: critical > 0 ? '#dff6ff' : 'white',
       textShadow: '0 1px 0 rgba(0,0,0,.4)',
       pointerEvents: 'none',
       zIndex: '2147483647',

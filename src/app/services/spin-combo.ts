@@ -22,6 +22,12 @@ const DECAY_PER_SECOND = 1.1;
 /** Bonus accordé par un trickshot réussi, et sa vitesse d'extinction. */
 const TRICKSHOT_BONUS = 8;
 const TRICKSHOT_DECAY = 0.8;
+/**
+ * Élan venu d'ailleurs que la rotation — points faibles touchés, publications
+ * parcourues en doomscrollant. Il plafonne et s'éteint de lui-même.
+ */
+const BOOST_CAP = 4;
+const BOOST_DECAY = 0.35;
 
 @Injectable({
   providedIn: 'root'
@@ -41,6 +47,7 @@ export class SpinCombo {
   private turnBonus = 0;
   /** Bonus de trickshot, hors norme et qui retombe lentement. */
   private trickshotBonus = 0;
+  private boostBonus = 0;
   private yawTravel = 0;
   private pitchTravel = 0;
   private turnCount = 0;
@@ -75,8 +82,11 @@ export class SpinCombo {
     if (this.trickshotBonus > 0) {
       this.trickshotBonus = Math.max(0, this.trickshotBonus - TRICKSHOT_DECAY * dt);
     }
+    if (this.boostBonus > 0) {
+      this.boostBonus = Math.max(0, this.boostBonus - BOOST_DECAY * dt);
+    }
 
-    if (this.speed < 0.05 && this.trickshotBonus === 0) {
+    if (this.speed < 0.05 && this.trickshotBonus === 0 && this.boostBonus === 0) {
       this.turnBonus = Math.max(0, this.turnBonus - DECAY_PER_SECOND * dt);
       if (this.turnBonus === 0) this.reset();
     }
@@ -94,6 +104,7 @@ export class SpinCombo {
     this.speed = 0;
     this.turnBonus = 0;
     this.trickshotBonus = 0;
+    this.boostBonus = 0;
     this.yawTravel = 0;
     this.pitchTravel = 0;
     this.turnCount = 0;
@@ -111,9 +122,15 @@ export class SpinCombo {
     this.publish();
   }
 
+  /** Ajoute de l'élan au combo, par exemple sur un point faible touché. */
+  boost(amount: number): void {
+    this.boostBonus = Math.min(BOOST_CAP, this.boostBonus + amount);
+    this.publish();
+  }
+
   private compute(): number {
     const fromSpeed = Math.min(this.speed, SPEED_CAP) / SPEED_CAP * SPEED_BONUS;
-    return 1 + fromSpeed + this.turnBonus + this.trickshotBonus;
+    return 1 + fromSpeed + this.turnBonus + this.trickshotBonus + this.boostBonus;
   }
 
   private publish(): void {

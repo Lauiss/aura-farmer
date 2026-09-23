@@ -14,11 +14,22 @@ import {
 import * as THREE from 'three';
 import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
 import { disposeObject } from '../../three/geometry';
-import { createMoyai } from '../../three/models/moyai';
+import { MoyaiPalette, applyMoyaiPalette, createMoyai } from '../../three/models/moyai';
 import { createCursor, setCursorOpacity } from '../../three/models/cursor';
 import { CosmeticId, createCosmetic } from '../../three/models/cosmetics';
 import { BackgroundId, createBackground } from '../../three/models/backgrounds';
 import { createBullet, createSniper, setSniperOpacity } from '../../three/models/sniper';
+import { animateWeakPoint, createWeakPoint } from '../../three/models/weak-point';
+
+/** Réglages des points faibles, fournis par les améliorations achetées. */
+export interface WeakPointConfig {
+  /** Échelle du point ; 1 à l'achat. */
+  size: number;
+  /** Durée de présence d'un point, en secondes. */
+  lifetime: number;
+  /** Délai avant l'apparition du suivant, en secondes. */
+  respawn: number;
+}
 
 /**
  * Scène Three.js autonome affichant la statue moyai en low poly.
@@ -46,6 +57,20 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   readonly cosmetics = input<readonly CosmeticId[]>([]);
   /** Décor de fond, ou `null` pour le fond uni de la page. */
   readonly background = input<BackgroundId | null>(null);
+  /** Matière de la statue (skin de la collection), `null` pour la pierre. */
+  readonly palette = input<MoyaiPalette | null>(null);
+  /**
+   * Part de l'amortissement retirée à la rotation, de 0 à 1 : plus elle est
+   * haute, plus la statue tourne longtemps après avoir été lancée.
+   */
+  readonly inertia = input(0);
+  /**
+   * Rotation perpétuelle, en radians par seconde : la caméra orbite seule
+   * autour de la statue, ce qui entretient le combo. 0 pour la désactiver.
+   */
+  readonly autoSpin = input(0);
+  /** Points faibles à faire apparaître, ou `null` s'ils ne sont pas débloqués. */
+  readonly weakPoints = input<WeakPointConfig | null>(null);
 
   /** Émis au clic sur la statue, pour l'utiliser comme cible de jeu. */
   readonly clicked = output<MouseEvent>();
@@ -116,9 +141,29 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   private sniper?: THREE.Group;
   private bullet?: THREE.Mesh;
   private trickshotElapsed = 0;
+  /** Départ et cible du tir, figés au déclenchement d'après la caméra. */
+  private readonly shotFrom = new THREE.Vector3();
+  private readonly shotTo = new THREE.Vector3();
+
+  /** Rebond de la statue au clic : temps écoulé et côté cliqué (-1 à 1). */
+  private bounceElapsed = -1;
+  private bounceSide = 0;
 
   /** Accessoires actuellement greffés, par identifiant. */
   private readonly worn = new Map<CosmeticId, THREE.Group>();
+
+  /**
+   * Point faible, enfant de la statue pour la suivre. Il alterne entre une
+   * absence (`hidden`), une présence limitée (`visible`) et un bref éclat quand
+   * on le touche (`popping`).
+   */
+  private weakPoint?: THREE.Group;
+  private weakState: 'hidden' | 'visible' | 'popping' = 'hidden';
+  private weakTimer = 0;
+  private weakAge = 0;
+  /** Maillages de la tête seule, sur lesquels les points faibles se posent. */
+  private readonly headMeshes: THREE.Object3D[] = [];
+  private readonly raycaster = new THREE.Raycaster();
 
   constructor() {
     // La scène n'existe qu'après le premier rendu : l'effet se contente de
@@ -134,6 +179,16 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     effect(() => {
       const distance = this.distance();
       if (this.camera) this.camera.position.z = distance;
+    });
+
+    effect(() => {
+      const damping = MoyaiViewer.dampingFor(this.inertia());
+      if (this.controls) this.controls.dynamicDampingFactor = damping;
+    });
+
+    effect(() => {
+      const palette = this.palette();
+      if (this.moyai) applyMoyaiPalette(this.moyai, palette);
     });
 
     effect(() => {
@@ -159,6 +214,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     if (this.sniper) disposeObject(this.sniper);
     if (this.bullet) disposeObject(this.bullet);
     if (this.backgroundGroup) disposeObject(this.backgroundGroup);
+    if (this.weakPoint) disposeObject(this.weakPoint);
     this.renderer?.dispose();
     // Le composant d'indication est monté et démonté à répétition : sans
     // rendre explicitement le contexte, le navigateur finit par refuser d'en
@@ -188,9 +244,14 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
     this.camera.position.set(0, 0.1, this.distance());
 
-    this.moyai = createMoyai();
+    this.moyai = createMoyai({ palette: this.palette() ?? undefined });
     this.moyai.rotation.set(...this.rotation());
     this.scene.add(this.moyai);
+    // Relevés avant la pose des accessoires : un point faible se pose sur la
+    // pierre, jamais sur des lunettes.
+    this.moyai.traverse(child => {
+      if ((child as THREE.Mesh).isMesh) this.headMeshes.push(child);
+    });
     this.syncCosmetics(this.cosmetics());
 
     this.addLights(this.scene);
@@ -204,6 +265,11 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.renderFrame();
   }
 
+  /** Amortissement de base, réduit par l'inertie achetée. */
+  private static dampingFor(inertia: number): number {
+    return Math.max(0.0035, 0.035 * (1 - inertia));
+  }
+
   private setupControls(canvas: HTMLCanvasElement): void {
     this.controls = new TrackballControls(this.camera!, canvas);
     this.controls.noPan = true;
@@ -214,7 +280,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     // Inertie franche : lancée d'un geste, la statue continue longtemps avant
     // de s'immobiliser. C'est ce qui rend les enchaînements possibles.
     this.controls.staticMoving = false;
-    this.controls.dynamicDampingFactor = 0.035;
+    this.controls.dynamicDampingFactor = MoyaiViewer.dampingFor(this.inertia());
     this.controls.addEventListener('start', () => (this.userInteracted = true));
   }
 
@@ -301,9 +367,8 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   private static readonly SHUSH_DURATION = 1.45;
 
   /** Le tir part de loin, en haut à droite, et vise le front de la statue. */
-  private static readonly SHOT_FROM = new THREE.Vector3(4.6, 3.1, 2.6);
-  private static readonly SHOT_TO = new THREE.Vector3(0.1, 0.7, 0.6);
   private static readonly TRICKSHOT_DURATION = 1.6;
+  private static readonly BOUNCE_DURATION = 0.42;
 
   private animateShush(delta: number): void {
     const finger = this.shush;
@@ -330,6 +395,136 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     const fadeIn = THREE.MathUtils.clamp(t / 0.1, 0, 1);
     const fadeOut = THREE.MathUtils.clamp((1 - t) / 0.18, 0, 1);
     setCursorOpacity(finger, Math.min(fadeIn, fadeOut));
+  }
+
+  // --- Points faibles ------------------------------------------------------
+
+  /**
+   * Vrai si le clic touche le point faible affiché. Le point éclate alors, et
+   * le suivant apparaîtra ailleurs après le délai prévu.
+   */
+  tryHitWeakPoint(event: MouseEvent): boolean {
+    const point = this.weakPoint;
+    const hitZone = point?.getObjectByName('hit');
+    if (!hitZone || this.weakState !== 'visible' || !this.camera) return false;
+
+    const rect = this.canvasRef().nativeElement.getBoundingClientRect();
+    const pointer = new THREE.Vector2(
+      ((event.clientX - rect.left) / rect.width) * 2 - 1,
+      -((event.clientY - rect.top) / rect.height) * 2 + 1
+    );
+    this.raycaster.setFromCamera(pointer, this.camera);
+
+    const zoneHit = this.raycaster.intersectObject(hitZone, false)[0];
+    if (!zoneHit) return false;
+
+    // Un point caché derrière la tête ne se touche pas au travers de la pierre.
+    const stoneHit = this.raycaster.intersectObjects(this.headMeshes, false)[0];
+    if (stoneHit && stoneHit.distance < zoneHit.distance - 0.25) return false;
+
+    this.weakState = 'popping';
+    this.weakTimer = MoyaiViewer.WEAK_POP_DURATION;
+    return true;
+  }
+
+  private static readonly WEAK_POP_DURATION = 0.28;
+
+  private updateWeakPoint(delta: number): void {
+    const config = this.weakPoints();
+
+    if (!config) {
+      if (this.weakPoint) this.weakPoint.visible = false;
+      this.weakState = 'hidden';
+      return;
+    }
+    if (!this.moyai) return;
+
+    if (!this.weakPoint) {
+      this.weakPoint = createWeakPoint();
+      this.weakPoint.visible = false;
+      this.moyai.add(this.weakPoint);
+      this.weakTimer = 0.8;
+    }
+    const point = this.weakPoint;
+    this.weakTimer -= delta;
+    this.weakAge += delta;
+
+    switch (this.weakState) {
+      case 'hidden':
+        if (this.weakTimer <= 0 && this.placeWeakPoint(point)) {
+          this.weakState = 'visible';
+          this.weakTimer = config.lifetime;
+          this.weakAge = 0;
+          point.visible = true;
+        }
+        break;
+
+      case 'visible': {
+        // Apparition franche, puis un clignotement dans la dernière
+        // demi-seconde pour prévenir qu'il va filer.
+        const appear = Math.min(1, this.weakAge / 0.15);
+        const closing = this.weakTimer < 0.5 && Math.sin(this.weakAge * 40) < 0;
+        point.scale.setScalar(config.size * appear);
+        animateWeakPoint(point, this.weakAge, closing ? 0.35 : 1);
+        if (this.weakTimer <= 0) this.hideWeakPoint(config);
+        break;
+      }
+
+      case 'popping': {
+        const t = 1 - Math.max(0, this.weakTimer) / MoyaiViewer.WEAK_POP_DURATION;
+        point.scale.setScalar(config.size * (1 + t * 1.6));
+        animateWeakPoint(point, this.weakAge, 1 - t);
+        if (this.weakTimer <= 0) this.hideWeakPoint(config);
+        break;
+      }
+    }
+  }
+
+  private hideWeakPoint(config: WeakPointConfig): void {
+    if (this.weakPoint) this.weakPoint.visible = false;
+    this.weakState = 'hidden';
+    this.weakTimer = config.respawn;
+  }
+
+  /**
+   * Choisit un endroit de la tête et y pose le point, à plat sur la facette.
+   * Le plus souvent du côté de la caméra, parfois ailleurs : il faut alors
+   * tourner la statue pour le trouver.
+   */
+  private placeWeakPoint(point: THREE.Group): boolean {
+    const moyai = this.moyai;
+    if (!moyai || !this.camera) return false;
+    moyai.updateMatrixWorld(true);
+
+    const center = new THREE.Vector3();
+    moyai.getWorldPosition(center);
+    const towardCamera = this.camera.position.clone().sub(center).normalize();
+    const blockers = [...this.headMeshes, ...this.worn.values()];
+
+    for (let attempt = 0; attempt < 12; attempt++) {
+      const direction = new THREE.Vector3(
+        Math.random() * 2 - 1,
+        Math.random() * 1.6 - 0.8,
+        Math.random() * 2 - 1
+      ).normalize();
+      if (Math.random() < 0.7) direction.add(towardCamera.clone().multiplyScalar(1.4)).normalize();
+
+      const origin = center.clone().add(direction.clone().multiplyScalar(4));
+      this.raycaster.set(origin, direction.clone().negate());
+      const hit = this.raycaster.intersectObjects(blockers, true)[0];
+      // Un accessoire au premier plan masquerait le point : on retente.
+      if (!hit?.face || !this.headMeshes.includes(hit.object)) continue;
+
+      const normal = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
+      const inverse = moyai.matrixWorld.clone().invert();
+      const localPoint = hit.point.clone().add(normal.clone().multiplyScalar(0.03)).applyMatrix4(inverse);
+      const localNormal = normal.transformDirection(inverse);
+
+      point.position.copy(localPoint);
+      point.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), localNormal);
+      return true;
+    }
+    return false;
   }
 
   /** Ajoute et retire les accessoires pour coller à la liste demandée. */
@@ -372,15 +567,30 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
    * front de la statue, puis tout s'efface.
    */
   playTrickshot(): void {
-    if (!this.scene) return;
+    if (!this.scene || !this.camera) return;
 
     if (!this.sniper) {
       this.sniper = createSniper();
-      this.sniper.scale.setScalar(0.55);
+      this.sniper.scale.setScalar(0.42);
       this.bullet = createBullet();
       this.scene.add(this.sniper);
       this.scene.add(this.bullet);
     }
+
+    // Le tir se cale sur la caméra au moment où il part : c'est elle qui
+    // orbite autour de la statue, et un fusil posé à un endroit fixe du monde
+    // sortait du cadre dès qu'on avait tourné le moyai. Il vient ainsi
+    // toujours se coller à la tête, en haut à droite de l'écran.
+    const camera = this.camera;
+    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+    const up = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
+    const toward = camera.position.clone().normalize();
+    this.shotTo.copy(toward).multiplyScalar(0.55).addScaledVector(up, 0.6);
+    this.shotFrom
+      .copy(this.shotTo)
+      .addScaledVector(right, 1.25)
+      .addScaledVector(up, 0.75)
+      .addScaledVector(toward, 0.5);
 
     this.trickshotElapsed = 0;
     this.sniper.visible = true;
@@ -401,8 +611,8 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
       return;
     }
 
-    const from = MoyaiViewer.SHOT_FROM;
-    const to = MoyaiViewer.SHOT_TO;
+    const from = this.shotFrom;
+    const to = this.shotTo;
 
     // L'arme reste en place, orientée vers la cible.
     sniper.position.copy(from);
@@ -422,6 +632,52 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     const fadeOut = THREE.MathUtils.clamp((1 - t) / 0.2, 0, 1);
     setSniperOpacity(sniper, Math.min(fadeIn, fadeOut));
   }
+
+  /**
+   * Rotation perpétuelle : la caméra orbite autour de la statue selon son
+   * propre axe vertical. C'est la caméra qui tourne, comme quand on manipule
+   * la statue à la main : le combo la mesure donc de la même façon.
+   */
+  private orbit(delta: number): void {
+    const speed = this.autoSpin();
+    if (!speed || !this.camera) return;
+    this.camera.position.applyAxisAngle(this.camera.up, speed * delta);
+    this.camera.lookAt(0, 0, 0);
+  }
+
+  /**
+   * Rebond de la statue au clic, incliné du côté cliqué. Il est joué dans la
+   * scène et non en CSS sur le canvas : animer le canvas faisait rebondir le
+   * décor de fond avec la statue.
+   */
+  bounce(side: number): void {
+    this.bounceSide = THREE.MathUtils.clamp(side, -1, 1);
+    this.bounceElapsed = 0;
+  }
+
+  private animateBounce(delta: number): void {
+    const moyai = this.moyai;
+    if (!moyai || this.bounceElapsed < 0) return;
+
+    this.bounceElapsed += delta;
+    const t = this.bounceElapsed / MoyaiViewer.BOUNCE_DURATION;
+    if (t >= 1) {
+      moyai.scale.set(1, 1, 1);
+      moyai.rotation.z = 0;
+      this.bounceElapsed = -1;
+      return;
+    }
+
+    // Écrasement, étirement, puis retour amorti : la même courbe que l'ancien
+    // rebond CSS, en plus doux dans l'axe de la profondeur.
+    const reduced = MoyaiViewer.reducedMotion;
+    const squash = Math.sin(t * Math.PI * 3) * Math.pow(1 - t, 1.6) * (reduced ? 0.02 : 0.12);
+    moyai.scale.set(1 + squash, 1 - squash, 1 + squash * 0.5);
+    moyai.rotation.z = reduced ? 0 : -this.bounceSide * 0.07 * Math.sin(t * Math.PI * 2) * (1 - t);
+  }
+
+  private static readonly reducedMotion =
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   private addLights(scene: THREE.Scene): void {
     // Sur fond noir, l'éclairage doit à la fois sculpter les facettes et
@@ -466,10 +722,13 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
       this.moyai.rotation.y += this.idleSpin() * delta;
     }
 
+    this.orbit(delta);
     this.controls?.update();
     this.reportSpin(delta);
     this.animateShush(delta);
     this.animateTrickshot(delta);
+    this.updateWeakPoint(delta);
+    this.animateBounce(delta);
     this.reportBackFacing(delta);
     if (!this.renderer || !this.scene || !this.camera) return;
 

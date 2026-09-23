@@ -1,0 +1,95 @@
+<div class="collection-page">
+  <header class="bar">
+    <button type="button" class="back" (click)="back()">&larr; {{ 'BACK' | translate }}</button>
+    <h1 class="heading">{{ 'COLLECTION' | translate }}</h1>
+    <p class="gems" [attr.aria-label]="'GEMS' | translate">
+      {{ collection.gems() }} <span aria-hidden="true">💎</span>
+    </p>
+  </header>
+
+  <main class="content">
+    @if (pendingTiers().length) {
+      <section class="section">
+        <h2 class="section-title">{{ 'COLLECTION_PENDING' | translate }}</h2>
+        <div class="chests">
+          @for (chest of pendingTiers(); track chest.tier) {
+            <button type="button" class="chest-card pending" (click)="openChest(chest.tier)">
+              <img [src]="chestIcon(chest.tier)" alt="" class="chest-icon">
+              <span class="chest-name">{{ ('CHEST_' + chest.tier.toUpperCase()) | translate }}</span>
+              <span class="count">&times;{{ collection.chestCount(chest.tier) }}</span>
+              <span class="cta">{{ 'CHEST_OPEN' | translate }}</span>
+            </button>
+          }
+        </div>
+      </section>
+    }
+
+    <section class="section">
+      <h2 class="section-title">{{ 'COLLECTION_SHOP' | translate }}</h2>
+      <p class="section-lead">{{ 'COLLECTION_SHOP_LEAD' | translate }}</p>
+      <div class="chests">
+        @for (chest of shopChests; track chest.tier) {
+          <div class="chest-card">
+            <img [src]="chestIcon(chest.tier)" alt="" class="chest-icon">
+            <span class="chest-name">{{ ('CHEST_' + chest.tier.toUpperCase()) | translate }}</span>
+            <ul class="odds">
+              @for (line of odds(chest); track line.rarity) {
+                <li [style.color]="rarityColors[line.rarity]">
+                  {{ ('RARITY_' + line.rarity.toUpperCase()) | translate }} {{ line.percent }} %
+                </li>
+              }
+            </ul>
+            <button
+              type="button"
+              class="cta buy"
+              [disabled]="collection.gems() < chest.price!"
+              (click)="buy(chest)"
+            >
+              {{ chest.price }} 💎
+            </button>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">{{ 'COLLECTION_FIGURES' | translate }}</h2>
+        <p class="progress">
+          {{ collection.ownedCount() }}/{{ collection.catalogue.length }}
+          · {{ 'COLLECTION_TOTAL_BONUS' | translate: { value: totalBonus() } }}
+        </p>
+      </div>
+
+      @for (group of groups; track group.rarity) {
+        <h3 class="rarity-title" [style.color]="rarityColors[group.rarity]">
+          {{ ('RARITY_' + group.rarity.toUpperCase()) | translate }}
+          <small>+{{ rarityBonus[group.rarity] * 100 }} % {{ 'COLLECTION_EACH' | translate }}</small>
+        </h3>
+        <div class="figures">
+          @for (collectible of group.items; track collectible.id) {
+            <button
+              type="button"
+              class="figure"
+              [class.owned]="collection.isOwned(collectible.id)"
+              [class.worn]="collection.skin() === collectible.id"
+              [style.--rarity]="rarityColors[collectible.rarity]"
+              [disabled]="!collection.isOwned(collectible.id)"
+              (click)="toggleSkin(collectible)"
+            >
+              <img [src]="figure(collectible)" alt="" class="figure-icon">
+              <span class="figure-name">
+                {{ collection.isOwned(collectible.id) ? (('COLLECTIBLE_' + collectible.id.toUpperCase()) | translate) : '?????' }}
+              </span>
+              @if (collection.isOwned(collectible.id)) {
+                <span class="figure-action">
+                  {{ (collection.skin() === collectible.id ? 'COLLECTION_WORN' : 'COLLECTION_WEAR') | translate }}
+                </span>
+              }
+            </button>
+          }
+        </div>
+      }
+    </section>
+  </main>
+</div>

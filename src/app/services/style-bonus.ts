@@ -3,6 +3,7 @@ import { BackgroundManager } from './background-manager';
 import { ShopManager } from './shop-manager';
 import { WardrobeManager } from './wardrobe-manager';
 import { COSMETIC_BONUS } from '../three/models/cosmetics';
+import { CollectionManager } from './collection-manager';
 
 /**
  * Relie l'apparence à la production : porter une pièce et afficher un décor
@@ -20,6 +21,7 @@ export class StyleBonus {
   private readonly shopManager = inject(ShopManager);
   private readonly wardrobe = inject(WardrobeManager);
   private readonly backgrounds = inject(BackgroundManager);
+  private readonly collection = inject(CollectionManager);
 
   constructor() {
     effect(() => {
@@ -27,7 +29,11 @@ export class StyleBonus {
         .equipped()
         .reduce((total, id) => total + (COSMETIC_BONUS[id] ?? 0), 0);
 
-      this.shopManager.styleBonus.set((1 + fromCosmetics) * this.backgrounds.bonus());
+      // Les statuettes de la collection comptent aussi : chacune rapporte,
+      // qu'elle habille la statue ou non.
+      this.shopManager.styleBonus.set(
+        (1 + fromCosmetics) * this.backgrounds.bonus() * this.collection.bonus()
+      );
     });
   }
 

@@ -2,10 +2,13 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { BackgroundId, BACKGROUNDS, backgroundDefinition } from '../three/models/backgrounds';
 import { AuraManager } from './aura-manager';
 import { SaveLocation, SaveManager } from './save-manager';
+import { ShopManager } from './shop-manager';
 
 interface BackgroundSave {
   owned: BackgroundId[];
   selected: BackgroundId | null;
+  /** Exemplaires achetés, par décor puis par amélioration. */
+  upgrades?: Partial<Record<BackgroundId, Record<number, number>>>;
 }
 
 /**
@@ -23,6 +26,7 @@ export class BackgroundManager {
 
   private readonly auraManager = inject(AuraManager);
   private readonly saveManager = inject(SaveManager);
+  private readonly shopManager = inject(ShopManager);
 
   private readonly ownedIds = signal<Set<BackgroundId>>(new Set());
   readonly selected = signal<BackgroundId | null>(null);
@@ -32,6 +36,14 @@ export class BackgroundManager {
     if (saved) {
       this.ownedIds.set(new Set(saved.owned ?? []));
       this.selected.set(saved.selected ?? null);
+      for (const background of BACKGROUNDS) {
+        const purchases = saved.upgrades?.[background.id] ?? {};
+        for (const upgrade of background.upgrades) {
+          upgrade.purchases = purchases[upgrade.id] ?? 0;
+          upgrade.unlocked = upgrade.purchases > 0;
+        }
+      }
+      this.shopManager.markPurchasesChanged();
     }
   }
 
@@ -41,8 +53,27 @@ export class BackgroundManager {
   /** Bonus du décor affiché ; 1 quand aucun n'est choisi. */
   readonly bonus = computed(() => {
     const id = this.selected();
-    return id ? 1 + backgroundDefinition(id).bonus : 1;
+    return id ? 1 + this.backgroundBonus(id) : 1;
   });
+
+  /** Bonus d'un décor, améliorations comprises, qu'il soit affiché ou non. */
+  backgroundBonus(id: BackgroundId): number {
+    const definition = backgroundDefinition(id);
+    return definition.upgrades.reduce(
+      (total, upgrade) => total + upgrade.value * this.shopManager.upgradePurchases(upgrade),
+      definition.bonus
+    );
+  }
+
+  buyUpgrade(id: BackgroundId, upgradeId: number): boolean {
+    if (!this.isOwned(id)) return false;
+    const list = backgroundDefinition(id).upgrades;
+    const upgrade = list.find(u => u.id === upgradeId);
+    if (!upgrade || !this.shopManager.buyUpgradeCopy(list, upgrade)) return false;
+
+    this.persist();
+    return true;
+  }
 
   isOwned(id: BackgroundId): boolean {
     return this.ownedIds().has(id);
@@ -72,7 +103,13 @@ export class BackgroundManager {
   private persist(): void {
     this.saveManager.saveProgress(SaveLocation.Backgrounds, {
       owned: [...this.ownedIds()],
-      selected: this.selected()
+      selected: this.selected(),
+      upgrades: Object.fromEntries(
+        BACKGROUNDS.map(background => [
+          background.id,
+          Object.fromEntries(background.upgrades.map(u => [u.id, this.shopManager.upgradePurchases(u)]))
+        ])
+      )
     } satisfies BackgroundSave);
   }
 }
