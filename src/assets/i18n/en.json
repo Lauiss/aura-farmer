@@ -365,5 +365,9 @@
     "COMPANION_CIGARETTES_HINT": "The pack is sitting there. You don't smoke, you pose.",
     "COMPANION_RACECAR_HINT": "A race car, purely for show.",
     "COMPANION_SKIBIDI_HINT": "Skibidi bop bop yes yes.",
-    "COMPANION_BRAULO_HINT": "Braulo chose you. He earns the most of all."
+    "COMPANION_BRAULO_HINT": "Braulo chose you. He earns the most of all.",
+    "WARDROBE_COMPANIONS": "Companions",
+    "WARDROBE_COMPANIONS_NOTE": "Stowing them changes nothing to their bonus: it is earned on purchase.",
+    "WARDROBE_OUT": "Out",
+    "WARDROBE_STOWED": "Stowed"
 }

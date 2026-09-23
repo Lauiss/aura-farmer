@@ -365,5 +365,9 @@
     "COMPANION_CIGARETTES_HINT": "Le paquet est posé là. Tu ne fumes pas, tu poses.",
     "COMPANION_RACECAR_HINT": "Une voiture de course, juste pour la déco.",
     "COMPANION_SKIBIDI_HINT": "Skibidi bop bop yes yes.",
-    "COMPANION_BRAULO_HINT": "Braulo t'a choisi. C'est lui qui rapporte le plus."
+    "COMPANION_BRAULO_HINT": "Braulo t'a choisi. C'est lui qui rapporte le plus.",
+    "WARDROBE_COMPANIONS": "Compagnons",
+    "WARDROBE_COMPANIONS_NOTE": "Les ranger ne change rien à leur bonus : il est acquis à l'achat.",
+    "WARDROBE_OUT": "Sorti",
+    "WARDROBE_STOWED": "Rangé"
 }

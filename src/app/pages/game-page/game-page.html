@@ -14,7 +14,7 @@
     [weakPoints]="utilityManager.weakPointConfig()"
     [auraLevel]="auraLevel()"
     [creature]="battles.worn()"
-    [companions]="store.companions()"
+    [companions]="store.shownCompanions()"
     [palette]="collection.skinPalette()"
     [inertia]="utilityManager.inertia()"
     [autoSpin]="utilityManager.autoSpin()"
@@ -87,7 +87,7 @@
 
   <nav class="actions">
     <app-icon-btn [icon]="shopIcon" label="SHOP" (activate)="openShop()"></app-icon-btn>
-    @if (wardrobeManager.hasAny() || backgroundManager.hasAny() || battles.defeatedCount() > 0) {
+    @if (wardrobeManager.hasAny() || backgroundManager.hasAny() || battles.defeatedCount() > 0 || store.companionCount() > 0) {
       <app-icon-btn [icon]="hangerIcon" label="WARDROBE" (activate)="openWardrobe()"></app-icon-btn>
     }
     @if (showBattles()) {

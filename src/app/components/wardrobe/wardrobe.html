@@ -24,6 +24,31 @@
     </ul>
   }
 
+  @if (companions().length) {
+    <section class="scenery">
+      <h3>{{ 'WARDROBE_COMPANIONS' | translate }}</h3>
+      <p class="section-note">{{ 'WARDROBE_COMPANIONS_NOTE' | translate }}</p>
+      <ul class="pieces">
+        @for (companion of companions(); track companion.id) {
+          <li>
+            <button
+              type="button"
+              class="piece"
+              [class.worn]="store.isCompanionShown(companion.id)"
+              [attr.aria-pressed]="store.isCompanionShown(companion.id)"
+              (click)="toggleCompanion(companion.id)"
+            >
+              <span class="name">{{ ('COMPANION_' + companion.id.toUpperCase()) | translate }}</span>
+              <span class="state">
+                {{ (store.isCompanionShown(companion.id) ? 'WARDROBE_OUT' : 'WARDROBE_STOWED') | translate }}
+              </span>
+            </button>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+
   @if (defeated().length) {
     <section class="scenery">
       <h3>{{ 'WARDROBE_BRAINROTS' | translate }}</h3>

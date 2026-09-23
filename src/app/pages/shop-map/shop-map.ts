@@ -87,6 +87,16 @@ const CENTER = { x: WORLD.width / 2, y: WORLD.height / 2 };
  */
 const BRANCH = 560;
 const SIDE_BRANCH = 1000;
+/**
+ * La boutique se pose bien plus loin que les quatre autres branches.
+ *
+ * Posée à la distance ordinaire, elle tombait en plein dans la zone des
+ * améliorations d'enseignements, qui montent **et** descendent de chaque
+ * article sur plus de mille cent unités : ses tuiles se superposaient aux
+ * leurs. À ces coordonnées elle garde près de deux mille unités de dégagement,
+ * et ses abscisses ne croisent celles d'aucune autre branche.
+ */
+const STORE_SPOT = { x: 2600, y: -2800 };
 const STEP = 300;
 const UPGRADE_STEP = 230;
 /** Demi-côté d'une tuile, en unités du monde, pour placer l'infobulle. */
@@ -292,11 +302,19 @@ export class ShopMap {
 
     // --- Nord-est : la boutique. Les rayons partent vers le haut, les
     // compagnons descendent depuis une sous-catégorie qui leur est propre.
-    const store = category('store', 'SHOP_CATEGORY_STORE', 1, -1);
+    const store = { x: root.x + STORE_SPOT.x, y: root.y + STORE_SPOT.y };
+    nodes.push({
+      key: 'category-store',
+      kind: 'category',
+      branch: 'store',
+      ...store,
+      parent: root,
+      labelKey: 'SHOP_CATEGORY_STORE'
+    });
 
     previous = store;
     for (const [index, chest] of CHESTS.filter(c => c.price !== null).entries()) {
-      const spot = { x: store.x + (index + 1) * STEP, y: store.y - STEP * 0.85 };
+      const spot = { x: store.x + (index + 1) * STEP, y: store.y - STEP * 1.05 };
       nodes.push({
         key: `chest-${chest.tier}`,
         kind: 'chest-unlock',
@@ -311,7 +329,7 @@ export class ShopMap {
 
     previous = store;
     for (const [index, drink] of CONSUMABLES.entries()) {
-      const spot = { x: store.x + (index + 1) * STEP, y: store.y + STEP * 0.85 };
+      const spot = { x: store.x + (index + 1) * STEP, y: store.y + STEP * 1.05 };
       nodes.push({
         key: `drink-${drink.id}`,
         kind: 'drink-unlock',
@@ -329,7 +347,7 @@ export class ShopMap {
     // Sous-catégorie des compagnons, au-dessus de la boutique. Ils s'étirent
     // vers la **droite** : vers la gauche, ils traversaient la colonne des
     // décors qui monte depuis la racine.
-    const companionsHub = { x: store.x, y: store.y - SIDE_BRANCH * 0.55 };
+    const companionsHub = { x: store.x, y: store.y - SIDE_BRANCH * 0.7 };
     nodes.push({
       key: 'category-companions',
       kind: 'category',

@@ -47,57 +47,72 @@ function shapeOf(definition: CompanionDefinition): THREE.Group {
   const { color, accent } = definition;
 
   switch (definition.id) {
-    /** Vermouth : un chien assis, museau en avant et queue dressée. */
+    /**
+     * Vermouth : un **corgi**. Tout le personnage tient à trois traits — un
+     * corps long posé très bas, des pattes minuscules, et des oreilles
+     * dressées démesurées. Un chien assis aux proportions ordinaires n'en
+     * serait pas un.
+     */
     case 'vermouth': {
-      group.add(
-        mesh(chisel(loft([
-          { y: -0.7, halfWidth: 0.34, front: 0.45, back: -0.45, chamfer: 0.34 },
-          { y: 0, halfWidth: 0.38, front: 0.4, back: -0.5, chamfer: 0.3 },
-          { y: 0.45, halfWidth: 0.3, front: 0.3, back: -0.42, chamfer: 0.34 }
-        ]), 0.04, createRandom(1)), material(color))
-      );
-      // Cou puis tête, nettement au-dessus du corps : fondue dedans, on ne
-      // distinguait qu'une masse brune.
+      // Corps allongé, couché à l'horizontale : le `loft` empile selon Y, on
+      // le bascule d'un quart de tour pour obtenir la longueur.
+      const trunk = loft([
+        { y: -0.85, halfWidth: 0.34, front: 0.34, back: -0.34, chamfer: 0.36 },
+        { y: -0.2, halfWidth: 0.42, front: 0.42, back: -0.42, chamfer: 0.34 },
+        { y: 0.5, halfWidth: 0.4, front: 0.4, back: -0.4, chamfer: 0.34 },
+        { y: 0.95, halfWidth: 0.3, front: 0.3, back: -0.3, chamfer: 0.36 }
+      ]);
+      trunk.rotateX(Math.PI / 2);
+      group.add(mesh(chisel(trunk, 0.03, createRandom(1)), material(color), [0, -0.05, 0]));
+
+      // Ventre et poitrail blancs, la marque du corgi.
+      const belly = loft([
+        { y: -0.7, halfWidth: 0.24, front: 0.2, back: -0.2, chamfer: 0.36 },
+        { y: 0.8, halfWidth: 0.26, front: 0.22, back: -0.22, chamfer: 0.36 }
+      ]);
+      belly.rotateX(Math.PI / 2);
+      group.add(mesh(belly, material(0xf0e6d6), [0, -0.3, 0]));
+
+      // Pattes ridicules : c'est leur brièveté qui fait le corgi.
+      for (const side of [-1, 1]) {
+        for (const z of [0.6, -0.55]) {
+          group.add(part(0xf0e6d6, [
+            { y: -0.82, halfWidth: 0.12, front: 0.14, back: -0.12, chamfer: 0.34 },
+            { y: -0.42, halfWidth: 0.13, front: 0.15, back: -0.12, chamfer: 0.34 }
+          ], [side * 0.28, 0, z]));
+        }
+      }
+
+      // Tête, posée haut et en avant du corps.
       group.add(part(color, [
-        { y: 0.35, halfWidth: 0.17, front: 0.22, back: -0.16, chamfer: 0.34 },
-        { y: 0.7, halfWidth: 0.2, front: 0.26, back: -0.18, chamfer: 0.34 }
-      ], [0, 0, 0.12]));
-      group.add(part(0xc9925e, [
-        { y: 0.68, halfWidth: 0.3, front: 0.36, back: -0.26, chamfer: 0.36 },
-        { y: 1.1, halfWidth: 0.32, front: 0.38, back: -0.28, chamfer: 0.36 },
-        { y: 1.28, halfWidth: 0.24, front: 0.3, back: -0.22, chamfer: 0.38 }
-      ], [0, 0, 0.1]));
-      // Museau clair, qui dépasse franchement.
-      group.add(part(0xe8d2b0, [
-        { y: 0.72, halfWidth: 0.15, front: 0.74, back: 0.3, chamfer: 0.34 },
-        { y: 0.94, halfWidth: 0.16, front: 0.68, back: 0.3, chamfer: 0.34 }
-      ], [0, 0, 0.1]));
-      group.add(mesh(new THREE.SphereGeometry(0.08, 5, 4), material(0x1c1a17), [0, 0.88, 0.86]));
-      // Yeux, sans lesquels la tête ne se lit pas comme une tête.
+        { y: 0.05, halfWidth: 0.3, front: 0.3, back: -0.28, chamfer: 0.36 },
+        { y: 0.48, halfWidth: 0.34, front: 0.34, back: -0.3, chamfer: 0.36 },
+        { y: 0.66, halfWidth: 0.26, front: 0.28, back: -0.24, chamfer: 0.38 }
+      ], [0, 0, 0.95]));
+      // Museau clair et truffe.
+      group.add(part(0xf0e6d6, [
+        { y: 0.08, halfWidth: 0.17, front: 0.42, back: 0.14, chamfer: 0.36 },
+        { y: 0.3, halfWidth: 0.18, front: 0.38, back: 0.14, chamfer: 0.36 }
+      ], [0, 0, 0.95]));
+      group.add(mesh(new THREE.SphereGeometry(0.075, 5, 4), material(0x1c1a17), [0, 0.22, 1.42]));
       for (const side of [-1, 1]) {
         group.add(
-          mesh(new THREE.SphereGeometry(0.06, 5, 4), new THREE.MeshBasicMaterial({ color: 0x14120f }),
-            [side * 0.14, 1.02, 0.44])
+          mesh(new THREE.SphereGeometry(0.055, 5, 4), new THREE.MeshBasicMaterial({ color: 0x14120f }),
+            [side * 0.15, 0.42, 1.22])
         );
       }
-      // Oreilles tombantes, dans le brun sombre pour trancher sur le crâne.
-      for (const side of [-1, 1]) {
-        group.add(part(accent, [
-          { y: 0.72, halfWidth: 0.1, front: 0.16, back: -0.12, chamfer: 0.36 },
-          { y: 1.18, halfWidth: 0.12, front: 0.18, back: -0.12, chamfer: 0.36 }
-        ], [side * 0.32, 0, 0.05], [0, 0, side * 0.3]));
-      }
-      // Pattes avant, et la queue.
+      // Les grandes oreilles dressées, triangulaires et bien écartées.
       for (const side of [-1, 1]) {
         group.add(part(color, [
-          { y: -0.75, halfWidth: 0.1, front: 0.16, back: -0.1, chamfer: 0.34 },
-          { y: -0.1, halfWidth: 0.11, front: 0.14, back: -0.1, chamfer: 0.34 }
-        ], [side * 0.2, 0, 0.36]));
+          { y: 0.5, halfWidth: 0.19, front: 0.13, back: -0.11, chamfer: 0.26 },
+          { y: 1.05, halfWidth: 0.03, front: 0.04, back: -0.04, chamfer: 0.34 }
+        ], [side * 0.24, 0, 0.9], [0, 0, side * 0.22]));
       }
+      // Queue courte, à peine un moignon.
       group.add(part(color, [
-        { y: 0, halfWidth: 0.08, front: -0.42, back: -0.62, chamfer: 0.35 },
-        { y: 0.55, halfWidth: 0.06, front: -0.3, back: -0.5, chamfer: 0.35 }
-      ]));
+        { y: 0.35, halfWidth: 0.13, front: 0.12, back: -0.12, chamfer: 0.36 },
+        { y: 0.62, halfWidth: 0.1, front: 0.1, back: -0.1, chamfer: 0.38 }
+      ], [0, 0, -1.0], [0.5, 0, 0]));
       break;
     }
 
@@ -205,6 +220,20 @@ function shapeOf(definition: CompanionDefinition): THREE.Group {
           { y: 0.4, halfWidth: 0.26, front: 0.26, back: -0.34, chamfer: 0.36 }
         ]), 0.03, createRandom(7)), material(color))
       );
+      // Les rayures : des anneaux sombres à peine plus larges que le corps.
+      // C'est elles qui font le tigré, la silhouette étant celle de tout chat.
+      const stripe = material(0x4a443d);
+      for (const y of [-0.62, -0.34, -0.06, 0.2]) {
+        group.add(
+          mesh(
+            loft([
+              { y: y - 0.055, halfWidth: 0.37, front: 0.4, back: -0.41, chamfer: 0.35 },
+              { y: y + 0.055, halfWidth: 0.37, front: 0.4, back: -0.41, chamfer: 0.35 }
+            ]),
+            stripe
+          )
+        );
+      }
       // Cou étroit puis tête ronde : sans ce rétrécissement, le chat n'était
       // qu'une silhouette continue où l'on ne distinguait rien.
       group.add(part(color, [
@@ -234,12 +263,28 @@ function shapeOf(definition: CompanionDefinition): THREE.Group {
       for (const side of [-1, 1]) {
         group.add(mesh(new THREE.SphereGeometry(0.085, 5, 4), eye, [side * 0.15, 0.92, 0.36]));
       }
-      // Queue enroulée le long du flanc.
+      // Queue enroulée le long du flanc, annelée comme le reste.
       group.add(part(color, [
         { y: -0.78, halfWidth: 0.07, front: -0.3, back: -0.48, chamfer: 0.35 },
         { y: -0.2, halfWidth: 0.06, front: -0.42, back: -0.58, chamfer: 0.35 },
         { y: 0.3, halfWidth: 0.05, front: -0.24, back: -0.42, chamfer: 0.35 }
       ]));
+      for (const y of [-0.55, -0.1, 0.2]) {
+        group.add(mesh(new THREE.SphereGeometry(0.085, 5, 4), stripe, [0, y, -0.44 - y * 0.12]));
+      }
+      // Le front porte aussi ses marques.
+      for (const side of [-1, 1]) {
+        group.add(
+          mesh(
+            loft([
+              { y: 1.0, halfWidth: 0.045, front: 0.3, back: 0.1, chamfer: 0.3 },
+              { y: 1.14, halfWidth: 0.045, front: 0.28, back: 0.1, chamfer: 0.3 }
+            ]),
+            stripe,
+            [side * 0.1, 0, 0.06]
+          )
+        );
+      }
       break;
     }
   }
