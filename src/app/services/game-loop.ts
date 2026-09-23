@@ -13,6 +13,7 @@ import { SpinCombo } from './spin-combo';
 import { CollectionManager } from './collection-manager';
 import { UtilityManager } from './utility-manager';
 import { BattleManager } from './battle-manager';
+import { ConsumableManager } from './consumable-manager';
 
 /**
  * Boucle de jeu : production d'aura passive, vérification des succès et
@@ -41,6 +42,7 @@ export class GameLoop {
   private readonly collection = inject(CollectionManager);
   private readonly utilityManager = inject(UtilityManager);
   private readonly battles = inject(BattleManager);
+  private readonly consumables = inject(ConsumableManager);
 
   private started = false;
 
@@ -94,6 +96,8 @@ export class GameLoop {
       }
       // Vérifier les achievements toutes les secondes
       this.achievementsManager.checkAchievements();
+      // Et faire vieillir les canettes en cours.
+      this.consumables.tick();
     });
 
     interval(10000).subscribe(() => {
@@ -135,11 +139,9 @@ export class GameLoop {
       totalClicks: this.achievementsManager.totalClicks()
     }
 
-    // La progression hors-ligne ne démarre qu'une fois la partie vraiment
-    // lancée. Le test portait sur la première pièce de la liste : celle-ci
-    // étant désormais triée par prix, il faut dire ce qu'on voulait vraiment
-    // dire — qu'au moins une pièce a été achetée.
-    if (moyaiUpgrades.some(piece => piece.unlocked)){
+    // L'heure de départ n'est notée que si le revenu hors-ligne est acheté :
+    // c'est la seule chose qui s'en sert.
+    if (this.utilityManager.offlineUnlocked()){
       saveData.lastSaveTime = Date.now();
     }
 
@@ -198,7 +200,9 @@ export class GameLoop {
         this.modalManager.open(OfflineProgressAnnouncer, {
           data: {
             offlineProgression: offlineGain,
-            offlineTime: offlineSeconds
+            offlineTime: offlineSeconds,
+            // Le temps réel, pour dire si le plafond a mordu.
+            elapsed: elapsedSeconds
           }
         });
       }

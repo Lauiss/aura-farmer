@@ -1,4 +1,5 @@
 import type { Purchasable } from '../../app/services/shop-manager';
+import { BATTLE_UNLOCK } from './bosses';
 import { sortByPrice } from './order';
 
 /**
@@ -8,7 +9,14 @@ import { sortByPrice } from './order';
  * articles.
  */
 
-export type UtilityId = 'weakpoints' | 'doomscroll' | 'trickshot' | 'spin' | 'prospect' | 'slumber';
+export type UtilityId =
+  | 'weakpoints'
+  | 'doomscroll'
+  | 'trickshot'
+  | 'spin'
+  | 'prospect'
+  | 'slumber'
+  | 'dice';
 
 /** Grandeur qu'une amélioration d'utilitaire fait progresser. */
 export type UtilityStat =
@@ -29,7 +37,8 @@ export type UtilityStat =
   | 'offlineHours'
   | 'offlineRate'
   | 'trickshotChance'
-  | 'trickshotPower';
+  | 'trickshotPower'
+  | 'dieLuck';
 
 export interface UtilityUpgrade extends Purchasable {
   stat: UtilityStat;
@@ -40,6 +49,12 @@ export interface UtilityUpgrade extends Purchasable {
 export interface UtilityDefinition {
   id: UtilityId;
   price: number;
+  /**
+   * Débit d'aura par seconde en deçà duquel l'utilitaire n'existe pas pour le
+   * joueur : ni sur la carte, ni dans les compteurs. Sert à ne rien dévoiler
+   * d'une mécanique qu'il n'a pas encore rencontrée.
+   */
+  revealAt?: number;
   /** Probabilité de déclenchement à chaque clic, pour le trickshot. */
   chance?: number;
   upgrades: UtilityUpgrade[];
@@ -101,11 +116,25 @@ export const UTILITIES: UtilityDefinition[] = [
     ]
   },
   {
+    // Dés pipés : n'apparaît qu'une fois les battles découvertes. Avant, ces
+    // améliorations parleraient d'un lancer de dé que le joueur n'a jamais vu.
+    id: 'dice',
+    price: 2000,
+    revealAt: BATTLE_UNLOCK,
+    upgrades: [
+      upgrade(1, 'DICE_UP_WEIGHTED', 'dieLuck', 0.04, 20000),
+      upgrade(2, 'DICE_UP_SLEIGHT', 'dieLuck', 0.05, 800000),
+      upgrade(3, 'DICE_UP_LOADED', 'dieLuck', 0.06, 40000000),
+      upgrade(4, 'DICE_UP_FATE', 'dieLuck', 0.07, 2000000000),
+      upgrade(5, 'DICE_UP_DESTINY', 'dieLuck', 0.08, 1e11)
+    ]
+  },
+  {
     // Sommeil : la progression hors-ligne était figée à huit heures à plein
     // rendement, sans rien pour la faire progresser. Elle a maintenant sa
     // branche, comme le reste.
     id: 'slumber',
-    price: 120000,
+    price: 1000,
     upgrades: [
       upgrade(1, 'SLUMBER_UP_NAP', 'offlineHours', 2, 600000),
       upgrade(2, 'SLUMBER_UP_DREAM', 'offlineRate', 0.1, 6000000),

@@ -1,18 +1,28 @@
-<div class="container align-center">
-    <!-- Le sablier dit d'emblée de quoi parle la modale ; le vieux logo d'aura
-         en PNG ne disait rien du temps écoulé. -->
-    <img class="hourglass" [src]="hourglassIcon" alt="" aria-hidden="true">
+<div class="offline">
+  <!-- Le sablier dit d'emblée de quoi parle la modale ; le vieux logo d'aura
+       en PNG ne disait rien du temps écoulé. -->
+  <img class="hourglass" [src]="hourglassIcon" alt="" aria-hidden="true">
 
-    <p aria-live="polite">
-        {{ 'OFFLINE_PROGRESSION_MESSAGE' | translate }}
-    </p>
+  <p class="lead" aria-live="polite">{{ 'OFFLINE_PROGRESSION_MESSAGE' | translate }}</p>
 
-    <div class="generated-aura align-center">
-        <span class="bold">{{ offlineProgression() | formatAura }}</span>
-        <span class="unit">{{ 'AURA' | translate }}</span>
-        <span>{{ 'IN' | translate }}</span>
-        <span class="bold">{{ hours() }}</span> <span>H</span>
-        <span class="bold">{{ minutes() }}</span> <span>M</span>
-        <span class="bold">{{ seconds() }}</span> <span>S</span>
+  <!-- Le gain d'abord, en gros : c'est la seule chose qu'on vient lire. -->
+  <p class="gain">
+    <span class="amount">+{{ offlineProgression() | formatAura }}</span>
+    <span class="unit">{{ 'AURA' | translate }}</span>
+  </p>
+
+  <dl class="detail">
+    <div class="row">
+      <dt>{{ 'OFFLINE_ELAPSED' | translate }}</dt>
+      <dd>{{ elapsedLabel() }}</dd>
     </div>
+    <div class="row">
+      <dt>{{ 'OFFLINE_RATE_LABEL' | translate }}</dt>
+      <dd>{{ ratePerSecond() | formatAura }} /s</dd>
+    </div>
+  </dl>
+
+  @if (capped()) {
+    <p class="capped">{{ 'OFFLINE_CAPPED' | translate: { hours: capHours() } }}</p>
+  }
 </div>

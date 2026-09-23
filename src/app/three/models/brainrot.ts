@@ -82,6 +82,46 @@ function sneakerLeg(x: number, z: number, top: number, shoe: number): THREE.Grou
   return group;
 }
 
+/** Teinte de peau, pour ce qui n'est pas censé être un membre d'animal. */
+const SKIN = 0xe0b08a;
+
+/**
+ * Un pied humain vu de trois quarts : talon, voûte, avant-pied élargi et cinq
+ * orteils. Assez de volumes pour qu'on lise un pied et pas une palme.
+ */
+function humanFoot(x: number, z: number, color: number): THREE.Group {
+  const group = new THREE.Group();
+
+  // Talon et cheville.
+  group.add(
+    part(color, [
+      { y: -1.52, halfWidth: 0.24, front: -0.02, back: -0.34, chamfer: 0.34 },
+      { y: -1.2, halfWidth: 0.23, front: 0.04, back: -0.32, chamfer: 0.34 }
+    ], [x, 0, z])
+  );
+  // Corps du pied, qui s'élargit vers l'avant.
+  group.add(
+    part(color, [
+      { y: -1.56, halfWidth: 0.3, front: 0.62, back: -0.34, chamfer: 0.22 },
+      { y: -1.34, halfWidth: 0.28, front: 0.5, back: -0.34, chamfer: 0.26 },
+      { y: -1.18, halfWidth: 0.24, front: 0.22, back: -0.3, chamfer: 0.3 }
+    ], [x, 0, z])
+  );
+  // Cinq orteils, du plus gros au plus petit.
+  const toes = [0.1, 0.075, 0.065, 0.055, 0.045];
+  toes.forEach((radius, index) => {
+    const offset = -0.2 + index * 0.105;
+    group.add(
+      mesh(
+        new THREE.SphereGeometry(radius, 5, 4),
+        material(color),
+        [x + offset, -1.53 + radius * 0.4, z + 0.66 - index * 0.035]
+      )
+    );
+  });
+  return group;
+}
+
 /** Rangée de dents pointues le long d'une mâchoire. */
 function teeth(y: number, zFront: number, zBack: number, halfWidth: number): THREE.Mesh {
   return part(0xf2efe6, [
@@ -522,24 +562,19 @@ function shapeOf(definition: BossDefinition): THREE.Group {
       group.add(folded(accent, -1, -0.05));
       group.add(folded(accent, 1, -0.05));
 
-      // Les pattes : d'abord un manchon de plumes, puis des pieds énormes.
+      // Les pattes, et surtout les pieds : ce sont des **pieds humains**, pas
+      // des serres d'oiseau. C'est tout le gag du personnage, donc ils sont
+      // volontairement démesurés par rapport au corps.
       for (const side of [-1, 1]) {
+        // Jambe humaine : mollet puis cheville.
         group.add(
-          rough(accent, [
-            { y: -1.2, halfWidth: 0.34, front: 0.36, back: -0.34, chamfer: 0.38 },
-            { y: -0.85, halfWidth: 0.4, front: 0.42, back: -0.38, chamfer: 0.38 },
-            { y: -0.55, halfWidth: 0.3, front: 0.32, back: -0.3, chamfer: 0.38 }
-          ], 89 + side, 0.06)
+          part(SKIN, [
+            { y: -1.32, halfWidth: 0.15, front: 0.15, back: -0.15, chamfer: 0.34 },
+            { y: -0.95, halfWidth: 0.21, front: 0.21, back: -0.21, chamfer: 0.34 },
+            { y: -0.5, halfWidth: 0.24, front: 0.24, back: -0.24, chamfer: 0.34 }
+          ], [side * 0.3, 0, 0])
         );
-        // Trois doigts, largement étalés vers l'avant.
-        for (const toe of [-1, 0, 1]) {
-          group.add(
-            part(0xe4a03c, [
-              { y: -1.42, halfWidth: 0.1, front: 0.78, back: -0.16, chamfer: 0.3 },
-              { y: -1.3, halfWidth: 0.11, front: 0.7, back: -0.16, chamfer: 0.3 }
-            ], [side * 0.36 + toe * 0.17, 0, 0], [0, toe * 0.4, 0])
-          );
-        }
+        group.add(humanFoot(side * 0.32, 0.12, SKIN));
       }
       break;
     }

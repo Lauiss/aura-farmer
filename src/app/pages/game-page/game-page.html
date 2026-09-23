@@ -30,6 +30,17 @@
     </div>
   }
 
+  @if (onboarding.dimmed()) {
+    <!-- Voile d'apprentissage : tout s'assombrit sauf la cible, qui passe
+         au-dessus de lui. Cliquer à côté suffit à l'éteindre. -->
+    <button
+      type="button"
+      class="dimmer"
+      [attr.aria-label]="'CLOSE' | translate"
+      (click)="onboarding.dismiss()"
+    ></button>
+  }
+
   <div class="overlay">
   <header class="counters">
     <p class="counter total">
@@ -77,9 +88,12 @@
       <app-icon-btn [icon]="hangerIcon" label="WARDROBE" (activate)="openWardrobe()"></app-icon-btn>
     }
     @if (showBattles()) {
-      <app-icon-btn [icon]="battleIcon" label="BATTLE" (activate)="openBattles()"></app-icon-btn>
+      <span class="target" [class.lit]="onboarding.spotlight() === 'battles'">
+        <app-icon-btn [icon]="battleIcon" label="BATTLE" (activate)="openBattles()"></app-icon-btn>
+      </span>
     }
     @if (showCollection()) {
+      <app-icon-btn [icon]="storeIcon" label="STORE" (activate)="openStore()"></app-icon-btn>
       <span class="with-badge">
         <app-icon-btn [icon]="chestIcon" label="COLLECTION" (activate)="openCollection()"></app-icon-btn>
         @if (collection.pendingChests() > 0) {

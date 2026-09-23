@@ -24,6 +24,7 @@ import { ComboMeter } from '../../components/combo-meter/combo-meter';
 import { DoomPhone } from '../../components/doom-phone/doom-phone';
 import { CollectionManager } from '../../services/collection-manager';
 import { BattleManager } from '../../services/battle-manager';
+import { Onboarding } from '../../services/onboarding';
 import { Router } from '@angular/router';
 
 @Component({
@@ -64,6 +65,7 @@ export class GamePage {
   readonly utilityManager = inject(UtilityManager);
   readonly collection = inject(CollectionManager);
   readonly battles = inject(BattleManager);
+  readonly onboarding = inject(Onboarding);
 
   /** L'accès à la collection apparaît avec le premier coffre ou la première gemme. */
   readonly showCollection = computed(
@@ -75,6 +77,7 @@ export class GamePage {
   );
 
   readonly chestIcon = this.modelIcons.chest('premium');
+  readonly storeIcon = this.modelIcons.can('monster');
   private readonly secretTracker = inject(SecretTracker);
 
   readonly hangerIcon = this.modelIcons.hanger();
@@ -129,13 +132,8 @@ export class GamePage {
    */
   readonly speedLines = [6, 18, 31, 44, 57, 70, 83, 94];
 
-  /**
-   * L'accès aux battles s'ouvre avec le premier enseignement acheté : sans
-   * rien à frapper, l'écran n'aurait aucune action à proposer.
-   */
-  readonly showBattles = computed(
-    () => this.shopManager.getAllItems().some(item => item.level() > 0)
-  );
+  /** L'accès aux battles apparaît au débit conseillé du premier boss. */
+  readonly showBattles = this.battles.discovered;
 
   readonly battleIcon = this.modelIcons.boss('tralalero');
   readonly shopIcon = this.modelIcons.shop();
@@ -153,8 +151,15 @@ export class GamePage {
   }
 
   openBattles() {
+    // Cliquer la cible éteint le projecteur : l'explication a porté.
+    this.onboarding.dismiss();
     this.soundManager.playFX(Sound.Plop);
     this.router.navigate(['/battle']);
+  }
+
+  openStore() {
+    this.soundManager.playFX(Sound.Plop);
+    this.router.navigate(['/store']);
   }
 
   openCollection() {
@@ -179,6 +184,9 @@ export class GamePage {
     // Idempotent : la partie se charge au premier écran de jeu atteint, que
     // ce soit celui-ci ou la carte de la boutique.
     this.gameLoop.start();
+    // Après le chargement de la partie : l'introduction ne se joue que si le
+    // compteur est encore au point de départ.
+    this.onboarding.playIntroIfFresh();
     this.soundManager.changeMusic(Sound.Game);
   }
 

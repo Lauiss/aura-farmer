@@ -7,6 +7,7 @@ import { GameLoop } from '../../services/game-loop';
 import { HintManager } from '../../services/hint-manager';
 import { ModelIcons } from '../../services/model-icons';
 import { Item, ShopManager } from '../../services/shop-manager';
+import { UtilityManager } from '../../services/utility-manager';
 import { Sound, SoundManager } from '../../services/sound-manager';
 import { FormatAuraPipe } from '../../pipes/format-aura';
 import {
@@ -52,6 +53,7 @@ export class BattlePage {
   private readonly soundManager = inject(SoundManager);
   private readonly hintManager = inject(HintManager);
   private readonly modelIcons = inject(ModelIcons);
+  private readonly utilityManager = inject(UtilityManager);
   private readonly translate = inject(TranslateService);
   private readonly router = inject(Router);
   private readonly gameLoop = inject(GameLoop);
@@ -131,7 +133,7 @@ export class BattlePage {
     const boss = this.boss();
     if (!boss || this.phase() !== 'select') return;
 
-    const playerRoll = this.roll();
+    const playerRoll = this.rollPlayer();
     const bossRoll = this.roll();
 
     if (playerRoll === bossRoll) {
@@ -173,6 +175,14 @@ export class BattlePage {
 
   private roll(): number {
     return 1 + Math.floor(Math.random() * DIE_FACES);
+  }
+
+  /**
+   * Le lancer du joueur, qui profite des dés pipés : une fraction des jets
+   * sort d'office sur la face maximale. Le boss, lui, lance un dé honnête.
+   */
+  private rollPlayer(): number {
+    return Math.random() < this.utilityManager.dieLuck() ? DIE_FACES : this.roll();
   }
 
   /** Revient à la liste des boss. */

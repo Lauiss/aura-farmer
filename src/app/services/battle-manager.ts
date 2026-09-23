@@ -1,7 +1,9 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { SaveLocation, SaveManager } from './save-manager';
 import { CollectionManager } from './collection-manager';
+import { ShopManager } from './shop-manager';
 import {
+  BATTLE_UNLOCK,
   BOSSES,
   BossDefinition,
   BossId,
@@ -33,6 +35,7 @@ export class BattleManager {
 
   private readonly saveManager = inject(SaveManager);
   private readonly collection = inject(CollectionManager);
+  private readonly shopManager = inject(ShopManager);
 
   private readonly defeatedIds = signal<Set<BossId>>(new Set());
   /** Brainrot porté à la place du moyai ; `null` pour la statue d'origine. */
@@ -47,6 +50,14 @@ export class BattleManager {
   }
 
   readonly defeatedCount = computed(() => this.defeatedIds().size);
+
+  /**
+   * Les battles n'existent pour le joueur qu'une fois le débit conseillé du
+   * premier boss atteint. Avant, ni l'entrée de menu ni les améliorations de
+   * dé ne se montrent : autant ne rien dévoiler d'une mécanique qu'il ne
+   * pourrait de toute façon pas aborder.
+   */
+  readonly discovered = computed(() => this.shopManager.production() >= BATTLE_UNLOCK);
 
   /** L'accès aux battles s'ouvre dès qu'il y a de quoi frapper. */
   readonly wornDefinition = computed(() => {

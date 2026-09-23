@@ -73,6 +73,13 @@ export const BOSSES: readonly BossDefinition[] = [
   { id: 'chad', shape: 'moai', recommended: 1e+12, hpSeconds: 90, damageSeconds: 9, reward: 250, color: 0xb9b2a4, accent: 0xe8b84b }
 ];
 
+/**
+ * Débit d'aura à partir duquel les battles se découvrent : celui conseillé
+ * pour le premier boss. Avant ce seuil, ni l'entrée de menu ni les
+ * améliorations de dé n'existent pour le joueur.
+ */
+export const BATTLE_UNLOCK = BOSSES[0].recommended;
+
 export function bossDefinition(id: BossId): BossDefinition {
   return BOSSES.find(boss => boss.id === id)!;
 }

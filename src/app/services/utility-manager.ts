@@ -32,6 +32,19 @@ export class UtilityManager {
 
   readonly catalogue = UTILITIES;
 
+  /**
+   * Utilitaires réellement montrés au joueur. Certains restent invisibles tant
+   * qu'il n'a pas rencontré la mécanique dont ils parlent : des améliorations
+   * de lancer de dé n'ont aucun sens avant la première battle.
+   */
+  readonly visibleCatalogue = computed(() =>
+    UTILITIES.filter(utility => this.isRevealed(utility))
+  );
+
+  isRevealed(utility: UtilityDefinition): boolean {
+    return utility.revealAt === undefined || this.shopManager.production() >= utility.revealAt;
+  }
+
   private readonly auraManager = inject(AuraManager);
   private readonly saveManager = inject(SaveManager);
   private readonly shopManager = inject(ShopManager);
@@ -137,6 +150,17 @@ export class UtilityManager {
   /** Élan ajouté au combo par publication parcourue. */
   readonly doomscrollCombo = computed(() => 0.08 + this.bonus('doomscroll', 'scrollCombo'));
 
+  // --- Dés pipés -----------------------------------------------------------
+
+  /**
+   * Probabilité qu'un lancer du joueur soit remplacé par un 20 en battle.
+   * Posséder l'utilitaire suffit à en tirer quelque chose, les améliorations
+   * font le reste.
+   */
+  readonly dieLuck = computed(() =>
+    this.ownedIds().has('dice') ? 0.05 + this.bonus('dice', 'dieLuck') : 0
+  );
+
   // --- Prospection de gemmes ---------------------------------------------
 
   /**
@@ -161,14 +185,21 @@ export class UtilityManager {
    * Durée maximale créditée à la reconnexion, en secondes. Huit heures sans
    * rien, puis ce que le Sommeil ajoute.
    */
-  readonly offlineCapSeconds = computed(
-    () => (8 + (this.ownedIds().has('slumber') ? 2 : 0) + this.bonus('slumber', 'offlineHours')) * 3600
+  readonly offlineCapSeconds = computed(() =>
+    this.ownedIds().has('slumber') ? (8 + this.bonus('slumber', 'offlineHours')) * 3600 : 0
   );
 
-  /** Part de la production créditée pendant l'absence ; 1 sans rien acheter. */
-  readonly offlineRate = computed(
-    () => 1 + (this.ownedIds().has('slumber') ? 0.1 : 0) + this.bonus('slumber', 'offlineRate')
+  /**
+   * Part de la production créditée pendant l'absence. Le revenu hors-ligne
+   * **s'achète** : sans le Sommeil, s'absenter ne rapporte rien. Il est
+   * volontairement bon marché, sa raison d'être étant de faire découvrir la
+   * mécanique et non de se mériter.
+   */
+  readonly offlineRate = computed(() =>
+    this.ownedIds().has('slumber') ? 1 + this.bonus('slumber', 'offlineRate') : 0
   );
+
+  readonly offlineUnlocked = computed(() => this.ownedIds().has('slumber'));
 
   // --- Rotation ------------------------------------------------------------
 

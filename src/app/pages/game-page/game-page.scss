@@ -258,3 +258,52 @@
   color: #9fe6ff;
   gap: $spacing-50;
 }
+
+/* --- Apprentissage : projecteur sur une entrée de menu ----------------- */
+// Le voile couvre tout l'écran ; la cible passe au-dessus de lui par son
+// `z-index`, ce qui la laisse cliquable et éclairée sans avoir à découper un
+// trou dans le voile.
+.dimmer {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.72);
+  border: none;
+  cursor: pointer;
+  animation: dim-in 0.3s ease-out;
+}
+
+.target.lit {
+  position: relative;
+  z-index: 41;
+  border-radius: $radius-100;
+  // Un halo ambré qui bat, pour que l'oeil aille là et nulle part ailleurs.
+  animation: beacon 1.1s ease-in-out infinite alternate;
+}
+
+@keyframes dim-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes beacon {
+  from {
+    box-shadow: 0 0 0 0.25rem rgba(232, 184, 75, 0.35), 0 0 2rem rgba(232, 184, 75, 0.3);
+  }
+  to {
+    box-shadow: 0 0 0 0.5rem rgba(232, 184, 75, 0.55), 0 0 3.5rem rgba(232, 184, 75, 0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dimmer,
+  .target.lit {
+    animation: none;
+  }
+
+  .target.lit {
+    box-shadow: 0 0 0 0.4rem rgba(232, 184, 75, 0.5);
+  }
+}

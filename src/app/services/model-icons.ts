@@ -13,6 +13,9 @@ import { createSniper } from '../three/models/sniper';
 import { createWeakPoint } from '../three/models/weak-point';
 import { createGem } from '../three/models/gem';
 import { createHourglass } from '../three/models/hourglass';
+import { createDie } from '../three/models/die';
+import { createCan } from '../three/models/can';
+import { ConsumableId, consumableDefinition } from '../../assets/static/consumables';
 import { createRelic } from '../three/models/relic';
 import { createBrainrot } from '../three/models/brainrot';
 import { BossId, bossDefinition } from '../../assets/static/bosses';
@@ -43,7 +46,8 @@ export class ModelIcons {
     'weak-point': 'assets/imgs/upgrades/upgrade_generic.png',
     sniper: 'assets/imgs/upgrades/upgrade_generic.png',
     gem: 'assets/imgs/upgrades/upgrade_generic.png',
-    hourglass: 'assets/imgs/upgrades/upgrade_generic.png'
+    hourglass: 'assets/imgs/upgrades/upgrade_generic.png',
+    die: 'assets/imgs/upgrades/upgrade_generic.png'
   };
 
   private cache = new Map<string, string>();
@@ -144,6 +148,24 @@ export class ModelIcons {
   gem(): string {
     return this.render('gem', () =>
       renderToDataUrl(createGem(), { size: 192, distance: 3.6, rotation: [0.12, 0.4, 0] })
+    );
+  }
+
+  /** Canette d'un consommable. */
+  can(id: ConsumableId): string {
+    return this.render(`can-${id}`, () =>
+      renderToDataUrl(createCan(consumableDefinition(id)), {
+        size: 192,
+        distance: 4.2,
+        rotation: [0.12, 0.4, 0]
+      })
+    );
+  }
+
+  /** Dé à vingt faces des battles. */
+  die(): string {
+    return this.render('die', () =>
+      renderToDataUrl(createDie(), { size: 192, distance: 3.4, rotation: [0.35, 0.45, 0] })
     );
   }
 

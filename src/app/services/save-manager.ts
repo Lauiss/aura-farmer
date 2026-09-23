@@ -22,7 +22,9 @@ export enum SaveLocation {
   Backgrounds = "AURA_FARMER_BACKGROUNDS",
   Utilities = "AURA_FARMER_UTILITIES",
   Collection = "AURA_FARMER_COLLECTION",
-  Battles = "AURA_FARMER_BATTLES"
+  Battles = "AURA_FARMER_BATTLES",
+  Onboarding = "AURA_FARMER_ONBOARDING",
+  Consumables = "AURA_FARMER_CONSUMABLES"
 }
 
 @Injectable({

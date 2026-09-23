@@ -151,6 +151,15 @@ export class CollectionManager {
     this.persist();
   }
 
+  /**
+   * Retire des gemmes sans toucher au total gagné : `gemsEarned` sert aux
+   * succès, une dépense ne doit pas les faire reculer.
+   */
+  spendGems(amount: number): void {
+    this.gems.update(gems => Math.max(0, gems - amount));
+    this.persist();
+  }
+
   /** Achète un coffre en gemmes ; il rejoint les coffres à ouvrir. */
   buyChest(tier: ChestTier): boolean {
     const price = chestDefinition(tier).price;

@@ -1,0 +1,269 @@
+@use '../../../menu-theme' as *;
+@use '../../../variables' as *;
+
+.store-page {
+  min-height: 100vh;
+  background: $menu-bg;
+  color: $menu-text;
+}
+
+/* --- Barre du haut ----------------------------------------------------- */
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-200;
+  padding: $spacing-200 $spacing-300;
+  border-bottom: 1px solid $menu-border;
+}
+
+.back,
+.link {
+  font: inherit;
+  font-weight: $menu-weight;
+  color: $menu-text-dim;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.back:hover,
+.back:focus-visible,
+.link:hover,
+.link:focus-visible {
+  color: $menu-accent;
+}
+
+.heading {
+  font-size: $menu-size-title;
+  font-weight: $menu-weight-strong;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gems {
+  font-size: $menu-size-lead;
+  font-weight: $menu-weight-strong;
+  font-variant-numeric: tabular-nums;
+  color: #9fe6ff;
+}
+
+/* --- Le comptoir et son vendeur ---------------------------------------- */
+// Le vendeur est posé derrière le comptoir, qui le coupe à mi-hauteur : c'est
+// ce chevauchement qui donne la profondeur, sans avoir à modéliser une scène.
+.counter-scene {
+  position: relative;
+  height: 14rem;
+  overflow: hidden;
+  background: linear-gradient(180deg, color-mix(in srgb, #{$menu-accent} 8%, $menu-bg), $menu-bg);
+}
+
+.vendor {
+  position: absolute;
+  left: 50%;
+  bottom: 3.5rem;
+  width: 11rem;
+  height: 11rem;
+  transform: translateX(-50%);
+  display: block;
+}
+
+.counter {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4.5rem;
+  background: $menu-surface;
+  border-top: 3px solid $menu-accent;
+  box-shadow: 0 -12px 28px rgba(0, 0, 0, 0.5);
+}
+
+// Rainures du plateau, pour qu'il ne soit pas un simple aplat.
+.counter::after {
+  content: '';
+  position: absolute;
+  inset: 0.9rem 8% auto;
+  height: 1px;
+  background: $menu-border;
+}
+
+.pitch {
+  position: absolute;
+  left: 50%;
+  bottom: 1.2rem;
+  transform: translateX(-50%);
+  max-width: 90%;
+  text-align: center;
+  font-size: $menu-size-small;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $menu-text-dim;
+}
+
+/* --- Étagères ---------------------------------------------------------- */
+.shelves {
+  padding: $spacing-300;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-400;
+}
+
+.shelf-title {
+  font-size: $menu-size-lead;
+  font-weight: $menu-weight-strong;
+  letter-spacing: 0.06em;
+}
+
+.shelf-lead {
+  margin-top: $spacing-50;
+  font-size: $menu-size-small;
+  color: $menu-text-dim;
+}
+
+.goods {
+  margin-top: $spacing-200;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: $spacing-200;
+  // Le rayonnage : un filet sous chaque rangée d'articles.
+  padding-bottom: $spacing-200;
+  border-bottom: 2px solid $menu-border-strong;
+}
+
+.good {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-50;
+  padding: $spacing-200 $spacing-150;
+  font: inherit;
+  color: $menu-text;
+  text-align: center;
+  background: $menu-surface;
+  border: 2px solid $menu-border-strong;
+  border-radius: $radius-100;
+}
+
+// Une canette en cours d'effet se signale, sinon on en rachète sans le savoir.
+.good.running {
+  border-color: $menu-accent;
+}
+
+.good.pending {
+  cursor: pointer;
+}
+
+.good.pending:hover,
+.good.pending:focus-visible {
+  border-color: $menu-accent;
+}
+
+.good-icon {
+  width: 5rem;
+  height: 5rem;
+  object-fit: contain;
+}
+
+.good-name {
+  font-weight: $menu-weight-strong;
+}
+
+.good-effect {
+  font-size: $menu-size-small;
+  color: $menu-accent;
+  font-variant-numeric: tabular-nums;
+}
+
+.good-note {
+  font-size: $menu-size-small;
+  color: $menu-text-dim;
+  font-variant-numeric: tabular-nums;
+}
+
+.odds {
+  margin: $spacing-50 0;
+  font-size: 0.78rem;
+  list-style: none;
+  padding: 0;
+}
+
+.odds .relic-odds {
+  margin-top: $spacing-50;
+  padding-top: $spacing-50;
+  border-top: 1px solid $menu-border;
+  color: $menu-accent;
+}
+
+.price {
+  margin-top: auto;
+  padding: $spacing-100 $spacing-200;
+  font: inherit;
+  font-weight: $menu-weight-strong;
+  color: $menu-bg;
+  background: $menu-accent;
+  border: none;
+  border-radius: $radius-100;
+  cursor: pointer;
+}
+
+.price:disabled {
+  color: $menu-text-faint;
+  background: $menu-bg;
+  border: 1px solid $menu-border-strong;
+  cursor: not-allowed;
+}
+
+.price:not(:disabled):hover,
+.price:not(:disabled):focus-visible {
+  filter: brightness(1.1);
+}
+
+/* --- Effets en cours --------------------------------------------------- */
+.active-list {
+  margin-top: $spacing-150;
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-150;
+}
+
+.active-chip {
+  display: flex;
+  align-items: center;
+  gap: $spacing-100;
+  padding: $spacing-50 $spacing-150;
+  background: $menu-surface;
+  border: 1px solid $menu-accent;
+  border-radius: 999px;
+}
+
+.chip-icon {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.chip-name {
+  font-weight: $menu-weight-strong;
+  font-size: $menu-size-small;
+}
+
+.chip-time {
+  font-size: $menu-size-small;
+  color: $menu-accent;
+  font-variant-numeric: tabular-nums;
+}
+
+.to-collection {
+  text-align: center;
+}
+
+@media (max-width: 40rem) {
+  .counter-scene {
+    height: 11rem;
+  }
+
+  .vendor {
+    width: 8rem;
+    height: 8rem;
+  }
+}

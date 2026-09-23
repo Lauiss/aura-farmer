@@ -4,6 +4,7 @@ import { ShopManager } from './shop-manager';
 import { WardrobeManager } from './wardrobe-manager';
 import { COSMETIC_BONUS } from '../three/models/cosmetics';
 import { CollectionManager } from './collection-manager';
+import { ConsumableManager } from './consumable-manager';
 
 /**
  * Relie l'apparence à la production : porter une pièce et afficher un décor
@@ -22,6 +23,7 @@ export class StyleBonus {
   private readonly wardrobe = inject(WardrobeManager);
   private readonly backgrounds = inject(BackgroundManager);
   private readonly collection = inject(CollectionManager);
+  private readonly consumables = inject(ConsumableManager);
 
   constructor() {
     effect(() => {
@@ -36,7 +38,10 @@ export class StyleBonus {
         (1 + fromCosmetics) *
           this.backgrounds.bonus() *
           this.collection.bonus() *
-          this.collection.relicBonus()
+          this.collection.relicBonus() *
+          // Les canettes en cours : un facteur temporaire, au même endroit que
+          // les bonus permanents puisque `ShopManager` n'en attend qu'un seul.
+          this.consumables.multiplier()
       );
     });
   }

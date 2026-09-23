@@ -8,52 +8,11 @@
   </header>
 
   <main class="content">
-    @if (pendingTiers().length) {
-      <section class="section">
-        <h2 class="section-title">{{ 'COLLECTION_PENDING' | translate }}</h2>
-        <div class="chests">
-          @for (chest of pendingTiers(); track chest.tier) {
-            <button type="button" class="chest-card pending" (click)="openChest(chest.tier)">
-              <img [src]="chestIcon(chest.tier)" alt="" class="chest-icon">
-              <span class="chest-name">{{ ('CHEST_' + chest.tier.toUpperCase()) | translate }}</span>
-              <span class="count">&times;{{ collection.chestCount(chest.tier) }}</span>
-              <span class="cta">{{ 'CHEST_OPEN' | translate }}</span>
-            </button>
-          }
-        </div>
-      </section>
-    }
-
-    <section class="section">
-      <h2 class="section-title">{{ 'COLLECTION_SHOP' | translate }}</h2>
-      <p class="section-lead">{{ 'COLLECTION_SHOP_LEAD' | translate }}</p>
-      <div class="chests">
-        @for (chest of shopChests; track chest.tier) {
-          <div class="chest-card">
-            <img [src]="chestIcon(chest.tier)" alt="" class="chest-icon">
-            <span class="chest-name">{{ ('CHEST_' + chest.tier.toUpperCase()) | translate }}</span>
-            <ul class="odds">
-              @for (line of odds(chest); track line.rarity) {
-                <li [style.color]="rarityColors[line.rarity]">
-                  {{ ('RARITY_' + line.rarity.toUpperCase()) | translate }} {{ line.percent }} %
-                </li>
-              }
-              <li class="relic-odds">
-                {{ 'COLLECTION_RELIC_ODDS' | translate: { percent: relicOdds(chest) } }}
-              </li>
-            </ul>
-            <button
-              type="button"
-              class="cta buy"
-              [disabled]="collection.gems() < chest.price!"
-              (click)="buy(chest)"
-            >
-              {{ chest.price }} 💎
-            </button>
-          </div>
-        }
-      </div>
-    </section>
+    <p class="to-store">
+      <button type="button" class="link" (click)="openStore()">
+        {{ 'COLLECTION_TO_STORE' | translate }} &rarr;
+      </button>
+    </p>
 
     <!-- Les reliques passent avant les statuettes : c'est la collection qui
          compte, et elle ne s'achète nulle part. -->

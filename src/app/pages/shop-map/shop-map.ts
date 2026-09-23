@@ -132,7 +132,8 @@ export class ShopMap {
     weakPoint: this.modelIcons.weakPoint(),
     sniper: this.modelIcons.sniper(),
     gem: this.modelIcons.gem(),
-    hourglass: this.modelIcons.hourglass()
+    hourglass: this.modelIcons.hourglass(),
+    die: this.modelIcons.die()
   };
 
   readonly buyAmount = signal<BuyAmount>('1');
@@ -253,7 +254,7 @@ export class ShopMap {
     // --- Ouest : les utilitaires, en ligne, leurs améliorations en colonne.
     const tools = category('utilities', 'SHOP_CATEGORY_UTILITIES', -1, 0);
     previous = tools;
-    this.utilityManager.catalogue.forEach((utility, index) => {
+    this.utilityManager.visibleCatalogue().forEach((utility, index) => {
       const spot = { x: tools.x - (index + 1) * STEP * 1.15, y: tools.y };
       nodes.push({ key: `utility-${utility.id}`, kind: 'utility', branch: 'utilities', ...spot, parent: previous, utility });
       previous = spot;
@@ -460,6 +461,8 @@ export class ShopMap {
             return this.icons.moyai;
           case 'prospect':
             return this.icons.gem;
+          case 'dice':
+            return this.icons.die;
           case 'slumber':
             return this.icons.hourglass;
           default:
@@ -654,6 +657,8 @@ export class ShopMap {
         return { key: 'STAT_TRICKSHOT_CHANCE', params: { from: round(u.trickshotChance() * 100), to: round((u.trickshotChance() + step) * 100) } };
       case 'trickshotPower':
         return { key: 'STAT_TRICKSHOT_POWER', params: { from: round(u.trickshotPower()), to: round(u.trickshotPower() + step) } };
+      case 'dieLuck':
+        return { key: 'STAT_DIE_LUCK', params: { from: round(u.dieLuck() * 100), to: round((u.dieLuck() + step) * 100) } };
     }
   }
 
