@@ -11,17 +11,31 @@ import { UtilityManager } from '../../services/utility-manager';
 import { Sound, SoundManager } from '../../services/sound-manager';
 import { FormatAuraPipe } from '../../pipes/format-aura';
 import {
+  ATTACK_SHAPES,
+  AttackProfile,
   BossDefinition,
-  DAMAGE_PER_CONTRIBUTION,
   DIE_FACES,
   PLAYER_HP_SECONDS
 } from '../../../assets/static/bosses';
 
+/** Une attaque jouable : un enseignement doublé de son profil de combat. */
+export interface Attack {
+  item: Item;
+  profile: AttackProfile;
+  /** Dégâts, déjà rapportés à la production du joueur. */
+  damage: number;
+  rollBonus: number;
+  cooldown: number;
+}
+
 /** Ce qui s'est passé au dernier tour, pour l'afficher. */
 interface Round {
+  /** Lancer brut du joueur, avant le bonus de profil. */
   playerRoll: number;
+  /** Lancer une fois le bonus appliqué : c'est lui qui est comparé. */
+  playerTotal: number;
   bossRoll: number;
-  /** `clash` quand les deux dés tombent à égalité : personne ne touche. */
+  /** `clash` quand les deux totaux tombent à égalité : personne ne touche. */
   outcome: 'hit' | 'taken' | 'clash';
   damage: number;
   actionName: string;
@@ -75,8 +89,53 @@ export class BattlePage {
   /** Production par seconde : tout le combat en dépend. */
   readonly production = computed(() => this.shopManager.production());
 
-  /** Enseignements achetés : ce sont les coups disponibles. */
-  readonly actions = computed(() => this.shopManager.getAllItems().filter(item => item.level() > 0));
+  /** Temps de recharge restant, par identifiant d'enseignement. */
+  private readonly cooldowns = signal<Record<number, number>>({});
+
+  /** Le manuel, replié par défaut : il sert la première fois, puis encombre. */
+  readonly manualOpen = signal(false);
+
+  /**
+   * Les coups disponibles : les enseignements achetés, répartis en trois tiers
+   * selon leur ancienneté. Les plus anciens frappent léger et sûr, les derniers
+   * frappent lourd et risqué — ce qui donne un choix à chaque tour quel que
+   * soit l'avancement de la partie, là où un découpage figé n'aurait proposé
+   * que des coups légers en début de jeu.
+   */
+  readonly attacks = computed<Attack[]>(() => {
+    const unlocked = this.shopManager.getAllItems().filter(item => item.level() > 0);
+    const production = this.production();
+
+    return unlocked.map((item, index) => {
+      const profile = BattlePage.profileFor(index, unlocked.length);
+      const shape = ATTACK_SHAPES[profile];
+      return {
+        item,
+        profile,
+        damage: production * shape.power,
+        rollBonus: shape.rollBonus,
+        // Plafonné à ce que le nombre d'attaques permet, sinon toutes peuvent
+        // se retrouver en recharge le même tour et le combat se bloque.
+        cooldown: Math.min(shape.cooldown, Math.max(0, unlocked.length - 1))
+      };
+    });
+  });
+
+  /** Sous trois enseignements, tout reste neutre : un tiers n'aurait aucun sens. */
+  private static profileFor(index: number, total: number): AttackProfile {
+    if (total < 3) return 'balanced';
+    const third = Math.floor((index * 3) / total);
+    return third === 0 ? 'light' : third === 1 ? 'balanced' : 'heavy';
+  }
+
+  /** Tours de recharge restants sur une attaque ; 0 si elle est prête. */
+  remaining(attack: Attack): number {
+    return this.cooldowns()[attack.item.id] ?? 0;
+  }
+
+  isReadyToPlay(attack: Attack): boolean {
+    return this.remaining(attack) === 0;
+  }
 
   readonly playerRatio = computed(() => this.playerHp() / this.playerMaxHp());
   readonly bossRatio = computed(() => this.bossHp() / this.bossMaxHp());
@@ -94,11 +153,6 @@ export class BattlePage {
     return this.modelIcons.boss(boss.id);
   }
 
-  /** Dégâts que porterait un enseignement, tirés de ce qu'il rapporte. */
-  damageOf(item: Item): number {
-    return item.value() * item.level() * DAMAGE_PER_CONTRIBUTION;
-  }
-
   /** Le débit conseillé est-il atteint ? Sinon, le combat sera rude. */
   isReady(boss: BossDefinition): boolean {
     return this.production() >= boss.recommended;
@@ -111,7 +165,7 @@ export class BattlePage {
       this.hintManager.show('BATTLE_LOCKED_HINT');
       return;
     }
-    if (!this.actions().length) {
+    if (!this.attacks().length) {
       this.hintManager.show('BATTLE_NO_ACTION_HINT');
       return;
     }
@@ -125,38 +179,61 @@ export class BattlePage {
     this.bossHp.set(this.bossMaxHp());
     this.playerHp.set(this.playerMaxHp());
     this.lastRound.set(null);
+    this.cooldowns.set({});
     this.phase.set('select');
     this.soundManager.playFX(Sound.Plop);
   }
 
-  play(item: Item): void {
+  play(attack: Attack): void {
     const boss = this.boss();
     if (!boss || this.phase() !== 'select') return;
+    if (!this.isReadyToPlay(attack)) {
+      this.hintManager.show('BATTLE_COOLDOWN_HINT');
+      return;
+    }
 
     const playerRoll = this.rollPlayer();
+    // Le profil de l'attaque pèse sur le lancer : c'est là que se joue le
+    // choix. Frapper lourd, c'est accepter de rater plus souvent.
+    const playerTotal = playerRoll + attack.rollBonus;
     const bossRoll = this.roll();
+    const name = attack.item.name();
 
-    if (playerRoll === bossRoll) {
+    this.startCooldowns(attack);
+
+    if (playerTotal === bossRoll) {
       // Égalité : les deux auras se neutralisent, personne ne perd de vie.
-      this.lastRound.set({ playerRoll, bossRoll, outcome: 'clash', damage: 0, actionName: item.name() });
+      this.lastRound.set({ playerRoll, playerTotal, bossRoll, outcome: 'clash', damage: 0, actionName: name });
       this.soundManager.playFX(Sound.Plop);
       return;
     }
 
-    if (playerRoll > bossRoll) {
-      const damage = this.damageOf(item);
-      this.bossHp.update(hp => Math.max(0, hp - damage));
-      this.lastRound.set({ playerRoll, bossRoll, outcome: 'hit', damage, actionName: item.name() });
+    if (playerTotal > bossRoll) {
+      this.bossHp.update(hp => Math.max(0, hp - attack.damage));
+      this.lastRound.set({ playerRoll, playerTotal, bossRoll, outcome: 'hit', damage: attack.damage, actionName: name });
       // Le son monte avec le dé : un vingt s'entend.
       this.soundManager.playPitched(Sound.Plop, 1 + (playerRoll / DIE_FACES) * 0.5);
     } else {
       const damage = boss.recommended * boss.damageSeconds;
       this.playerHp.update(hp => Math.max(0, hp - damage));
-      this.lastRound.set({ playerRoll, bossRoll, outcome: 'taken', damage, actionName: item.name() });
+      this.lastRound.set({ playerRoll, playerTotal, bossRoll, outcome: 'taken', damage, actionName: name });
       this.soundManager.playPitched(Sound.Plop, 0.7);
     }
 
     this.resolveEnd(boss);
+  }
+
+  /**
+   * Fait vieillir toutes les recharges d'un tour, puis met celle de l'attaque
+   * jouée. Dans cet ordre : sinon elle perdrait un tour dès son propre coup.
+   */
+  private startCooldowns(played: Attack): void {
+    const next: Record<number, number> = {};
+    for (const [id, turns] of Object.entries(this.cooldowns())) {
+      if (turns > 1) next[Number(id)] = turns - 1;
+    }
+    if (played.cooldown > 0) next[played.item.id] = played.cooldown;
+    this.cooldowns.set(next);
   }
 
   private resolveEnd(boss: BossDefinition): void {

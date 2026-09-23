@@ -88,12 +88,43 @@ export function bossDefinition(id: BossId): BossDefinition {
 export const PLAYER_HP_SECONDS = 100;
 
 /**
- * Multiplicateur appliqué à la contribution d'un enseignement pour en tirer
- * des dégâts. Choisir l'enseignement qui rapporte le plus est donc toujours le
- * meilleur coup : c'est la production du joueur, et sa répartition, qui font sa
- * force au combat.
+ * Profil d'une attaque. Les enseignements débloqués sont répartis en trois
+ * tiers — les plus anciens frappent léger, les derniers frappent lourd.
  */
-export const DAMAGE_PER_CONTRIBUTION = 30;
+export type AttackProfile = 'light' | 'balanced' | 'heavy';
+
+export interface AttackShape {
+  /** Dégâts, en secondes de la production du joueur. */
+  power: number;
+  /** Ce que le profil ajoute au lancer du joueur, ou lui retire. */
+  rollBonus: number;
+  /** Tours d'attente avant de pouvoir rejouer la même attaque. */
+  cooldown: number;
+}
+
+/**
+ * Le nerf de la bataille.
+ *
+ * Les dégâts se calculent sur la **production totale** et non sur ce que
+ * rapporte l'enseignement choisi : sans cela, le dernier acheté écrasait tous
+ * les autres et il n'y avait qu'un seul coup à jouer, toujours le même.
+ *
+ * Le choix se fait donc ailleurs, sur un pari. Une attaque légère touche
+ * presque à tous les coups mais gratte peu ; une lourde fait très mal mais
+ * rate sept fois sur dix, et rater, c'est encaisser.
+ *
+ * Les trois profils ont été calés à **efficacité égale** — dégâts rendus
+ * rapportés aux dégâts encaissés, 11 pour chacun : aucun n'est un piège, et
+ * aucun n'est le bon choix systématique. Ce qui les sépare est la variance :
+ * frapper lourd raccourcit le combat au prix d'échanges perdus, frapper léger
+ * l'allonge en sécurité. Le temps de recharge interdit par-dessus de
+ * s'installer sur une seule attaque.
+ */
+export const ATTACK_SHAPES: Record<AttackProfile, AttackShape> = {
+  light: { power: 5, rollBonus: 4, cooldown: 1 },
+  balanced: { power: 11, rollBonus: 0, cooldown: 2 },
+  heavy: { power: 29, rollBonus: -5, cooldown: 3 }
+};
 
 /** Part de la récompense rendue quand on refait un boss déjà battu. */
 export const FARM_REWARD_SHARE = 0.2;

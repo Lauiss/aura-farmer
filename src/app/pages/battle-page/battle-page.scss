@@ -376,3 +376,119 @@
     animation: none;
   }
 }
+
+/* --- Profils d'attaque -------------------------------------------------- */
+// Trois couleurs, toujours les mêmes, du plus sûr au plus risqué. Le manuel
+// et les cartes les partagent pour qu'on fasse le lien sans les relire.
+.light,
+.profile-light .action-profile {
+  color: #7ed957;
+}
+
+.balanced,
+.profile-balanced .action-profile {
+  color: $menu-accent;
+}
+
+.heavy,
+.profile-heavy .action-profile {
+  color: #ff6b3d;
+}
+
+.action-profile {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.action-roll {
+  font-size: 0.75rem;
+  color: $menu-text-faint;
+  font-variant-numeric: tabular-nums;
+}
+
+.profile-light {
+  border-color: rgba(126, 217, 87, 0.5);
+}
+
+.profile-heavy {
+  border-color: rgba(255, 107, 61, 0.5);
+}
+
+// En recharge : la carte reste lisible pour qu'on prévoie son tour, mais
+// n'est plus jouable.
+.action-card.charging {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.action-card:disabled:hover {
+  border-color: $menu-border-strong;
+}
+
+.action-cooldown {
+  font-size: 0.72rem;
+  font-weight: $menu-weight-strong;
+  color: #ff9f45;
+}
+
+/* --- Manuel ------------------------------------------------------------- */
+.actions-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-200;
+  margin-bottom: $spacing-150;
+}
+
+.actions-head .actions-title {
+  margin-bottom: 0;
+}
+
+.manual-toggle {
+  font: inherit;
+  font-size: $menu-size-small;
+  color: $menu-text-dim;
+  background: none;
+  border: 1px solid $menu-border-strong;
+  border-radius: $radius-100;
+  padding: $spacing-50 $spacing-150;
+  cursor: pointer;
+}
+
+.manual-toggle:hover,
+.manual-toggle:focus-visible {
+  color: $menu-accent;
+  border-color: $menu-accent;
+}
+
+.manual {
+  max-width: 44rem;
+  margin: 0 auto $spacing-250;
+  padding: $spacing-200;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-100;
+  font-size: $menu-size-small;
+  color: $menu-text-dim;
+  background: $menu-surface;
+  border: 1px solid $menu-border;
+  border-radius: $radius-100;
+}
+
+.manual-profiles {
+  margin: 0;
+  padding-left: $spacing-250;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-50;
+}
+
+/* Le détail du lancer, sous le total. */
+.roll small {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: $menu-weight;
+  color: $menu-text-faint;
+}

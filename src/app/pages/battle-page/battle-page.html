@@ -28,7 +28,12 @@
       <section class="middle">
         @if (lastRound(); as round) {
           <div class="dice" [class]="'dice ' + round.outcome">
-            <p class="roll player">{{ round.playerRoll }}</p>
+            <p class="roll player">
+              {{ round.playerTotal }}
+              @if (round.playerTotal !== round.playerRoll) {
+                <small>{{ round.playerRoll }}{{ round.playerTotal > round.playerRoll ? '+' : '' }}{{ round.playerTotal - round.playerRoll }}</small>
+              }
+            </p>
             <p class="versus">{{ 'BATTLE_VS' | translate }}</p>
             <p class="roll boss">{{ round.bossRoll }}</p>
           </div>
@@ -87,12 +92,49 @@
 
     @if (phase() === 'select') {
       <footer class="actions-bar">
-        <p class="actions-title">{{ 'BATTLE_CHOOSE' | translate }}</p>
+        <div class="actions-head">
+          <p class="actions-title">{{ 'BATTLE_CHOOSE' | translate }}</p>
+          <button
+            type="button"
+            class="manual-toggle"
+            [attr.aria-expanded]="manualOpen()"
+            (click)="manualOpen.set(!manualOpen())"
+          >
+            {{ (manualOpen() ? 'BATTLE_MANUAL_HIDE' : 'BATTLE_MANUAL_SHOW') | translate }}
+          </button>
+        </div>
+
+        @if (manualOpen()) {
+          <div class="manual">
+            <p>{{ 'BATTLE_MANUAL_DAMAGE' | translate }}</p>
+            <p>{{ 'BATTLE_MANUAL_ROLL' | translate: { faces: dieFaces } }}</p>
+            <ul class="manual-profiles">
+              <li><b class="light">{{ 'ATTACK_LIGHT' | translate }}</b> — {{ 'BATTLE_MANUAL_LIGHT' | translate }}</li>
+              <li><b class="balanced">{{ 'ATTACK_BALANCED' | translate }}</b> — {{ 'BATTLE_MANUAL_BALANCED' | translate }}</li>
+              <li><b class="heavy">{{ 'ATTACK_HEAVY' | translate }}</b> — {{ 'BATTLE_MANUAL_HEAVY' | translate }}</li>
+            </ul>
+            <p>{{ 'BATTLE_MANUAL_COOLDOWN' | translate }}</p>
+          </div>
+        }
+
         <div class="actions">
-          @for (item of actions(); track item.id) {
-            <button type="button" class="action-card" (click)="play(item)">
-              <span class="action-name">{{ item.name() }}</span>
-              <span class="action-damage">{{ damageOf(item) | formatAura }}</span>
+          @for (attack of attacks(); track attack.item.id) {
+            <button
+              type="button"
+              [class]="'action-card profile-' + attack.profile"
+              [class.charging]="!isReadyToPlay(attack)"
+              [disabled]="!isReadyToPlay(attack)"
+              (click)="play(attack)"
+            >
+              <span class="action-profile">{{ ('ATTACK_' + attack.profile.toUpperCase()) | translate }}</span>
+              <span class="action-name">{{ attack.item.name() }}</span>
+              <span class="action-damage">{{ attack.damage | formatAura }}</span>
+              <span class="action-roll">
+                {{ attack.rollBonus >= 0 ? '+' : '' }}{{ attack.rollBonus }} {{ 'BATTLE_ON_ROLL' | translate }}
+              </span>
+              @if (!isReadyToPlay(attack)) {
+                <span class="action-cooldown">{{ 'BATTLE_COOLDOWN' | translate: { turns: remaining(attack) } }}</span>
+              }
             </button>
           }
         </div>

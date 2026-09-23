@@ -286,3 +286,31 @@
   border-top: 1px solid $menu-border;
   color: $menu-accent;
 }
+
+/* --- Passerelle vers la boutique --------------------------------------- */
+// Un vrai bouton et non un lien nu : c'est un passage d'écran, il doit se
+// voir autant que les autres commandes de la page.
+.to-store {
+  display: flex;
+  justify-content: center;
+  margin-bottom: $spacing-300;
+}
+
+.to-store .link {
+  padding: $spacing-150 $spacing-300;
+  font: inherit;
+  font-weight: $menu-weight-strong;
+  letter-spacing: 0.08em;
+  color: $menu-accent;
+  background: none;
+  border: 2px solid $menu-accent;
+  border-radius: $radius-100;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.to-store .link:hover,
+.to-store .link:focus-visible {
+  color: $menu-bg;
+  background-color: $menu-accent;
+}

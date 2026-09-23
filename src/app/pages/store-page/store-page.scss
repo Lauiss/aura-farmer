@@ -253,8 +253,26 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* --- Passerelle vers la collection, symétrique de celle de l'autre écran --- */
 .to-collection {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+}
+
+.to-collection .link {
+  padding: $spacing-150 $spacing-300;
+  font-weight: $menu-weight-strong;
+  letter-spacing: 0.08em;
+  color: $menu-accent;
+  border: 2px solid $menu-accent;
+  border-radius: $radius-100;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.to-collection .link:hover,
+.to-collection .link:focus-visible {
+  color: $menu-bg;
+  background-color: $menu-accent;
 }
 
 @media (max-width: 40rem) {
