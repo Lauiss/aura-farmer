@@ -220,7 +220,9 @@ export class DoomPhone implements AfterViewInit, OnDestroy {
       this.dirty = true;
     }
     if (auto && document.visibilityState === 'visible') {
-      this.scrollBy(AUTO_SPEED * delta);
+      // La vitesse achetée s'applique ici, et nulle part ailleurs : le
+      // défilement à la molette reste à la main du joueur.
+      this.scrollBy(AUTO_SPEED * this.utilityManager.doomscrollSpeed() * delta);
     }
 
     const step = Math.min(this.target - this.position, MAX_SPEED * delta);

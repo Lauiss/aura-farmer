@@ -23,8 +23,6 @@ import { animateWeakPoint, createWeakPoint } from '../../three/models/weak-point
 import { auraShellOpacity, createAuraShard, createAuraShell } from '../../three/models/aura';
 import { createBrainrot } from '../../three/models/brainrot';
 import { createMogFace, fadeMogFace } from '../../three/models/mog-face';
-import { createCompanion } from '../../three/models/companion';
-import { CompanionId, companionDefinition } from '../../../assets/static/companions';
 import { BossId, bossDefinition } from '../../../assets/static/bosses';
 
 /** Réglages des points faibles, fournis par les améliorations achetées. */
@@ -103,8 +101,6 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
    */
   readonly maxFps = input(0);
 
-  /** Compagnons acquis, posés en arc au pied de la statue. */
-  readonly companions = input<readonly CompanionId[]>([]);
 
   /** Émis au clic sur la statue, pour l'utiliser comme cible de jeu. */
   readonly clicked = output<MouseEvent>();
@@ -212,9 +208,6 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   private readonly shardLife: number[] = [];
   private nextShard = 0;
 
-  /** Compagnons actuellement posés, par identifiant. */
-  private readonly placed = new Map<CompanionId, THREE.Group>();
-
   /** Expression de mogger, jouée au clic quand le Mogging est débloqué. */
   private mogFace?: THREE.Group;
   private mogElapsed = -1;
@@ -268,11 +261,6 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     });
 
     effect(() => {
-      const wanted = this.companions();
-      this.zone.runOutsideAngular(() => this.syncCompanions(wanted));
-    });
-
-    effect(() => {
       // Lu pour la dépendance : la créature portée change, le sujet aussi.
       this.creature();
       this.zone.runOutsideAngular(() => {
@@ -300,7 +288,6 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     if (this.backgroundGroup) disposeObject(this.backgroundGroup);
     if (this.weakPoint) disposeObject(this.weakPoint);
     if (this.auraShell) disposeObject(this.auraShell);
-    for (const object of this.placed.values()) disposeObject(object);
     for (const shard of this.shards) disposeObject(shard);
     this.renderer?.dispose();
     // Le composant d'indication est monté et démonté à répétition : sans
@@ -340,7 +327,6 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     // appel, arriver sur l'écran avec un million d'aura n'allumait aucun halo
     // tant que le palier ne changeait pas.
     this.syncAura(this.auraLevel());
-    this.syncCompanions(this.companions());
 
     this.addLights(this.scene);
 
@@ -859,42 +845,6 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
 
   private static readonly reducedMotion =
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  /**
-   * Pose les compagnons en arc devant la statue, les plus récents vers
-   * l'extérieur.
-   *
-   * Ils vivent dans la scène et non sur le moyai : ils ne doivent ni tourner
-   * avec lui, ni disparaître quand on porte un brainrot à sa place. Rien n'est
-   * reconstruit quand la liste change, seuls les venus et les partis.
-   */
-  private syncCompanions(wanted: readonly CompanionId[]): void {
-    if (!this.scene) return;
-
-    for (const [id, object] of this.placed) {
-      if (wanted.includes(id)) continue;
-      this.scene.remove(object);
-      disposeObject(object);
-      this.placed.delete(id);
-    }
-
-    wanted.forEach((id, index) => {
-      let object = this.placed.get(id);
-      if (!object) {
-        object = createCompanion(companionDefinition(id));
-        this.scene!.add(object);
-        this.placed.set(id, object);
-      }
-
-      // Répartis de part et d'autre, de plus en plus loin : le premier acquis
-      // se tient près du pied, les suivants s'écartent.
-      const rank = Math.floor(index / 2) + 1;
-      const side = index % 2 === 0 ? -1 : 1;
-      object.position.set(side * (1.05 + rank * 0.85), -1.75, 0.55 - rank * 0.35);
-      object.scale.setScalar(0.42);
-      object.rotation.y = side * -0.5;
-    });
-  }
 
   // --- Aura ----------------------------------------------------------------
 

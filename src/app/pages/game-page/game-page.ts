@@ -26,6 +26,7 @@ import { CollectionManager } from '../../services/collection-manager';
 import { BattleManager } from '../../services/battle-manager';
 import { Onboarding } from '../../services/onboarding';
 import { StoreManager } from '../../services/store-manager';
+import { CompanionId } from '../../../assets/static/companions';
 import { Router } from '@angular/router';
 
 @Component({
@@ -154,6 +155,11 @@ export class GamePage {
     // Cliquer la cible éteint le projecteur : l'explication a porté.
     this.onboarding.dismiss();
     this.router.navigate(['/battle']);
+  }
+
+  /** Vignette d'un compagnon, rendue une fois puis conservée. */
+  companionIcon(id: CompanionId): string {
+    return this.modelIcons.companion(id);
   }
 
   openStore() {

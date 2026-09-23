@@ -74,7 +74,8 @@ export class GameLoop {
         id => this.battles.isDefeated(id),
         () => this.battles.defeatedCount(),
         id => this.store.hasCompanion(id),
-        () => this.store.companionCount()
+        () => this.store.companionCount(),
+        () => this.spinCombo.peak()
       )
     );
 

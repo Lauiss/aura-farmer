@@ -30,6 +30,8 @@ export type UtilityStat =
   | 'scrollCombo'
   | 'autoScroll'
   | 'chestChance'
+  | 'scrollSpeed'
+  | 'akimbo'
   | 'inertia'
   | 'autoSpin'
   | 'gemChance'
@@ -101,8 +103,14 @@ export const UTILITIES: UtilityDefinition[] = [
       // et le pilote automatique, déjà sauvegardé sous le 6, doit rester le
       // dernier maillon.
       upgrade(7, 'DOOMSCROLL_UP_LOOTBOX', 'chestChance', 0.002, 25000000000),
-      // Amélioration finale, hors de prix : le téléphone défile tout seul.
-      upgrade(6, 'DOOMSCROLL_UP_AUTOPILOT', 'autoScroll', 1, 5e13, 1)
+      // Pilote automatique, hors de prix : le téléphone défile tout seul.
+      upgrade(6, 'DOOMSCROLL_UP_AUTOPILOT', 'autoScroll', 1, 5e13, 1),
+      // Puis on l'accélère. Trois exemplaires de chacune, plafonnées à ×2,5 :
+      // au-delà, les publications se succèdent trop vite pour être lues.
+      upgrade(8, 'DOOMSCROLL_UP_FEED', 'scrollSpeed', 0.15, 2e14, 3),
+      upgrade(9, 'DOOMSCROLL_UP_RATIO', 'scrollSpeed', 0.35, 1e15, 3),
+      // Et pour finir, le second téléphone.
+      upgrade(10, 'DOOMSCROLL_UP_AKIMBO', 'akimbo', 1, 8e15, 1)
     ]
   },
   {

@@ -14,7 +14,6 @@
     [weakPoints]="utilityManager.weakPointConfig()"
     [auraLevel]="auraLevel()"
     [creature]="battles.worn()"
-    [companions]="store.shownCompanions()"
     [palette]="collection.skinPalette()"
     [inertia]="utilityManager.inertia()"
     [autoSpin]="utilityManager.autoSpin()"
@@ -83,6 +82,23 @@
 
   @if (utilityManager.isOwned('doomscroll')) {
     <app-doom-phone class="phone"></app-doom-phone>
+    @if (utilityManager.doomscrollAkimbo()) {
+      <!-- Akimbo : un second fil, de l'autre côté. Il a sa propre instance,
+           donc son propre défilement et ses propres tirages — c'est ce qui
+           double réellement le doomscrolling. -->
+      <app-doom-phone class="phone left"></app-doom-phone>
+    }
+  }
+
+  <!-- Les compagnons se tiennent au bas de l'écran, au-dessus du menu, et ne
+       bougent pas : posés dans la scène, ils tournaient avec la caméra qui
+       orbite autour de la statue. -->
+  @if (store.shownCompanions().length) {
+    <div class="companions" aria-hidden="true">
+      @for (id of store.shownCompanions(); track id) {
+        <img class="companion" [src]="companionIcon(id)" alt="">
+      }
+    </div>
   }
 
   <nav class="actions">

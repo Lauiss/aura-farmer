@@ -369,5 +369,10 @@
     "WARDROBE_COMPANIONS": "Compagnons",
     "WARDROBE_COMPANIONS_NOTE": "Les ranger ne change rien à leur bonus : il est acquis à l'achat.",
     "WARDROBE_OUT": "Sorti",
-    "WARDROBE_STOWED": "Rangé"
+    "WARDROBE_STOWED": "Rangé",
+    "DOOMSCROLL_UP_FEED": "Fil tendu",
+    "DOOMSCROLL_UP_RATIO": "Ratio",
+    "DOOMSCROLL_UP_AKIMBO": "Akimbo",
+    "STAT_SCROLL_SPEED": "Vitesse du pilote : ×{{from}} → ×{{to}}",
+    "STAT_AKIMBO": "Un second téléphone de l'autre côté de l'écran : deux fils en même temps."
 }

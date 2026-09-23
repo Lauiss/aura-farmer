@@ -369,5 +369,10 @@
     "WARDROBE_COMPANIONS": "Companions",
     "WARDROBE_COMPANIONS_NOTE": "Stowing them changes nothing to their bonus: it is earned on purchase.",
     "WARDROBE_OUT": "Out",
-    "WARDROBE_STOWED": "Stowed"
+    "WARDROBE_STOWED": "Stowed",
+    "DOOMSCROLL_UP_FEED": "Tight Feed",
+    "DOOMSCROLL_UP_RATIO": "Ratio",
+    "DOOMSCROLL_UP_AKIMBO": "Akimbo",
+    "STAT_SCROLL_SPEED": "Autopilot speed: ×{{from}} → ×{{to}}",
+    "STAT_AKIMBO": "A second phone on the other side of the screen: two feeds at once."
 }

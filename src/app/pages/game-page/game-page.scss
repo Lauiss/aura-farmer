@@ -26,7 +26,10 @@
   position: absolute;
   inset: 0;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  // Quatre bandes : compteurs, combo au centre, compagnons, puis le menu. Les
+  // compagnons ont leur propre bande — partagée avec le menu, ils se seraient
+  // superposés à lui.
+  grid-template-rows: auto 1fr auto auto;
   padding: $spacing-400 $spacing-300;
   gap: $spacing-300;
   // La couche laisse passer les clics : c'est la statue, dessous, qui les
@@ -139,7 +142,18 @@
   transform: translateY(-50%);
 }
 
+// Akimbo : le second téléphone, en miroir du premier.
+.phone.left {
+  right: auto;
+  left: clamp(1rem, 6vw, 7rem);
+}
+
 @media (max-width: 40rem) {
+  .phone.left {
+    left: 0.5rem;
+    right: auto;
+  }
+
   .phone {
     right: 0.5rem;
     top: auto;
@@ -305,5 +319,32 @@
 
   .target.lit {
     box-shadow: 0 0 0 0.4rem rgba(232, 184, 75, 0.5);
+  }
+}
+
+/* --- Compagnons, alignés au-dessus du menu ----------------------------- */
+// Ils sont dans l'habillage et non dans la scène : posés en 3D au pied de la
+// statue, ils tournaient avec la caméra qui orbite autour d'elle.
+.companions {
+  justify-self: center;
+  align-self: end;
+  margin-bottom: $spacing-150;
+  display: flex;
+  align-items: flex-end;
+  gap: $spacing-100;
+  pointer-events: none;
+}
+
+.companion {
+  width: 3.4rem;
+  height: 3.4rem;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.6));
+}
+
+@media (max-width: 40rem) {
+  .companion {
+    width: 2.4rem;
+    height: 2.4rem;
   }
 }

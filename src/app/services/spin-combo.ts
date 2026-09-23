@@ -59,6 +59,15 @@ export class SpinCombo {
   /** Vrai tant qu'un trickshot porte encore. */
   readonly trickshot = signal(false);
 
+  /**
+   * Plus haut multiplicateur atteint depuis le lancement.
+   *
+   * Les succès sont contrôlés une fois par seconde : un pic passé entre deux
+   * contrôles serait manqué. On retient donc le sommet, et non la valeur
+   * courante.
+   */
+  readonly peak = signal(1);
+
   private speed = 0;
   private turnBonus = 0;
   /** Bonus de trickshot, hors norme et qui retombe lentement. */
@@ -184,6 +193,7 @@ export class SpinCombo {
     if (value !== this.lastPublished) {
       this.lastPublished = value;
       this.multiplier.set(value);
+      if (value > this.peak()) this.peak.set(value);
     }
     if (spinning !== this.spinning()) this.spinning.set(spinning);
     const landed = this.trickshotBonus > 0;

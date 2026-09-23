@@ -17,7 +17,8 @@ export function createAchievements(
   isBossDefeated: (id: BossId) => boolean = () => false,
   getBossCount: () => number = () => 0,
   hasCompanion: (id: CompanionId) => boolean = () => false,
-  getCompanionCount: () => number = () => 0
+  getCompanionCount: () => number = () => 0,
+  getComboPeak: () => number = () => 1
 ): Achievement[] {
   const achievements: Achievement[] = [
     {
@@ -821,6 +822,14 @@ export function createAchievements(
       description: "Adopter Braulo, le chat — le meilleur de tous.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
       condition: () => hasCompanion('braulo'),
+      unlocked: false,
+    },
+    {
+      id: 220,
+      title: "Six Seven",
+      description: "Atteindre un multiplicateur de 6,7.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getComboPeak() >= 6.7,
       unlocked: false,
     },
     {

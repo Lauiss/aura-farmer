@@ -778,6 +778,10 @@ export class ShopMap {
         return { key: 'STAT_SCROLL_COMBO', params: { from: round(u.doomscrollCombo()), to: round(u.doomscrollCombo() + step) } };
       case 'autoScroll':
         return { key: 'STAT_AUTOSCROLL', params: {} };
+      case 'scrollSpeed':
+        return { key: 'STAT_SCROLL_SPEED', params: { from: round(u.doomscrollSpeed()), to: round(Math.min(2.5, u.doomscrollSpeed() + step)) } };
+      case 'akimbo':
+        return { key: 'STAT_AKIMBO', params: {} };
       case 'chestChance':
         return { key: 'STAT_CHEST_CHANCE', params: { from: round(u.chestChance() * 100), to: round((u.chestChance() + step) * 100) } };
       case 'inertia': {

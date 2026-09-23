@@ -141,6 +141,18 @@ export class UtilityManager {
   /** Le téléphone défile-t-il tout seul ? Il faut l'amélioration et l'interrupteur. */
   readonly doomscrollAuto = computed(() => this.doomscrollAutoOwned() && this.autoScrollEnabled());
 
+  /**
+   * Vitesse du pilote automatique, plafonnée à ×2,5 : au-delà, les
+   * publications se succèdent plus vite qu'on ne peut les lire, et le
+   * téléphone n'est plus qu'un bandeau clignotant.
+   */
+  readonly doomscrollSpeed = computed(() =>
+    Math.min(2.5, 1 + this.bonus('doomscroll', 'scrollSpeed'))
+  );
+
+  /** Second téléphone, de l'autre côté de l'écran. */
+  readonly doomscrollAkimbo = computed(() => this.bonus('doomscroll', 'akimbo') > 0);
+
   toggleAutoScroll(): void {
     this.autoScrollEnabled.update(enabled => !enabled);
     this.persist();
