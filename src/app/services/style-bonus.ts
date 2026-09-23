@@ -30,9 +30,13 @@ export class StyleBonus {
         .reduce((total, id) => total + (COSMETIC_BONUS[id] ?? 0), 0);
 
       // Les statuettes de la collection comptent aussi : chacune rapporte,
-      // qu'elle habille la statue ou non.
+      // qu'elle habille la statue ou non. Les reliques sacrées, elles, entrent
+      // par un facteur à part : leur bonus se multiplie au lieu de s'ajouter.
       this.shopManager.styleBonus.set(
-        (1 + fromCosmetics) * this.backgrounds.bonus() * this.collection.bonus()
+        (1 + fromCosmetics) *
+          this.backgrounds.bonus() *
+          this.collection.bonus() *
+          this.collection.relicBonus()
       );
     });
   }

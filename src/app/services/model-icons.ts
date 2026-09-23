@@ -4,13 +4,15 @@ import { createGear } from '../three/models/gear';
 import { createHanger } from '../three/models/hanger';
 import { createMoyai } from '../three/models/moyai';
 import { createChest } from '../three/models/chest';
-import { ChestTier, collectibleDefinition } from '../../assets/static/collectibles';
+import { ChestTier, collectibleDefinition, relicDefinition } from '../../assets/static/collectibles';
 import { createQuestionMark } from '../three/models/question-mark';
 import { createBuilding } from '../three/models/building';
 import { createTrophy } from '../three/models/trophy';
 import { createPhone } from '../three/models/phone';
 import { createSniper } from '../three/models/sniper';
 import { createWeakPoint } from '../three/models/weak-point';
+import { createGem } from '../three/models/gem';
+import { createRelic } from '../three/models/relic';
 import { renderToDataUrl } from '../three/snapshot';
 import * as THREE from 'three';
 
@@ -36,7 +38,8 @@ export class ModelIcons {
     hanger: 'assets/imgs/moyai/moyai_tuxedo.png',
     phone: 'assets/imgs/upgrades/upgrade_generic.png',
     'weak-point': 'assets/imgs/upgrades/upgrade_generic.png',
-    sniper: 'assets/imgs/upgrades/upgrade_generic.png'
+    sniper: 'assets/imgs/upgrades/upgrade_generic.png',
+    gem: 'assets/imgs/upgrades/upgrade_generic.png'
   };
 
   private cache = new Map<string, string>();
@@ -131,6 +134,26 @@ export class ModelIcons {
     return this.render('sniper', () =>
       renderToDataUrl(createSniper(), { size: 192, distance: 6.2, rotation: [0.2, 0.5, 0.25] })
     );
+  }
+
+  /** Gemme, la seconde monnaie. */
+  gem(): string {
+    return this.render('gem', () =>
+      renderToDataUrl(createGem(), { size: 192, distance: 3.6, rotation: [0.12, 0.4, 0] })
+    );
+  }
+
+  /** Relique sacrée. Un identifiant inconnu retombe sur l'image de secours. */
+  relic(id: string): string {
+    return this.render(`relic-${id}`, () => {
+      const definition = relicDefinition(id);
+      if (!definition) throw new Error(`relique inconnue : ${id}`);
+      return renderToDataUrl(createRelic(definition), {
+        size: 192,
+        distance: 6.4,
+        rotation: [0.1, 0.4, 0]
+      });
+    });
   }
 
   private render(key: string, draw: () => string): string {

@@ -11,9 +11,13 @@ import {
   RARITY_BONUS,
   RARITY_COLLECTIBLE_CHANCE,
   RARITY_GEMS,
+  RELICS,
+  RELIC_CHEST_CHANCE,
   Rarity,
+  RelicDefinition,
   chestDefinition,
-  collectibleDefinition
+  collectibleDefinition,
+  relicDefinition
 } from '../../assets/static/collectibles';
 import type { MoyaiPalette } from '../three/models/moyai';
 
@@ -24,6 +28,8 @@ export interface ChestReward {
   gems: number;
   /** Statuette obtenue, jamais un doublon. */
   collectible?: CollectibleDefinition;
+  /** Relique sacrée trouvée, qui prend le pas sur tout le reste. */
+  relic?: RelicDefinition;
   /** Aura rendue quand la rareté ne donne pas de statuette. */
   aura: number;
 }
@@ -31,16 +37,20 @@ export interface ChestReward {
 interface CollectionSave {
   gems: number;
   owned: string[];
+  /** Reliques sacrées trouvées. */
+  relics?: string[];
   chests: Partial<Record<ChestTier, number>>;
   skin: string | null;
 }
 
 /**
- * Gacha : la seconde monnaie (les gemmes), les coffres en attente et la
- * collection de statuettes.
+ * Gacha : la seconde monnaie (les gemmes), les coffres en attente, la
+ * collection de statuettes et celle des reliques sacrées.
  *
  * Une statuette ne s'obtient qu'une fois : le tirage ne pioche que parmi
- * celles qui manquent, et une rareté complétée se rabat sur de l'aura.
+ * celles qui manquent. Une rareté complétée ne bloque pas le coffre, il monte
+ * d'un cran — commun épuisé, il donne du rare — et ne se rabat sur de l'aura
+ * qu'une fois toute la collection réunie.
  */
 @Injectable({
   providedIn: 'root'
@@ -55,6 +65,7 @@ export class CollectionManager {
 
   readonly gems = signal(0);
   private readonly ownedIds = signal<Set<string>>(new Set());
+  private readonly relicIds = signal<Set<string>>(new Set());
   /** Coffres possédés et pas encore ouverts, par tier. */
   readonly chests = signal<Partial<Record<ChestTier, number>>>({});
   /** Statuette dont la statue du jeu porte la matière, `null` pour la pierre. */
@@ -65,12 +76,15 @@ export class CollectionManager {
     if (saved) {
       this.gems.set(saved.gems ?? 0);
       this.ownedIds.set(new Set(saved.owned ?? []));
+      this.relicIds.set(new Set(saved.relics ?? []));
       this.chests.set(saved.chests ?? {});
       this.skin.set(saved.skin ?? null);
     }
   }
 
   readonly ownedCount = computed(() => this.ownedIds().size);
+  readonly relicCount = computed(() => this.relicIds().size);
+  readonly relicCatalogue = RELICS;
   readonly pendingChests = computed(() =>
     Object.values(this.chests()).reduce((total, count) => total + (count ?? 0), 0)
   );
@@ -84,6 +98,24 @@ export class CollectionManager {
     }
     return total;
   });
+
+  /**
+   * Bonus des reliques. Il est **multiplicatif**, contrairement à celui des
+   * statuettes qui s'additionne : c'est ce qui fait des dix reliques la
+   * récompense de toute une partie plutôt qu'un bonus de plus.
+   */
+  readonly relicBonus = computed(() => {
+    let total = 1;
+    for (const id of this.relicIds()) {
+      const definition = relicDefinition(id);
+      if (definition) total *= definition.bonus;
+    }
+    return total;
+  });
+
+  isRelicOwned(id: string): boolean {
+    return this.relicIds().has(id);
+  }
 
   readonly skinPalette = computed<MoyaiPalette | null>(() => {
     const id = this.skin();
@@ -125,8 +157,20 @@ export class CollectionManager {
     if (this.chestCount(tier) <= 0) return null;
     this.chests.update(chests => ({ ...chests, [tier]: (chests[tier] ?? 1) - 1 }));
 
-    const rarity = this.rollRarity(tier);
-    const reward: ChestReward = { tier, rarity, gems: RARITY_GEMS[rarity], aura: 0 };
+    // Une relique passe avant tout le reste : c'est le tirage le plus rare, et
+    // il rend le coffre mémorable quoi qu'il contienne par ailleurs.
+    const relic = this.rollRelic(tier);
+
+    // La rareté tirée peut être déjà complète. Plutôt que de se rabattre
+    // aussitôt sur de l'aura, on monte d'un cran : commun épuisé, le coffre
+    // donne du rare, puis de l'épique, et ainsi de suite.
+    const rolled = this.rollRarity(tier);
+    const rarity = this.firstRarityWithMissing(rolled) ?? rolled;
+    const reward: ChestReward = { tier, rarity, gems: RARITY_GEMS[rarity], aura: 0, relic };
+
+    if (relic) {
+      this.relicIds.update(owned => new Set(owned).add(relic.id));
+    }
 
     const missing = COLLECTIBLES.filter(c => c.rarity === rarity && !this.ownedIds().has(c.id));
     if (missing.length && Math.random() < RARITY_COLLECTIBLE_CHANCE[rarity]) {
@@ -154,6 +198,26 @@ export class CollectionManager {
     this.persist();
   }
 
+  /**
+   * Première rareté, à partir de celle tirée et en montant, qui a encore une
+   * statuette à donner. `null` quand la collection est complète.
+   */
+  private firstRarityWithMissing(from: Rarity): Rarity | null {
+    const start = RARITIES.indexOf(from);
+    for (let i = start; i < RARITIES.length; i++) {
+      const rarity = RARITIES[i];
+      if (COLLECTIBLES.some(c => c.rarity === rarity && !this.ownedIds().has(c.id))) return rarity;
+    }
+    return null;
+  }
+
+  /** Tire une relique encore manquante, ou `undefined` la plupart du temps. */
+  private rollRelic(tier: ChestTier): RelicDefinition | undefined {
+    const missing = RELICS.filter(relic => !this.relicIds().has(relic.id));
+    if (!missing.length || Math.random() >= RELIC_CHEST_CHANCE[tier]) return undefined;
+    return missing[Math.floor(Math.random() * missing.length)];
+  }
+
   private rollRarity(tier: ChestTier): Rarity {
     const odds = chestDefinition(tier).odds;
     let roll = Math.random();
@@ -168,6 +232,7 @@ export class CollectionManager {
     this.saveManager.saveProgress(SaveLocation.Collection, {
       gems: this.gems(),
       owned: [...this.ownedIds()],
+      relics: [...this.relicIds()],
       chests: this.chests(),
       skin: this.skin()
     } satisfies CollectionSave);

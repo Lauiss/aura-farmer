@@ -16,7 +16,9 @@ import {
   RARITIES,
   RARITY_BONUS,
   RARITY_COLORS,
-  Rarity
+  Rarity,
+  RelicDefinition,
+  RELIC_CHEST_CHANCE
 } from '../../../assets/static/collectibles';
 
 /**
@@ -59,6 +61,19 @@ export class CollectionPage {
   }));
 
   readonly totalBonus = computed(() => Math.round((this.collection.bonus() - 1) * 100));
+
+  /** Bonus cumulé des reliques, arrondi : il se compte en facteur, pas en %. */
+  readonly relicMultiplier = computed(() => Number(this.collection.relicBonus().toFixed(2)));
+
+  /** Chance d'une relique, en pourcentage : c'est ce qui distingue les coffres. */
+  relicOdds(chest: ChestDefinition): string {
+    return `${(RELIC_CHEST_CHANCE[chest.tier] * 100).toFixed(1)}`;
+  }
+
+  /** Relique trouvée : sa figure. Sinon le point d'interrogation. */
+  relicFigure(relic: RelicDefinition): string {
+    return this.collection.isRelicOwned(relic.id) ? this.modelIcons.relic(relic.id) : this.questionIcon;
+  }
 
   chestIcon(tier: ChestTier): string {
     return this.modelIcons.chest(tier);

@@ -106,3 +106,54 @@ export const RARITY_AURA_SECONDS: Record<Rarity, number> = {
   epic: 600,
   legendary: 1800
 };
+
+// --- Reliques sacrées ----------------------------------------------------
+
+/**
+ * Dix reliques sacrées de l'aura : la collection alternative.
+ *
+ * Elles ne s'achètent **jamais**, ni en aura ni en gemmes — elles ne tombent
+ * que des coffres, rarement. En contrepartie leur bonus est **multiplicatif**
+ * et non additif comme celui des statuettes : les dix réunies multiplient la
+ * production par plus de cent.
+ */
+export type RelicShape = 'crystal' | 'orb' | 'obelisk';
+
+export interface RelicDefinition {
+  id: string;
+  /** Facteur appliqué à la production, multiplié à celui des autres reliques. */
+  bonus: number;
+  shape: RelicShape;
+  /** Couleur de la pierre, et celle de son halo. */
+  color: number;
+  glow: number;
+}
+
+export const RELICS: readonly RelicDefinition[] = [
+  { id: 'tear', bonus: 1.25, shape: 'crystal', color: 0x7fd4ff, glow: 0x1f6c94 },
+  { id: 'ember', bonus: 1.3, shape: 'orb', color: 0xff7a3d, glow: 0x8c2f0a },
+  { id: 'root', bonus: 1.35, shape: 'obelisk', color: 0x6fae72, glow: 0x24512a },
+  { id: 'echo', bonus: 1.4, shape: 'crystal', color: 0xb98bff, glow: 0x4a2482 },
+  { id: 'tide', bonus: 1.5, shape: 'orb', color: 0x4fd6c0, glow: 0x146b5e },
+  { id: 'ash', bonus: 1.6, shape: 'obelisk', color: 0xd9d2c4, glow: 0x5c564a },
+  { id: 'dawn', bonus: 1.75, shape: 'crystal', color: 0xffc766, glow: 0x9c6510 },
+  { id: 'void', bonus: 1.9, shape: 'orb', color: 0x5a5fa8, glow: 0x191b45 },
+  { id: 'crown', bonus: 2.2, shape: 'obelisk', color: 0xe8b84b, glow: 0x8a6412 },
+  { id: 'origin', bonus: 2.5, shape: 'crystal', color: 0xfff3d6, glow: 0xb08a2c }
+];
+
+export function relicDefinition(id: string): RelicDefinition | undefined {
+  return RELICS.find(relic => relic.id === id);
+}
+
+/**
+ * Chance qu'un coffre donne une relique, avant tout autre tirage. Le coffre du
+ * doomscrolling, qui tombe gratuitement, est le plus avare ; le mythique reste
+ * le meilleur moyen d'en trouver sans pour autant les garantir.
+ */
+export const RELIC_CHEST_CHANCE: Record<ChestTier, number> = {
+  doomscroll: 0.004,
+  basic: 0.006,
+  premium: 0.02,
+  mythic: 0.06
+};

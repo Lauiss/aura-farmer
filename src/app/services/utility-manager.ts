@@ -126,6 +126,24 @@ export class UtilityManager {
   /** Élan ajouté au combo par publication parcourue. */
   readonly doomscrollCombo = computed(() => 0.08 + this.bonus('doomscroll', 'scrollCombo'));
 
+  // --- Prospection de gemmes ---------------------------------------------
+
+  /**
+   * Les gemmes tombent au clic même sans la Prospection : c'est ainsi qu'on
+   * découvre la seconde monnaie sans avoir à la débloquer. L'utilitaire ne fait
+   * qu'élargir une veine déjà ouverte.
+   */
+  private prospectBonus(stat: UtilityStat, base: number, owned: number): number {
+    return base + (this.ownedIds().has('prospect') ? owned : 0) + this.bonus('prospect', stat);
+  }
+
+  /** Chance qu'un clic ordinaire fasse tomber une gemme. */
+  readonly gemClickChance = computed(() => this.prospectBonus('gemChance', 0.004, 0.006));
+  /** Chance qu'un coup critique en fasse tomber une. */
+  readonly gemCritChance = computed(() => this.prospectBonus('gemCritChance', 0.02, 0.03));
+  /** Gemmes rendues par une trouvaille. */
+  readonly gemAmount = computed(() => Math.round(this.prospectBonus('gemAmount', 1, 0)));
+
   // --- Rotation ------------------------------------------------------------
 
   /**

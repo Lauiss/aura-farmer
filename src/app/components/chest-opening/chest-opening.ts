@@ -67,6 +67,11 @@ export class ChestOpening implements AfterViewInit, OnDestroy {
     return collectible ? this.modelIcons.moyaiSkin(collectible.id) : null;
   });
 
+  readonly relicIcon = computed(() => {
+    const relic = this.reward()?.relic;
+    return relic ? this.modelIcons.relic(relic.id) : null;
+  });
+
   private renderer?: THREE.WebGLRenderer;
   private scene?: THREE.Scene;
   private camera?: THREE.PerspectiveCamera;

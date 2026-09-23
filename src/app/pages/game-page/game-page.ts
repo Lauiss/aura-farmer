@@ -61,9 +61,6 @@ export class GamePage {
   readonly utilityManager = inject(UtilityManager);
   readonly collection = inject(CollectionManager);
 
-  /** Chance qu'un coup critique rapporte une gemme. */
-  private static readonly CRIT_GEM_CHANCE = 0.02;
-
   /** L'accès à la collection apparaît avec le premier coffre ou la première gemme. */
   readonly showCollection = computed(
     () =>
@@ -107,6 +104,21 @@ export class GamePage {
    * filent sur les bords pour dire que la partie s'emballe.
    */
   readonly goFast = computed(() => this.spinCombo.multiplier() >= 10);
+
+  /**
+   * Palier d'aura, qui commande le halo autour de la statue. Le premier seuil
+   * est le million : c'est le moment où la partie décolle, et l'aura doit se
+   * voir sans qu'on ait à lire le compteur.
+   */
+  readonly auraLevel = computed(() => {
+    const aura = this.auraManager.auraCount();
+    if (aura >= 1e12) return 3;
+    if (aura >= 1e9) return 2;
+    if (aura >= 1e6) return 1;
+    return 0;
+  });
+
+  readonly gemIcon = this.modelIcons.gem();
 
   /**
    * Position des traînées le long de chaque bord, en pourcentage. Fixée une
@@ -171,12 +183,22 @@ export class GamePage {
     if (critical) {
       // La série nourrit aussi le combo affiché, pas seulement le coup porté.
       this.spinCombo.boost(this.utilityManager.weakPointCombo() * this.critStreak.multiplier());
-      // De loin en loin, un critique fait aussi tomber une gemme.
-      if (Math.random() < GamePage.CRIT_GEM_CHANCE) {
-        this.collection.addGems(1);
-        if (e) this.spawnGem(e.clientX, e.clientY);
-      }
     }
+
+    // Les gemmes tombent au clic, rarement, et plus souvent sur un critique.
+    // La Prospection, achetée dans les utilitaires, élargit les deux chances.
+    const gemChance = critical
+      ? this.utilityManager.gemCritChance()
+      : this.utilityManager.gemClickChance();
+    if (Math.random() < gemChance) {
+      const amount = this.utilityManager.gemAmount();
+      this.collection.addGems(amount);
+      if (e) this.spawnGem(e.clientX, e.clientY, amount);
+    }
+
+    // L'aura se crée sous le clic : une volée d'éclats part de la pierre, plus
+    // large sur un coup critique.
+    this.viewer?.emitAura(critical ? 2.4 : 1);
 
     // Incrémenter le compteur de clics
     this.achievementsManager.incrementClicks();
@@ -225,10 +247,10 @@ export class GamePage {
     this.viewer?.bounce(((e.clientX - r.left) / r.width - 0.5) * 2);
   }
 
-  /** Petit « +1 💎 » qui s'envole à côté du clic. */
-  private spawnGem(clientX: number, clientY: number) {
+  /** Petit « +N 💎 » qui s'envole à côté du clic. */
+  private spawnGem(clientX: number, clientY: number, amount = 1) {
     const span = document.createElement('span');
-    span.textContent = '+1 💎';
+    span.textContent = `+${amount} 💎`;
     Object.assign(span.style, {
       position: 'fixed',
       left: `${clientX + 40}px`,

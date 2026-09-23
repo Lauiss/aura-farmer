@@ -8,7 +8,7 @@ import { sortByPrice } from './order';
  * articles.
  */
 
-export type UtilityId = 'weakpoints' | 'doomscroll' | 'trickshot' | 'spin';
+export type UtilityId = 'weakpoints' | 'doomscroll' | 'trickshot' | 'spin' | 'prospect';
 
 /** Grandeur qu'une amélioration d'utilitaire fait progresser. */
 export type UtilityStat =
@@ -22,7 +22,10 @@ export type UtilityStat =
   | 'autoScroll'
   | 'chestChance'
   | 'inertia'
-  | 'autoSpin';
+  | 'autoSpin'
+  | 'gemChance'
+  | 'gemCritChance'
+  | 'gemAmount';
 
 export interface UtilityUpgrade extends Purchasable {
   stat: UtilityStat;
@@ -79,6 +82,20 @@ export const UTILITIES: UtilityDefinition[] = [
     ]
   },
   { id: 'trickshot', price: 50000000, chance: 0.03, upgrades: [] },
+  {
+    // Prospection : les gemmes ne tombaient que des coffres. Elle ouvre la
+    // seconde monnaie au clic, et ses améliorations en font une source à part
+    // entière plutôt qu'un hasard anecdotique.
+    id: 'prospect',
+    price: 400000,
+    upgrades: [
+      upgrade(1, 'PROSPECT_UP_EYE', 'gemChance', 0.0015, 1200000),
+      upgrade(2, 'PROSPECT_UP_VEIN', 'gemCritChance', 0.01, 12000000),
+      upgrade(3, 'PROSPECT_UP_CUT', 'gemAmount', 1, 120000000),
+      upgrade(4, 'PROSPECT_UP_LODE', 'gemChance', 0.003, 1200000000),
+      upgrade(5, 'PROSPECT_UP_MOTHERLODE', 'gemAmount', 2, 120000000000)
+    ]
+  },
   {
     // Rotation : la statue garde son élan plus longtemps une fois lancée,
     // jusqu'à tourner toute seule — ce qui entretient le combo en continu.

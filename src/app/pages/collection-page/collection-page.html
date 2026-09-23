@@ -38,6 +38,9 @@
                   {{ ('RARITY_' + line.rarity.toUpperCase()) | translate }} {{ line.percent }} %
                 </li>
               }
+              <li class="relic-odds">
+                {{ 'COLLECTION_RELIC_ODDS' | translate: { percent: relicOdds(chest) } }}
+              </li>
             </ul>
             <button
               type="button"
@@ -47,6 +50,33 @@
             >
               {{ chest.price }} 💎
             </button>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Les reliques passent avant les statuettes : c'est la collection qui
+         compte, et elle ne s'achète nulle part. -->
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title">{{ 'COLLECTION_RELICS' | translate }}</h2>
+        <p class="progress">
+          {{ collection.relicCount() }}/{{ collection.relicCatalogue.length }}
+          · &times;{{ relicMultiplier() }} {{ 'RELIC_PRODUCTION' | translate }}
+        </p>
+      </div>
+      <p class="section-lead">{{ 'COLLECTION_RELICS_LEAD' | translate }}</p>
+
+      <div class="figures">
+        @for (relic of collection.relicCatalogue; track relic.id) {
+          <div class="figure relic" [class.owned]="collection.isRelicOwned(relic.id)">
+            <img [src]="relicFigure(relic)" alt="" class="figure-icon">
+            <span class="figure-name">
+              {{ collection.isRelicOwned(relic.id) ? (('RELIC_' + relic.id.toUpperCase()) | translate) : '?????' }}
+            </span>
+            <span class="figure-action">
+              {{ collection.isRelicOwned(relic.id) ? '\u00d7' + relic.bonus : '???' }}
+            </span>
           </div>
         }
       </div>

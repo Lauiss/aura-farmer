@@ -12,6 +12,7 @@
     [background]="backgroundManager.selected()"
     [distance]="heroDistance()"
     [weakPoints]="utilityManager.weakPointConfig()"
+    [auraLevel]="auraLevel()"
     [palette]="collection.skinPalette()"
     [inertia]="utilityManager.inertia()"
     [autoSpin]="utilityManager.autoSpin()"
@@ -53,6 +54,14 @@
       ></app-moyai-viewer>
       <span class="unit">{{ 'AURA_PER_SECOND' | translate }}</span>
     </p>
+
+    @if (showCollection()) {
+      <p class="counter gems">
+        <span class="value">{{ collection.gems() }}</span>
+        <img class="gem-mark" [src]="gemIcon" alt="" aria-hidden="true">
+        <span class="unit">{{ 'GEMS' | translate }}</span>
+      </p>
+    }
   </header>
 
     <app-combo-meter class="combo"></app-combo-meter>

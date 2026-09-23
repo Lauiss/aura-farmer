@@ -38,6 +38,17 @@
             <h2 class="title">+{{ reward.aura | formatAura }} <small>{{ 'AURA' | translate }}</small></h2>
           }
           <p class="gems">+{{ reward.gems }} 💎</p>
+
+          @if (reward.relic; as relic) {
+            <!-- La relique s'annonce à part, sous la récompense ordinaire :
+                 elle ne remplace pas le tirage du coffre, elle s'y ajoute. -->
+            <div class="relic">
+              <img [src]="relicIcon()" alt="" class="relic-figure">
+              <p class="relic-label">{{ 'RELIC_FOUND' | translate }}</p>
+              <h3 class="relic-name">{{ ('RELIC_' + relic.id.toUpperCase()) | translate }}</h3>
+              <p class="relic-bonus">&times;{{ relic.bonus }} {{ 'RELIC_PRODUCTION' | translate }}</p>
+            </div>
+          }
         </div>
 
         <div class="actions">

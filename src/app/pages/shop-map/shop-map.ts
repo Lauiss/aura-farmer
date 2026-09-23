@@ -128,7 +128,8 @@ export class ShopMap {
     hanger: this.modelIcons.hanger(),
     phone: this.modelIcons.phone(),
     weakPoint: this.modelIcons.weakPoint(),
-    sniper: this.modelIcons.sniper()
+    sniper: this.modelIcons.sniper(),
+    gem: this.modelIcons.gem()
   };
 
   readonly buyAmount = signal<BuyAmount>('1');
@@ -454,6 +455,8 @@ export class ShopMap {
             return this.icons.weakPoint;
           case 'spin':
             return this.icons.moyai;
+          case 'prospect':
+            return this.icons.gem;
           default:
             return this.icons.sniper;
         }
@@ -621,6 +624,12 @@ export class ShopMap {
       }
       case 'autoSpin':
         return { key: 'STAT_AUTOSPIN', params: {} };
+      case 'gemChance':
+        return { key: 'STAT_GEM_CHANCE', params: { from: round(u.gemClickChance() * 100), to: round((u.gemClickChance() + step) * 100) } };
+      case 'gemCritChance':
+        return { key: 'STAT_GEM_CRIT', params: { from: round(u.gemCritChance() * 100), to: round((u.gemCritChance() + step) * 100) } };
+      case 'gemAmount':
+        return { key: 'STAT_GEM_AMOUNT', params: { from: round(u.gemAmount()), to: round(u.gemAmount() + step) } };
     }
   }
 

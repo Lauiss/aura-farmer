@@ -20,6 +20,7 @@ import { CosmeticId, createCosmetic } from '../../three/models/cosmetics';
 import { BackgroundId, createBackground } from '../../three/models/backgrounds';
 import { createBullet, createSniper, setSniperOpacity } from '../../three/models/sniper';
 import { animateWeakPoint, createWeakPoint } from '../../three/models/weak-point';
+import { auraShellOpacity, createAuraShard, createAuraShell } from '../../three/models/aura';
 
 /** Réglages des points faibles, fournis par les améliorations achetées. */
 export interface WeakPointConfig {
@@ -71,6 +72,12 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   readonly autoSpin = input(0);
   /** Points faibles à faire apparaître, ou `null` s'ils ne sont pas débloqués. */
   readonly weakPoints = input<WeakPointConfig | null>(null);
+
+  /**
+   * Palier d'aura atteint, de 0 (aucun halo) à 3. Au-delà du million, la
+   * statue s'entoure d'une lueur qui s'intensifie à chaque palier.
+   */
+  readonly auraLevel = input(0);
 
   /** Émis au clic sur la statue, pour l'utiliser comme cible de jeu. */
   readonly clicked = output<MouseEvent>();
@@ -166,6 +173,21 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
    */
   private weakPoint?: THREE.Group;
   private weakState: 'hidden' | 'visible' | 'popping' = 'hidden';
+
+  /**
+   * Éclats d'aura projetés au clic. Le lot est alloué une fois et recyclé :
+   * créer des maillages à chaque clic ferait travailler le ramasse-miettes en
+   * plein milieu du geste le plus répété du jeu.
+   */
+  private readonly shards: THREE.Mesh[] = [];
+  private readonly shardVelocity: THREE.Vector3[] = [];
+  private readonly shardSpin: THREE.Vector3[] = [];
+  private readonly shardLife: number[] = [];
+  private nextShard = 0;
+
+  /** Halo autour de la statue, monté dès qu'un palier d'aura est atteint. */
+  private auraShell?: THREE.Group;
+  private auraElapsed = 0;
   private weakTimer = 0;
   private weakAge = 0;
   /** Maillages de la tête seule, sur lesquels les points faibles se posent. */
@@ -202,6 +224,11 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
       const id = this.background();
       this.zone.runOutsideAngular(() => this.syncBackground(id));
     });
+
+    effect(() => {
+      const level = this.auraLevel();
+      this.zone.runOutsideAngular(() => this.syncAura(level));
+    });
   }
   private userInteracted = false;
   /** Position du pointeur à l'appui, pour distinguer un clic d'une rotation. */
@@ -222,6 +249,8 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     if (this.bullet) disposeObject(this.bullet);
     if (this.backgroundGroup) disposeObject(this.backgroundGroup);
     if (this.weakPoint) disposeObject(this.weakPoint);
+    if (this.auraShell) disposeObject(this.auraShell);
+    for (const shard of this.shards) disposeObject(shard);
     this.renderer?.dispose();
     // Le composant d'indication est monté et démonté à répétition : sans
     // rendre explicitement le contexte, le navigateur finit par refuser d'en
@@ -260,6 +289,11 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
       if ((child as THREE.Mesh).isMesh) this.headMeshes.push(child);
     });
     this.syncCosmetics(this.cosmetics());
+    // Comme le décor et les accessoires : l'effet qui suit `auraLevel` s'est
+    // déjà exécuté avant que la scène n'existe et n'a rien pu poser. Sans cet
+    // appel, arriver sur l'écran avec un million d'aura n'allumait aucun halo
+    // tant que le palier ne changeait pas.
+    this.syncAura(this.auraLevel());
 
     this.addLights(this.scene);
 
@@ -688,6 +722,123 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   private static readonly reducedMotion =
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // --- Aura ----------------------------------------------------------------
+
+  /** Nombre d'éclats gardés en réserve : au-delà, les plus anciens repartent. */
+  private static readonly SHARD_POOL = 28;
+  private static readonly SHARD_LIFE = 0.85;
+
+  /**
+   * Projette une volée d'éclats depuis la statue : c'est l'aura qui se crée
+   * sous le clic. `power` vaut 1 pour un clic ordinaire et davantage pour un
+   * coup critique, ce qui élargit la volée et l'envoie plus loin.
+   */
+  emitAura(power = 1): void {
+    if (!this.scene) return;
+
+    const count = Math.round(THREE.MathUtils.clamp(5 * power, 4, 14));
+    for (let i = 0; i < count; i++) {
+      const index = this.nextShard % MoyaiViewer.SHARD_POOL;
+      this.nextShard++;
+
+      let shard = this.shards[index];
+      if (!shard) {
+        shard = createAuraShard();
+        this.shards[index] = shard;
+        this.shardVelocity[index] = new THREE.Vector3();
+        this.shardSpin[index] = new THREE.Vector3();
+        this.scene.add(shard);
+      }
+
+      // Départ réparti sur la surface de la tête plutôt qu'en son centre :
+      // les éclats semblent sortir de la pierre et non la traverser.
+      const direction = new THREE.Vector3(
+        Math.random() * 2 - 1,
+        Math.random() * 2 - 1,
+        Math.random() * 2 - 1
+      ).normalize();
+
+      shard.position.copy(direction).multiplyScalar(1.2 + Math.random() * 0.4);
+      shard.scale.setScalar(0.7 + Math.random() * 0.6 * power);
+      shard.visible = true;
+
+      this.shardVelocity[index]
+        .copy(direction)
+        .multiplyScalar((2.2 + Math.random() * 1.8) * Math.min(power, 2));
+      // Une poussée vers le haut : l'aura monte, elle ne se disperse pas à plat.
+      this.shardVelocity[index].y += 1.1;
+      this.shardSpin[index].set(
+        (Math.random() - 0.5) * 9,
+        (Math.random() - 0.5) * 9,
+        (Math.random() - 0.5) * 9
+      );
+      this.shardLife[index] = MoyaiViewer.SHARD_LIFE;
+    }
+  }
+
+  private animateShards(delta: number): void {
+    for (let i = 0; i < this.shards.length; i++) {
+      const shard = this.shards[i];
+      if (!shard?.visible) continue;
+
+      this.shardLife[i] -= delta;
+      if (this.shardLife[i] <= 0) {
+        shard.visible = false;
+        continue;
+      }
+
+      const velocity = this.shardVelocity[i];
+      shard.position.addScaledVector(velocity, delta);
+      // Freinage progressif : l'éclat ralentit en s'éloignant au lieu de
+      // filer indéfiniment hors du cadre.
+      velocity.multiplyScalar(Math.max(0, 1 - 2.4 * delta));
+
+      const spin = this.shardSpin[i];
+      shard.rotation.x += spin.x * delta;
+      shard.rotation.y += spin.y * delta;
+      shard.rotation.z += spin.z * delta;
+
+      const remaining = this.shardLife[i] / MoyaiViewer.SHARD_LIFE;
+      (shard.material as THREE.Material).opacity = remaining * remaining;
+    }
+  }
+
+  /** Monte ou retire le halo, et règle son intensité sur le palier atteint. */
+  private syncAura(level: number): void {
+    if (level <= 0) {
+      if (this.auraShell) this.auraShell.visible = false;
+      return;
+    }
+    if (!this.scene) return;
+
+    if (!this.auraShell) {
+      this.auraShell = createAuraShell();
+      this.scene.add(this.auraShell);
+    }
+    this.auraShell.visible = true;
+
+    const opacity = auraShellOpacity(level);
+    this.auraShell.children.forEach((shell, index) => {
+      ((shell as THREE.Mesh).material as THREE.Material).opacity = opacity[index] ?? 0;
+    });
+  }
+
+  private animateAura(delta: number): void {
+    const shell = this.auraShell;
+    if (!shell?.visible) return;
+
+    this.auraElapsed += delta;
+    // Les deux coques tournent en sens inverse : leurs facettes se croisent et
+    // le halo scintille sans qu'on touche aux matériaux.
+    shell.children[0].rotation.y += delta * 0.22;
+    shell.children[0].rotation.x += delta * 0.11;
+    shell.children[1].rotation.y -= delta * 0.16;
+    shell.children[1].rotation.z += delta * 0.09;
+
+    // Respiration lente, pour que le halo vive sans attirer l'oeil.
+    shell.scale.setScalar(1 + Math.sin(this.auraElapsed * 1.4) * 0.03);
+  }
+
   private addLights(scene: THREE.Scene): void {
     // Sur fond noir, l'éclairage doit à la fois sculpter les facettes et
     // détacher la silhouette : une clé chaude, un remplissage froid discret et
@@ -737,6 +888,8 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.animateShush(delta);
     this.animateTrickshot(delta);
     this.updateWeakPoint(delta);
+    this.animateShards(delta);
+    this.animateAura(delta);
     this.animateBounce(delta);
     this.reportBackFacing(delta);
     if (!this.renderer || !this.scene || !this.camera) return;

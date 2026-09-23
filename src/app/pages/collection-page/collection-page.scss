@@ -265,3 +265,24 @@
     animation: none;
   }
 }
+
+/* --- Reliques sacrées -------------------------------------------------- */
+// Elles empruntent la tuile des statuettes, mais ne se cliquent pas : on ne
+// les porte pas et on ne les achète pas, on les trouve.
+.figure.relic {
+  --rarity: #{$menu-accent};
+  cursor: default;
+}
+
+.figure.relic.owned {
+  cursor: default;
+}
+
+// Ligne des reliques dans les chances d'un coffre : détachée des raretés,
+// c'est un tirage à part et non une cinquième rareté.
+.odds .relic-odds {
+  margin-top: $spacing-50;
+  padding-top: $spacing-50;
+  border-top: 1px solid $menu-border;
+  color: $menu-accent;
+}
