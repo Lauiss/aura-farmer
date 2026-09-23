@@ -3,6 +3,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { FormatAuraPipe } from '../../pipes/format-aura';
 import { DecimalPipe } from '@angular/common';
 import { ModalManager } from '../../services/modal-manager';
+import { ModelIcons } from '../../services/model-icons';
 
 @Component({
   selector: 'app-offline-progress-announcer',
@@ -13,6 +14,8 @@ import { ModalManager } from '../../services/modal-manager';
 })
 export class OfflineProgressAnnouncer {
   private modalManager = inject(ModalManager);
+
+  readonly hourglassIcon = inject(ModelIcons).hourglass();
 
   offlineProgression = computed(() => {
     return this.modalManager.modalData()?.data?.offlineProgression ?? 0;

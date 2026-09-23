@@ -1,5 +1,6 @@
 import { FormatAuraPipe } from "../../app/pipes/format-aura";
 import { Achievement } from "../../app/services/achievements-manager";
+import { COLLECTIBLES, RELICS } from "./collectibles";
 
 export function createAchievements(
   getShopItems: () => any[],
@@ -7,7 +8,10 @@ export function createAchievements(
   getTotalAura: () => number,
   getOutfitPieces: () => { unlocked: boolean }[] = () => [],
   getMaxedSkillCount: () => number = () => 0,
-  getBackFacingReached: () => boolean = () => false
+  getBackFacingReached: () => boolean = () => false,
+  getRelicCount: () => number = () => 0,
+  getGemsEarned: () => number = () => 0,
+  getFigureCount: () => number = () => 0
 ): Achievement[] {
   const achievements: Achievement[] = [
     {
@@ -587,6 +591,78 @@ export function createAchievements(
       description: "Porter cinq compétences à leur niveau maximal.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
       condition: () => getMaxedSkillCount() >= 5,
+      unlocked: false,
+    },
+    {
+      id: 73,
+      title: "Première Pépite",
+      description: "Trouver sa première gemme.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getGemsEarned() >= 1,
+      unlocked: false,
+    },
+    {
+      id: 74,
+      title: "Prospecteur",
+      description: "Amasser cent gemmes au total.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getGemsEarned() >= 100,
+      unlocked: false,
+    },
+    {
+      id: 75,
+      title: "Filon Mère",
+      description: "Amasser mille gemmes au total.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getGemsEarned() >= 1000,
+      unlocked: false,
+    },
+    {
+      id: 76,
+      title: "Première Statuette",
+      description: "Obtenir sa première statuette dans un coffre.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getFigureCount() >= 1,
+      unlocked: false,
+    },
+    {
+      id: 77,
+      title: "Vitrine Garnie",
+      description: "Réunir dix statuettes.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getFigureCount() >= 10,
+      unlocked: false,
+    },
+    {
+      id: 78,
+      title: "Collection Complète",
+      description: "Réunir toutes les statuettes du jeu.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getFigureCount() >= COLLECTIBLES.length,
+      unlocked: false,
+    },
+    {
+      id: 79,
+      title: "Trouvaille Sacrée",
+      description: "Mettre la main sur une relique sacrée de l'aura.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getRelicCount() >= 1,
+      unlocked: false,
+    },
+    {
+      id: 80,
+      title: "Reliquaire",
+      description: "Réunir cinq reliques sacrées.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getRelicCount() >= 5,
+      unlocked: false,
+    },
+    {
+      id: 81,
+      title: "Gardien des Reliques",
+      description: "Réunir les dix reliques sacrées de l'aura.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getRelicCount() >= RELICS.length,
       unlocked: false,
     }
   ];

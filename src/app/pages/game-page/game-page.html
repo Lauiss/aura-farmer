@@ -56,10 +56,10 @@
     </p>
 
     @if (showCollection()) {
-      <p class="counter gems">
-        <span class="value">{{ collection.gems() }}</span>
-        <img class="gem-mark" [src]="gemIcon" alt="" aria-hidden="true">
-        <span class="unit">{{ 'GEMS' | translate }}</span>
+      <!-- Même présentation que dans la collection et la boutique : la valeur
+           puis le losange, partout pareil. -->
+      <p class="counter gems" [attr.aria-label]="'GEMS' | translate">
+        <span class="value">{{ collection.gems() }}</span> <span aria-hidden="true">💎</span>
       </p>
     }
   </header>

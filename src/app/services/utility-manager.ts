@@ -144,6 +144,21 @@ export class UtilityManager {
   /** Gemmes rendues par une trouvaille. */
   readonly gemAmount = computed(() => Math.round(this.prospectBonus('gemAmount', 1, 0)));
 
+  // --- Progression hors-ligne --------------------------------------------
+
+  /**
+   * Durée maximale créditée à la reconnexion, en secondes. Huit heures sans
+   * rien, puis ce que le Sommeil ajoute.
+   */
+  readonly offlineCapSeconds = computed(
+    () => (8 + (this.ownedIds().has('slumber') ? 2 : 0) + this.bonus('slumber', 'offlineHours')) * 3600
+  );
+
+  /** Part de la production créditée pendant l'absence ; 1 sans rien acheter. */
+  readonly offlineRate = computed(
+    () => 1 + (this.ownedIds().has('slumber') ? 0.1 : 0) + this.bonus('slumber', 'offlineRate')
+  );
+
   // --- Rotation ------------------------------------------------------------
 
   /**

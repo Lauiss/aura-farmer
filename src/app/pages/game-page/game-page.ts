@@ -118,7 +118,6 @@ export class GamePage {
     return 0;
   });
 
-  readonly gemIcon = this.modelIcons.gem();
 
   /**
    * Position des traînées le long de chaque bord, en pourcentage. Fixée une

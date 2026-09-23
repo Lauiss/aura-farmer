@@ -10,6 +10,8 @@ import { createAchievements } from '../../assets/static/achievements';
 import { StyleBonus } from './style-bonus';
 import { SecretTracker } from './secret-tracker';
 import { SpinCombo } from './spin-combo';
+import { CollectionManager } from './collection-manager';
+import { UtilityManager } from './utility-manager';
 
 /**
  * Boucle de jeu : production d'aura passive, vérification des succès et
@@ -35,6 +37,8 @@ export class GameLoop {
   private readonly styleBonus = inject(StyleBonus);
   private readonly secretTracker = inject(SecretTracker);
   private readonly spinCombo = inject(SpinCombo);
+  private readonly collection = inject(CollectionManager);
+  private readonly utilityManager = inject(UtilityManager);
 
   private started = false;
 
@@ -57,7 +61,10 @@ export class GameLoop {
         () => this.auraManager.allTimeAura(),
         () => this.shopManager.moyaiUpgrades(),
         () => this.shopManager.maxedSkillCount(),
-        () => this.secretTracker.backFacingReached()
+        () => this.secretTracker.backFacingReached(),
+        () => this.collection.relicCount(),
+        () => this.collection.gemsEarned(),
+        () => this.collection.ownedCount()
       )
     );
 
@@ -175,12 +182,13 @@ export class GameLoop {
         return;
       }
 
-      const maxOfflineSeconds = 8 * 60 * 60; // 8 heures
-      const offlineSeconds = Math.min(elapsedSeconds, maxOfflineSeconds);
+      // Le plafond et le rendement viennent de la branche Sommeil : huit
+      // heures à plein tarif sans rien avoir acheté, davantage ensuite.
+      const offlineSeconds = Math.min(elapsedSeconds, this.utilityManager.offlineCapSeconds());
 
       const totalValue = this.shopManager.getTotalValue();
       if (totalValue > 0 && offlineSeconds > 0) {
-        const offlineGain = totalValue * offlineSeconds;
+        const offlineGain = totalValue * offlineSeconds * this.utilityManager.offlineRate();
         this.auraManager.auraCount.update(current => current + offlineGain);
         this.auraManager.allTimeAura.update(total => total + offlineGain);
         this.modalManager.open(OfflineProgressAnnouncer, {

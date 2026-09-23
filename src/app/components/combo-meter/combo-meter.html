@@ -1,7 +1,24 @@
 @if (active()) {
-  <div class="combo" [class]="'combo tier-' + tier()" role="status" aria-live="polite">
-    <p class="value">&times;{{ display() }}</p>
+  <div
+    class="combo"
+    [class.top]="isTop()"
+    [style.--tier]="tierColor()"
+    role="status"
+    aria-live="polite"
+  >
+    <!-- La boucle ne sert qu'à recréer le chiffre quand le palier change, ce
+         qui rejoue l'à-coup : changer une classe ou un attribut ne relancerait
+         pas l'animation CSS. -->
+    @for (key of [tierIndex()]; track key) {
+      <p class="value" [style.font-size]="valueSize()">&times;{{ display() }}</p>
+    }
+
     <p class="tier">{{ tierLabel() | translate }}</p>
+
+    <div class="gauge" aria-hidden="true">
+      <span [style.width.%]="toNextTier() * 100"></span>
+    </div>
+
     @if (streak.active()) {
       <p class="streak" [class.maxed]="streak.maxed()">
         {{ 'CRIT_STREAK' | translate }} &times;{{ streak.count() }}

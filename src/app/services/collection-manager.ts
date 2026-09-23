@@ -36,6 +36,8 @@ export interface ChestReward {
 
 interface CollectionSave {
   gems: number;
+  /** Gemmes amassées depuis le début, dépenses comprises : pour les succès. */
+  gemsEarned?: number;
   owned: string[];
   /** Reliques sacrées trouvées. */
   relics?: string[];
@@ -64,6 +66,12 @@ export class CollectionManager {
   private readonly saveManager = inject(SaveManager);
 
   readonly gems = signal(0);
+  /**
+   * Total gagné sur toute la partie. Le solde courant ne suffit pas aux
+   * succès : acheter un coffre le fait redescendre, et « amasser cent
+   * gemmes » ne doit pas se perdre à la première dépense.
+   */
+  readonly gemsEarned = signal(0);
   private readonly ownedIds = signal<Set<string>>(new Set());
   private readonly relicIds = signal<Set<string>>(new Set());
   /** Coffres possédés et pas encore ouverts, par tier. */
@@ -75,6 +83,8 @@ export class CollectionManager {
     const saved: CollectionSave | null = this.saveManager.loadProgress(SaveLocation.Collection);
     if (saved) {
       this.gems.set(saved.gems ?? 0);
+      // Parties d'avant le suivi : on repart du solde, faute de mieux.
+      this.gemsEarned.set(saved.gemsEarned ?? saved.gems ?? 0);
       this.ownedIds.set(new Set(saved.owned ?? []));
       this.relicIds.set(new Set(saved.relics ?? []));
       this.chests.set(saved.chests ?? {});
@@ -137,6 +147,7 @@ export class CollectionManager {
 
   addGems(amount: number): void {
     this.gems.update(gems => gems + amount);
+    this.gemsEarned.update(total => total + amount);
     this.persist();
   }
 
@@ -187,6 +198,7 @@ export class CollectionManager {
     }
 
     this.gems.update(gems => gems + reward.gems);
+    this.gemsEarned.update(total => total + reward.gems);
     this.persist();
     return reward;
   }
@@ -231,6 +243,7 @@ export class CollectionManager {
   private persist(): void {
     this.saveManager.saveProgress(SaveLocation.Collection, {
       gems: this.gems(),
+      gemsEarned: this.gemsEarned(),
       owned: [...this.ownedIds()],
       relics: [...this.relicIds()],
       chests: this.chests(),

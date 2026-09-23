@@ -212,5 +212,17 @@
     "STAT_GEM_CHANCE": "Gemme au clic : {{from}} % → {{to}} %",
     "STAT_GEM_CRIT": "Gemme sur critique : {{from}} % → {{to}} %",
     "STAT_GEM_AMOUNT": "Gemmes par trouvaille : {{from}} → {{to}}",
-    "COLLECTION_RELIC_ODDS": "Relique : {{percent}} %"
+    "COLLECTION_RELIC_ODDS": "Relique : {{percent}} %",
+    "COMBO_NUCLEAR": "Nucléaire",
+    "COMBO_GODLIKE": "Godlike",
+    "UTILITY_SLUMBER": "Sommeil",
+    "UTILITY_SLUMBER_DESC": "Tu continues à farmer pendant ton absence : le plafond hors-ligne monte, et le rendement avec.",
+    "UTILITY_SLUMBER_HINT": "Reviens demain : ton aura aura continué à monter pendant ton absence.",
+    "SLUMBER_UP_NAP": "Sieste réparatrice",
+    "SLUMBER_UP_DREAM": "Rêve lucide",
+    "SLUMBER_UP_HIBERNATION": "Hibernation",
+    "SLUMBER_UP_ASTRAL": "Voyage astral",
+    "SLUMBER_UP_TORPOR": "Torpeur de pierre",
+    "STAT_OFFLINE_HOURS": "Plafond hors-ligne : {{from}} h → {{to}} h",
+    "STAT_OFFLINE_RATE": "Rendement hors-ligne : {{from}} % → {{to}} %"
 }

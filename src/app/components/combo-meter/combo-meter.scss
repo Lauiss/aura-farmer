@@ -12,21 +12,21 @@
   align-items: center;
   gap: $spacing-50;
   text-align: center;
-  // Chaque montée de palier relance l'animation, ce qui donne le petit à-coup
-  // attendu dans un clicker.
   animation: pop 0.25s cubic-bezier(0.2, 1.4, 0.4, 1);
 }
 
+// Le chiffre n'a pas de halo : il se détache par une ombre portée sombre,
+// comme les compteurs. Sa taille et sa couleur suffisent à dire le palier.
 .value {
-  font-size: 3.2rem;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
-  color: $menu-accent;
-  // Ombre portée sombre et non halo coloré : elle sert à détacher le chiffre
-  // du décor, comme les compteurs, pas à le faire briller.
+  color: var(--tier);
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75);
+  // Rejoué à chaque palier franchi, le nœud étant recréé : un coup sec, pas
+  // une pulsation permanente qui finirait par ne plus rien signaler.
+  animation: kick 0.42s cubic-bezier(0.18, 1.6, 0.36, 1);
 }
 
 .tier {
@@ -34,7 +34,30 @@
   font-weight: $menu-weight-strong;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: $menu-text-dim;
+  color: var(--tier);
+}
+
+/* --- Jauge vers le palier suivant --- */
+// C'est elle qui donne envie de continuer : le chiffre seul ne disait pas
+// qu'on approchait de quelque chose.
+.gauge {
+  width: 7rem;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(237, 230, 214, 0.16);
+  overflow: hidden;
+}
+
+.gauge span {
+  display: block;
+  height: 100%;
+  background: var(--tier);
+  transition: width 0.12s linear;
+}
+
+// Palier maximal : la jauge est pleine et bat, il n'y a plus rien au-dessus.
+.combo.top .gauge span {
+  animation: throb 0.5s ease-in-out infinite alternate;
 }
 
 .streak {
@@ -46,7 +69,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-// Série au plafond : elle passe à l'ambre, comme le chiffre du combo.
 .streak.maxed {
   color: $menu-accent;
 }
@@ -60,28 +82,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* --- Paliers : la couleur chauffe avec l'élan --- */
-// Seules la couleur et la taille marquent le palier. Les halos ont été
-// retirés : ils noyaient le chiffre au lieu de le mettre en avant.
-.tier-locked .value {
-  color: #ffd166;
-}
-
-.tier-cracked .value {
-  color: #ff9f45;
-  font-size: 3.6rem;
-}
-
-.tier-ascended .value {
-  color: #ff6b3d;
-  font-size: 4rem;
-  animation: throb 0.6s ease-in-out infinite alternate;
-}
-
-.tier-ascended .tier {
-  color: #ff9f45;
-}
-
 @keyframes pop {
   from {
     transform: scale(0.82);
@@ -89,15 +89,28 @@
   }
 }
 
+@keyframes kick {
+  0% {
+    transform: scale(1.45) rotate(-3deg);
+  }
+  60% {
+    transform: scale(0.95) rotate(1deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+
 @keyframes throb {
   to {
-    transform: scale(1.06);
+    opacity: 0.45;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .combo,
-  .tier-ascended .value {
+  .value,
+  .combo.top .gauge span {
     animation: none;
   }
 }

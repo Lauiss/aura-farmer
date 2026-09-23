@@ -6,6 +6,12 @@
       {{ auraManager.auraCount() | formatAura }} <span>{{ 'AURA' | translate }}</span>
     </p>
 
+    @if (collection.gemsEarned() > 0) {
+      <p class="gems" [attr.aria-label]="'GEMS' | translate">
+        {{ collection.gems() }} <span aria-hidden="true">💎</span>
+      </p>
+    }
+
     <div class="tools">
       <button type="button" class="tool wide" (click)="cycleBuyAmount()">
         {{ 'BUY' | translate }} &times;{{ buyAmount() === 'MAX' ? ('BUY_MAX' | translate) : buyAmount() }}

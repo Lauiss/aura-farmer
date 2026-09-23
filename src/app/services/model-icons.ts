@@ -12,6 +12,7 @@ import { createPhone } from '../three/models/phone';
 import { createSniper } from '../three/models/sniper';
 import { createWeakPoint } from '../three/models/weak-point';
 import { createGem } from '../three/models/gem';
+import { createHourglass } from '../three/models/hourglass';
 import { createRelic } from '../three/models/relic';
 import { renderToDataUrl } from '../three/snapshot';
 import * as THREE from 'three';
@@ -39,7 +40,8 @@ export class ModelIcons {
     phone: 'assets/imgs/upgrades/upgrade_generic.png',
     'weak-point': 'assets/imgs/upgrades/upgrade_generic.png',
     sniper: 'assets/imgs/upgrades/upgrade_generic.png',
-    gem: 'assets/imgs/upgrades/upgrade_generic.png'
+    gem: 'assets/imgs/upgrades/upgrade_generic.png',
+    hourglass: 'assets/imgs/upgrades/upgrade_generic.png'
   };
 
   private cache = new Map<string, string>();
@@ -140,6 +142,13 @@ export class ModelIcons {
   gem(): string {
     return this.render('gem', () =>
       renderToDataUrl(createGem(), { size: 192, distance: 3.6, rotation: [0.12, 0.4, 0] })
+    );
+  }
+
+  /** Sablier, pour tout ce qui touche au temps passé hors du jeu. */
+  hourglass(): string {
+    return this.render('hourglass', () =>
+      renderToDataUrl(createHourglass(), { size: 192, distance: 6.4, rotation: [0.12, 0.4, 0] })
     );
   }
 

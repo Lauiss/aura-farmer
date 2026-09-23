@@ -1,9 +1,15 @@
 <div class="container align-center">
+    <!-- Le sablier dit d'emblée de quoi parle la modale ; le vieux logo d'aura
+         en PNG ne disait rien du temps écoulé. -->
+    <img class="hourglass" [src]="hourglassIcon" alt="" aria-hidden="true">
+
     <p aria-live="polite">
         {{ 'OFFLINE_PROGRESSION_MESSAGE' | translate }}
     </p>
-<div class="generated-aura align-center">
-        <span class="bold">{{ offlineProgression() | formatAura }}</span> <p><img class="aura-logo" src="assets/imgs/aura.png"/></p>
+
+    <div class="generated-aura align-center">
+        <span class="bold">{{ offlineProgression() | formatAura }}</span>
+        <span class="unit">{{ 'AURA' | translate }}</span>
         <span>{{ 'IN' | translate }}</span>
         <span class="bold">{{ hours() }}</span> <span>H</span>
         <span class="bold">{{ minutes() }}</span> <span>M</span>

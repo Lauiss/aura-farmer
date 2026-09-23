@@ -43,6 +43,14 @@
   border-bottom: 1px solid $menu-border;
 }
 
+// Même présentation que dans la collection : la valeur puis le losange.
+.bar .gems {
+  font-size: $menu-size-lead;
+  font-weight: $menu-weight-strong;
+  font-variant-numeric: tabular-nums;
+  color: #9fe6ff;
+}
+
 .aura {
   font-size: $menu-size-title;
   font-weight: $menu-weight-strong;
@@ -256,15 +264,24 @@
 }
 
 /* --- États d'une tuile --- */
-// Achetable : la couleur de la branche en plein, et un halo.
+// Un seul repère à retenir sur toute la carte : **l'ambre signale ce qui est
+// achetable tout de suite**. La couleur de branche ne suffisait pas — chaque
+// branche ayant la sienne, rien ne distinguait d'un coup d'oeil une tuile
+// abordable d'une tuile hors de prix.
 .state-ready .tile {
-  border-color: var(--branch);
-  background-color: var(--branch-soft);
-  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35), 0 0 28px color-mix(in srgb, var(--branch) 45%, transparent);
+  border-color: $menu-accent;
+  background-color: color-mix(in srgb, #{$menu-accent} 14%, $menu-surface);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35), 0 0 28px rgba(232, 184, 75, 0.5);
 }
 
 .state-ready .level {
-  border-color: var(--branch);
+  color: $menu-bg;
+  background-color: $menu-accent;
+  border-color: $menu-accent;
+}
+
+.state-ready .name {
+  color: $menu-accent;
 }
 
 // Acquis ou maxxé : la tuile est pleine, le niveau passe à la couleur.
@@ -279,9 +296,25 @@
   border-color: var(--branch);
 }
 
-// Trop cher : on devine la branche, mais la tuile ne se présente pas en offre.
+// Trop cher : la tuile s'efface. Elle reste lisible — on doit pouvoir viser
+// son prochain achat — mais elle ne se présente plus comme une offre.
+.state-poor {
+  color: $menu-text-faint;
+}
+
+.state-poor .tile {
+  border-color: $menu-border-strong;
+  background-color: $menu-bg;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
+}
+
 .state-poor .mark {
-  opacity: 0.75;
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+
+.state-poor .level {
+  border-color: $menu-border-strong;
 }
 
 // Pas encore dévoilé, ou prérequis manquant : gris et en pointillés.

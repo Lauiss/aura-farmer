@@ -8,7 +8,7 @@ import { sortByPrice } from './order';
  * articles.
  */
 
-export type UtilityId = 'weakpoints' | 'doomscroll' | 'trickshot' | 'spin' | 'prospect';
+export type UtilityId = 'weakpoints' | 'doomscroll' | 'trickshot' | 'spin' | 'prospect' | 'slumber';
 
 /** Grandeur qu'une amélioration d'utilitaire fait progresser. */
 export type UtilityStat =
@@ -25,7 +25,9 @@ export type UtilityStat =
   | 'autoSpin'
   | 'gemChance'
   | 'gemCritChance'
-  | 'gemAmount';
+  | 'gemAmount'
+  | 'offlineHours'
+  | 'offlineRate';
 
 export interface UtilityUpgrade extends Purchasable {
   stat: UtilityStat;
@@ -82,6 +84,20 @@ export const UTILITIES: UtilityDefinition[] = [
     ]
   },
   { id: 'trickshot', price: 50000000, chance: 0.03, upgrades: [] },
+  {
+    // Sommeil : la progression hors-ligne était figée à huit heures à plein
+    // rendement, sans rien pour la faire progresser. Elle a maintenant sa
+    // branche, comme le reste.
+    id: 'slumber',
+    price: 120000,
+    upgrades: [
+      upgrade(1, 'SLUMBER_UP_NAP', 'offlineHours', 2, 600000),
+      upgrade(2, 'SLUMBER_UP_DREAM', 'offlineRate', 0.1, 6000000),
+      upgrade(3, 'SLUMBER_UP_HIBERNATION', 'offlineHours', 4, 60000000),
+      upgrade(4, 'SLUMBER_UP_ASTRAL', 'offlineRate', 0.2, 600000000),
+      upgrade(5, 'SLUMBER_UP_TORPOR', 'offlineHours', 8, 60000000000)
+    ]
+  },
   {
     // Prospection : les gemmes ne tombaient que des coffres. Elle ouvre la
     // seconde monnaie au clic, et ses améliorations en font une source à part

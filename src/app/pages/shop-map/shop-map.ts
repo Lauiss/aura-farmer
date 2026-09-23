@@ -20,6 +20,7 @@ import { Sound, SoundManager } from '../../services/sound-manager';
 import { FormatAuraPipe, formatAura } from '../../pipes/format-aura';
 import { ModelIcons } from '../../services/model-icons';
 import { GameLoop } from '../../services/game-loop';
+import { CollectionManager } from '../../services/collection-manager';
 import { UpgradeType } from '../../../assets/static/enum/upgrade-types';
 
 type NodeKind =
@@ -118,6 +119,7 @@ export class ShopMap {
   private readonly gameLoop = inject(GameLoop);
   readonly backgroundManager = inject(BackgroundManager);
   readonly utilityManager = inject(UtilityManager);
+  readonly collection = inject(CollectionManager);
 
   readonly world = WORLD;
   private readonly icons = {
@@ -129,7 +131,8 @@ export class ShopMap {
     phone: this.modelIcons.phone(),
     weakPoint: this.modelIcons.weakPoint(),
     sniper: this.modelIcons.sniper(),
-    gem: this.modelIcons.gem()
+    gem: this.modelIcons.gem(),
+    hourglass: this.modelIcons.hourglass()
   };
 
   readonly buyAmount = signal<BuyAmount>('1');
@@ -457,6 +460,8 @@ export class ShopMap {
             return this.icons.moyai;
           case 'prospect':
             return this.icons.gem;
+          case 'slumber':
+            return this.icons.hourglass;
           default:
             return this.icons.sniper;
         }
@@ -630,6 +635,10 @@ export class ShopMap {
         return { key: 'STAT_GEM_CRIT', params: { from: round(u.gemCritChance() * 100), to: round((u.gemCritChance() + step) * 100) } };
       case 'gemAmount':
         return { key: 'STAT_GEM_AMOUNT', params: { from: round(u.gemAmount()), to: round(u.gemAmount() + step) } };
+      case 'offlineHours':
+        return { key: 'STAT_OFFLINE_HOURS', params: { from: round(u.offlineCapSeconds() / 3600), to: round(u.offlineCapSeconds() / 3600 + step) } };
+      case 'offlineRate':
+        return { key: 'STAT_OFFLINE_RATE', params: { from: percent(u.offlineRate()), to: percent(u.offlineRate() + step) } };
     }
   }
 

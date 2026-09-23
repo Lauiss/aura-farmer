@@ -212,5 +212,17 @@
     "STAT_GEM_CHANCE": "Gem on click: {{from}} % → {{to}} %",
     "STAT_GEM_CRIT": "Gem on crit: {{from}} % → {{to}} %",
     "STAT_GEM_AMOUNT": "Gems per find: {{from}} → {{to}}",
-    "COLLECTION_RELIC_ODDS": "Relic: {{percent}} %"
+    "COLLECTION_RELIC_ODDS": "Relic: {{percent}} %",
+    "COMBO_NUCLEAR": "Nuclear",
+    "COMBO_GODLIKE": "Godlike",
+    "UTILITY_SLUMBER": "Slumber",
+    "UTILITY_SLUMBER_DESC": "You keep farming while away: the offline cap rises, and the rate with it.",
+    "UTILITY_SLUMBER_HINT": "Come back tomorrow: your aura will have kept climbing while you were away.",
+    "SLUMBER_UP_NAP": "Power Nap",
+    "SLUMBER_UP_DREAM": "Lucid Dream",
+    "SLUMBER_UP_HIBERNATION": "Hibernation",
+    "SLUMBER_UP_ASTRAL": "Astral Travel",
+    "SLUMBER_UP_TORPOR": "Stone Torpor",
+    "STAT_OFFLINE_HOURS": "Offline cap: {{from}} h → {{to}} h",
+    "STAT_OFFLINE_RATE": "Offline rate: {{from}} % → {{to}} %"
 }
