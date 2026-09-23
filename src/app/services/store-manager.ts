@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { AuraManager } from './aura-manager';
+import { ShopManager } from './shop-manager';
 import { SaveLocation, SaveManager } from './save-manager';
 import { ChestTier } from '../../assets/static/collectibles';
 import { COMPANIONS, CompanionDefinition, CompanionId, companionDefinition } from '../../assets/static/companions';
@@ -35,6 +36,7 @@ export class StoreManager {
 
   private readonly auraManager = inject(AuraManager);
   private readonly saveManager = inject(SaveManager);
+  private readonly shopManager = inject(ShopManager);
 
   private readonly chests = signal<Set<ChestTier>>(new Set());
   private readonly drinks = signal<Set<ConsumableId>>(new Set());
@@ -62,8 +64,19 @@ export class StoreManager {
     return this.drinks().has(id);
   }
 
+  /** Prix d'ouverture d'un rayon de coffres, indexation comprise. */
   chestPrice(tier: ChestTier): number {
-    return CHEST_UNLOCK_PRICES[tier] ?? 0;
+    return this.shopManager.scaled(CHEST_UNLOCK_PRICES[tier] ?? 0);
+  }
+
+  /** Prix d'ouverture d'un rayon de canettes. */
+  drinkPrice(drink: ConsumableDefinition): number {
+    return this.shopManager.scaled(drink.unlockPrice);
+  }
+
+  /** Prix d'un compagnon. */
+  companionPrice(definition: CompanionDefinition): number {
+    return this.shopManager.scaled(definition.price);
   }
 
   /** Canettes réellement en rayon. */
@@ -82,9 +95,10 @@ export class StoreManager {
   }
 
   unlockDrink(drink: ConsumableDefinition): boolean {
-    if (this.isDrinkUnlocked(drink.id) || this.auraManager.auraCount() < drink.unlockPrice) return false;
+    const price = this.drinkPrice(drink);
+    if (this.isDrinkUnlocked(drink.id) || this.auraManager.auraCount() < price) return false;
 
-    this.auraManager.auraCount.update(aura => aura - drink.unlockPrice);
+    this.auraManager.auraCount.update(aura => aura - price);
     this.drinks.update(unlocked => new Set(unlocked).add(drink.id));
     this.persist();
     return true;
@@ -139,9 +153,10 @@ export class StoreManager {
   });
 
   buyCompanion(definition: CompanionDefinition): boolean {
-    if (this.hasCompanion(definition.id) || this.auraManager.auraCount() < definition.price) return false;
+    const price = this.companionPrice(definition);
+    if (this.hasCompanion(definition.id) || this.auraManager.auraCount() < price) return false;
 
-    this.auraManager.auraCount.update(aura => aura - definition.price);
+    this.auraManager.auraCount.update(aura => aura - price);
     this.companionIds.update(owned => new Set(owned).add(definition.id));
     this.persist();
     return true;

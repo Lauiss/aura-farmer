@@ -134,16 +134,59 @@ function shapeOf(definition: CompanionDefinition): THREE.Group {
       break;
     }
 
-    /** Moto : cadre bas, deux roues, guidon et selle. */
+    /**
+     * Moto : réservoir galbé, moteur apparent, échappement, fourche inclinée
+     * et phare rond. Réduite à trois boîtes, elle ne se lisait pas comme une
+     * moto mais comme un jouet.
+     */
     case 'moto': {
-      group.add(wheel(-0.62, -0.5, 0, 0.42));
-      group.add(wheel(0.66, -0.5, 0, 0.42));
-      group.add(box(color, 1.15, 0.3, 0.34, [0.02, -0.2, 0]));
-      group.add(box(accent, 0.55, 0.32, 0.36, [-0.2, 0.08, 0], [0, 0, 0.12]));
-      group.add(box(0x1c1f24, 0.5, 0.16, 0.36, [0.35, 0.06, 0]));
-      // Fourche et guidon.
-      group.add(box(0x9aa0a8, 0.1, 0.72, 0.1, [-0.6, -0.12, 0], [0, 0, 0.22]));
-      group.add(box(0x9aa0a8, 0.62, 0.08, 0.08, [-0.68, 0.28, 0]));
+      group.add(wheel(-0.72, -0.48, 0, 0.44));
+      group.add(wheel(0.76, -0.48, 0, 0.44));
+      // Jantes claires, qui creusent les roues.
+      for (const x of [-0.72, 0.76]) {
+        const rim = mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.28, 7), material(0x9aa0a8), [x, -0.48, 0]);
+        rim.rotation.z = Math.PI / 2;
+        group.add(rim);
+      }
+
+      // Cadre : deux tubes, un bas et un oblique.
+      group.add(box(0x6c737c, 1.3, 0.1, 0.14, [0.02, -0.42, 0]));
+      group.add(box(0x6c737c, 0.66, 0.1, 0.14, [-0.28, -0.12, 0], [0, 0, 0.55]));
+
+      // Moteur, bloc massif au centre bas.
+      group.add(box(0x3c4149, 0.46, 0.34, 0.34, [0.12, -0.34, 0]));
+      for (const y of [-0.24, -0.36, -0.48]) {
+        group.add(box(0x8d949c, 0.4, 0.045, 0.38, [0.12, y, 0]));
+      }
+
+      // Réservoir galbé, la pièce qui donne sa ligne à la moto.
+      group.add(part(color, [
+        { y: -0.12, halfWidth: 0.3, front: 0.17, back: -0.17, chamfer: 0.36 },
+        { y: 0.04, halfWidth: 0.34, front: 0.22, back: -0.22, chamfer: 0.34 },
+        { y: 0.18, halfWidth: 0.24, front: 0.16, back: -0.16, chamfer: 0.38 }
+      ], [-0.12, 0, 0]));
+
+      // Selle, puis la coque arrière relevée.
+      group.add(box(0x1c1f24, 0.44, 0.12, 0.3, [0.34, 0.06, 0]));
+      group.add(box(accent, 0.3, 0.2, 0.26, [0.62, 0.1, 0], [0, 0, -0.3]));
+
+      // Échappement, le long du flanc.
+      group.add(
+        mesh(new THREE.CylinderGeometry(0.075, 0.09, 0.9, 7), material(0xb0b6bd),
+          [0.3, -0.56, 0.2], [0, 0, Math.PI / 2 + 0.08])
+      );
+
+      // Fourche inclinée, guidon et phare.
+      group.add(box(0x9aa0a8, 0.09, 0.78, 0.09, [-0.66, -0.1, 0.1], [0, 0, 0.3]));
+      group.add(box(0x9aa0a8, 0.09, 0.78, 0.09, [-0.66, -0.1, -0.1], [0, 0, 0.3]));
+      group.add(box(0x2f343b, 0.62, 0.07, 0.07, [-0.82, 0.28, 0]));
+      for (const side of [-1, 1]) {
+        group.add(box(0x1c1f24, 0.12, 0.09, 0.09, [-0.82 + side * 0.26, 0.28, 0]));
+      }
+      group.add(
+        mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.12, 8), material(0xf2e6b0),
+          [-0.92, 0.12, 0], [0, 0, Math.PI / 2])
+      );
       break;
     }
 
@@ -162,19 +205,57 @@ function shapeOf(definition: CompanionDefinition): THREE.Group {
       break;
     }
 
-    /** Voiture de course : caisse basse, aileron, quatre roues. */
+    /**
+     * Voiture de course : museau plongeant, cockpit ouvert, pontons latéraux,
+     * aileron à deux plans et échappement. Trois boîtes empilées ne faisaient
+     * pas une voiture.
+     */
     case 'racecar': {
-      group.add(box(color, 1.9, 0.3, 0.86, [0, -0.35, 0]));
-      group.add(box(color, 1.0, 0.32, 0.72, [-0.1, -0.05, 0]));
-      group.add(box(0x2b3a4a, 0.5, 0.26, 0.6, [0.12, 0.08, 0]));
-      // Aileron arrière, la signature de la silhouette.
-      group.add(box(accent, 0.12, 0.28, 0.8, [-0.82, 0.05, 0]));
-      group.add(box(accent, 0.34, 0.08, 0.92, [-0.86, 0.22, 0]));
-      // Museau plongeant.
-      group.add(box(accent, 0.34, 0.12, 0.7, [0.94, -0.44, 0]));
-      for (const x of [-0.62, 0.66]) {
-        for (const z of [-0.5, 0.5]) {
-          group.add(wheel(x, -0.52, z, 0.3));
+      // Plancher, puis la coque. Elle est bâtie en volumes explicites et non
+      // en `loft` : celui-ci n'empile que selon Y, et le basculer pour suivre
+      // la longueur dressait la caisse à la verticale.
+      group.add(box(0x1c1f24, 2.0, 0.12, 0.7, [0, -0.44, 0]));
+      // Tub central, large, qui porte le pilote.
+      group.add(box(color, 0.9, 0.34, 0.6, [-0.2, -0.22, 0]));
+      // Capot avant, plus étroit et plus bas, en deux marches.
+      group.add(box(color, 0.5, 0.26, 0.48, [0.42, -0.3, 0]));
+      group.add(box(color, 0.45, 0.18, 0.34, [0.82, -0.38, 0]));
+      // Capot moteur arrière.
+      group.add(box(color, 0.55, 0.3, 0.52, [-0.75, -0.26, 0]));
+
+      // Museau plongeant et aileron avant.
+      group.add(box(color, 0.5, 0.14, 0.4, [1.02, -0.4, 0], [0, 0, -0.12]));
+      group.add(box(accent, 0.24, 0.05, 0.92, [1.22, -0.5, 0]));
+
+      // Pontons latéraux et écopes.
+      for (const z of [-0.46, 0.46]) {
+        group.add(box(color, 0.8, 0.26, 0.22, [-0.05, -0.3, z]));
+        group.add(box(0x1c1f24, 0.12, 0.2, 0.2, [0.32, -0.28, z]));
+      }
+
+      // Cockpit ouvert : un creux sombre, un arceau, un casque.
+      group.add(box(0x14161a, 0.52, 0.2, 0.42, [-0.18, -0.06, 0]));
+      group.add(box(accent, 0.12, 0.26, 0.4, [-0.46, 0.06, 0]));
+      group.add(mesh(new THREE.SphereGeometry(0.17, 6, 5), material(0xf0e4d0), [-0.16, 0.02, 0]));
+
+      // Aileron arrière à deux plans, la signature de la silhouette.
+      group.add(box(accent, 0.1, 0.34, 0.26, [-0.98, 0.0, 0.3]));
+      group.add(box(accent, 0.1, 0.34, 0.26, [-0.98, 0.0, -0.3]));
+      group.add(box(accent, 0.34, 0.06, 0.96, [-1.0, 0.2, 0]));
+      group.add(box(color, 0.26, 0.05, 0.9, [-0.98, 0.04, 0], [0, 0, 0.18]));
+
+      // Échappement, au centre de l'arrière.
+      group.add(
+        mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.22, 7), material(0x8d949c),
+          [-1.14, -0.24, 0], [0, 0, Math.PI / 2])
+      );
+
+      for (const x of [-0.66, 0.7]) {
+        for (const z of [-0.54, 0.54]) {
+          group.add(wheel(x, -0.5, z, 0.32));
+          const rim = mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.2, 7), material(0xb0b6bd), [x, -0.5, z]);
+          rim.rotation.z = Math.PI / 2;
+          group.add(rim);
         }
       }
       break;

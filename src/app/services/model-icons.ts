@@ -16,6 +16,8 @@ import { createHourglass } from '../three/models/hourglass';
 import { createDie } from '../three/models/die';
 import { createCan } from '../three/models/can';
 import { createCompanion } from '../three/models/companion';
+import { createSwords } from '../three/models/swords';
+import { createCoin } from '../three/models/coin';
 import { CompanionId, companionDefinition } from '../../assets/static/companions';
 import { ConsumableId, consumableDefinition } from '../../assets/static/consumables';
 import { createRelic } from '../three/models/relic';
@@ -49,7 +51,9 @@ export class ModelIcons {
     sniper: 'assets/imgs/upgrades/upgrade_generic.png',
     gem: 'assets/imgs/upgrades/upgrade_generic.png',
     hourglass: 'assets/imgs/upgrades/upgrade_generic.png',
-    die: 'assets/imgs/upgrades/upgrade_generic.png'
+    die: 'assets/imgs/upgrades/upgrade_generic.png',
+    swords: 'assets/imgs/upgrades/upgrade_generic.png',
+    coin: 'assets/imgs/upgrades/monetize_aura.png'
   };
 
   private cache = new Map<string, string>();
@@ -161,6 +165,20 @@ export class ModelIcons {
         distance: 4.2,
         rotation: [0.12, 0.4, 0]
       })
+    );
+  }
+
+  /** Épées croisées, enseigne des battles d'aura. */
+  swords(): string {
+    return this.render('swords', () =>
+      renderToDataUrl(createSwords(), { size: 192, distance: 5.2, rotation: [0, 0, 0] })
+    );
+  }
+
+  /** Pièce d'or, enseigne du marchand. */
+  coin(): string {
+    return this.render('coin', () =>
+      renderToDataUrl(createCoin(), { size: 192, distance: 3.4, rotation: [0.42, 0.55, 0.12] })
     );
   }
 

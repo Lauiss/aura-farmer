@@ -40,7 +40,8 @@ type NodeKind =
   | 'utility-upgrade'
   | 'chest-unlock'
   | 'drink-unlock'
-  | 'companion';
+  | 'companion'
+  | 'soon';
 
 /** Branche d'un nœud : elle en donne la couleur, comme dans Sludgeneer. */
 type Branch = 'root' | 'teachings' | 'outfit' | 'scenery' | 'utilities' | 'store';
@@ -372,6 +373,18 @@ export class ShopMap {
       if (!this.store.hasCompanion(companion.id)) break;
     }
 
+    // Le casino : annoncé, chiffré, mais pas encore jouable. Il tient sa
+    // place dans l'arbre pour dire où va le jeu, sans prétendre exister.
+    nodes.push({
+      key: 'soon-casino',
+      kind: 'soon',
+      branch: 'store',
+      x: store.x - STEP * 1.4,
+      y: store.y,
+      parent: store,
+      labelKey: 'SHOP_CASINO'
+    });
+
     return nodes;
   });
 
@@ -458,7 +471,9 @@ export class ShopMap {
 
   isOwned(node: MapNode): boolean {
     // La racine et les catégories sont acquises d'entrée : ce sont les
-    // points de départ de chaque branche.
+    // points de départ de chaque branche. Un nœud « à venir » n'est jamais
+    // acquis, faute d'exister.
+    if (node.kind === 'soon') return false;
     if (this.isHub(node)) return true;
     const level = this.levelOf(node)!;
     return level.current >= level.max;
@@ -488,6 +503,9 @@ export class ShopMap {
         return { current: this.store.isDrinkUnlocked(node.drink!.id) ? 1 : 0, max: 1 };
       case 'companion':
         return { current: this.store.hasCompanion(node.companion!.id) ? 1 : 0, max: 1 };
+      // Le casino n'a pas de niveau : il n'est pas encore achetable.
+      case 'soon':
+        return null;
       default:
         return null;
     }
@@ -517,6 +535,8 @@ export class ShopMap {
       case 'drink-unlock':
       case 'companion':
         return this.storeName(node);
+      case 'soon':
+        return this.translate.instant(node.labelKey!);
       case 'utility-upgrade':
         return this.translate.instant(node.utilityUpgrade!.name);
       case 'background-upgrade':
@@ -548,7 +568,8 @@ export class ShopMap {
       'utility-upgrade': 'SHOP_KIND_UPGRADE',
       'chest-unlock': 'SHOP_KIND_SHELF',
       'drink-unlock': 'SHOP_KIND_SHELF',
-      companion: 'SHOP_KIND_COMPANION'
+      companion: 'SHOP_KIND_COMPANION',
+      soon: 'SHOP_KIND_SOON'
     };
     return keys[node.kind];
   }
@@ -571,6 +592,8 @@ export class ShopMap {
         return this.modelIcons.can(node.drink!.id);
       case 'companion':
         return this.modelIcons.companion(node.companion!.id);
+      case 'soon':
+        return this.icons.question;
       case 'utility':
         switch (node.utility!.id) {
           case 'doomscroll':
@@ -622,17 +645,19 @@ export class ShopMap {
       case 'item':
         return this.shopManager.batchPrice(node.item!, this.amountFor(node.item!));
       case 'outfit':
-        return node.piece!.price;
+        return this.shopManager.scaled(node.piece!.price);
       case 'background':
-        return node.background!.price;
+        return this.shopManager.scaled(node.background!.price);
       case 'utility':
-        return node.utility!.price;
+        return this.shopManager.scaled(node.utility!.price);
       case 'chest-unlock':
         return this.store.chestPrice(node.chestTier!);
       case 'drink-unlock':
-        return node.drink!.unlockPrice;
+        return this.store.drinkPrice(node.drink!);
       case 'companion':
-        return node.companion!.price;
+        return this.store.companionPrice(node.companion!);
+      case 'soon':
+        return this.shopManager.scaled(1e15);
       // Les améliorations suivent le réglage d'achat multiple comme les
       // articles : le prix affiché est celui du lot, pas d'un exemplaire.
       case 'utility-upgrade':
@@ -749,6 +774,8 @@ export class ShopMap {
         return [
           { key: 'SHOP_COMPANION_DESC', params: { value: `${Math.round(node.companion!.bonus * 100)}` } }
         ];
+      case 'soon':
+        return [{ key: 'SHOP_CASINO_DESC', params: {} }];
       default:
         return [{ key: `SHOP_HUB_${node.branch.toUpperCase()}_DESC`, params: {} }];
     }
@@ -906,6 +933,10 @@ export class ShopMap {
 
     if (!this.isRevealed(node) || !this.isAvailable(node)) {
       this.hintManager.show('SHOP_LOCKED_HINT');
+      return;
+    }
+    if (node.kind === 'soon') {
+      this.hintManager.show('SHOP_SOON_HINT');
       return;
     }
     if (this.isOwned(node)) return;

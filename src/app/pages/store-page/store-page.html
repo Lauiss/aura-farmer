@@ -62,7 +62,11 @@
       }
       <div class="goods">
         @for (drink of store.availableDrinks(); track drink.id) {
-          <div class="good" [class.running]="consumables.isActive(drink.id)">
+          <div
+            class="good"
+            [class.running]="consumables.isActive(drink.id)"
+            [class.bought]="bought() === 'drink-' + drink.id"
+          >
             <img [src]="canIcon(drink)" alt="" class="good-icon">
             <span class="good-name">{{ ('DRINK_' + drink.id.toUpperCase()) | translate }}</span>
             <span class="good-effect">&times;{{ drink.multiplier }} {{ 'STORE_FOR' | translate }} {{ minutes(drink) }} min</span>
@@ -90,7 +94,7 @@
       }
       <div class="goods">
         @for (chest of shopChests(); track chest.tier) {
-          <div class="good">
+          <div class="good" [class.bought]="bought() === 'chest-' + chest.tier">
             <img [src]="chestIcon(chest.tier)" alt="" class="good-icon">
             <span class="good-name">{{ ('CHEST_' + chest.tier.toUpperCase()) | translate }}</span>
             <ul class="odds">

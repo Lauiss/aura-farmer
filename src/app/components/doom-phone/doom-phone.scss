@@ -41,3 +41,61 @@ canvas {
   // la page à sa place.
   touch-action: none;
 }
+
+/* --- Réactions : le téléphone n'était qu'un rectangle qui défile --- */
+// La carcasse tressaute et se borde de la couleur du post résolu. Les classes
+// sont posées puis retirées par le composant, ce qui rejoue l'animation.
+:host {
+  border-radius: 1.2rem;
+  transition: box-shadow 0.18s ease;
+}
+
+:host(.pulse-good) {
+  animation: doom-kick 0.32s cubic-bezier(0.2, 1.5, 0.4, 1);
+  box-shadow: 0 0 0 3px rgba(125, 255, 179, 0.7), 0 0 3rem rgba(31, 138, 82, 0.6);
+}
+
+:host(.pulse-bad) {
+  animation: doom-shake 0.34s ease-in-out;
+  box-shadow: 0 0 0 3px rgba(255, 157, 143, 0.7), 0 0 3rem rgba(163, 40, 31, 0.6);
+}
+
+:host(.pulse-chest) {
+  animation: doom-kick 0.45s cubic-bezier(0.2, 1.5, 0.4, 1);
+  box-shadow: 0 0 0 4px rgba(255, 227, 154, 0.85), 0 0 4rem rgba(184, 134, 11, 0.8);
+}
+
+@keyframes doom-kick {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes doom-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host(.pulse-good),
+  :host(.pulse-bad),
+  :host(.pulse-chest) {
+    animation: none;
+  }
+}

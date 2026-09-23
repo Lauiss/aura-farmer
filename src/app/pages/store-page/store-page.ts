@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ChestOpening } from '../../components/chest-opening/chest-opening';
@@ -65,6 +65,20 @@ export class StorePage {
     CHESTS.filter(chest => this.collection.chestCount(chest.tier) > 0)
   );
 
+  /**
+   * Article qui vient d'être acheté, pour lui donner son à-coup. Sans
+   * réaction, cliquer « acheter » ne se distinguait pas d'un clic raté : seule
+   * la ligne de gemmes changeait, tout en haut de l'écran.
+   */
+  readonly bought = signal<string | null>(null);
+
+  private celebrate(key: string): void {
+    this.bought.set(key);
+    setTimeout(() => {
+      if (this.bought() === key) this.bought.set(null);
+    }, 460);
+  }
+
   chestIcon(tier: ChestTier): string {
     return this.modelIcons.chest(tier);
   }
@@ -102,6 +116,7 @@ export class StorePage {
       return;
     }
     this.soundManager.playFX(Sound.Buy);
+    this.celebrate(`chest-${chest.tier}`);
     this.openChest(chest.tier);
   }
 
@@ -116,6 +131,7 @@ export class StorePage {
       return;
     }
     this.soundManager.playFX(Sound.Buy);
+    this.celebrate(`drink-${definition.id}`);
     this.hintManager.show('STORE_DRINK_HINT');
   }
 

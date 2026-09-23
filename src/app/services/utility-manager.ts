@@ -70,7 +70,7 @@ export class UtilityManager {
   buy(id: UtilityId): boolean {
     if (this.isOwned(id)) return false;
 
-    const price = this.definition(id).price;
+    const price = this.shopManager.scaled(this.definition(id).price);
     if (this.auraManager.auraCount() < price) return false;
 
     this.auraManager.auraCount.update(aura => aura - price);

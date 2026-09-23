@@ -369,8 +369,24 @@ export class DoomPhone implements AfterViewInit, OnDestroy {
     ctx.textAlign = 'left';
   }
 
+  /**
+   * Fait réagir la carcasse : un à-coup vert, un tremblement rouge ou un éclat
+   * doré. La classe est retirée puis reposée à l'image suivante, sans quoi deux
+   * publications de même nature à la suite ne rejoueraient pas l'animation.
+   */
+  private pulse(kind: DoomscrollOutcome['kind']): void {
+    const element = this.host.nativeElement as HTMLElement;
+    const classes = ['pulse-good', 'pulse-bad', 'pulse-chest'];
+    element.classList.remove(...classes);
+    // Forcer le recalcul : sans cette lecture, le navigateur regroupe le
+    // retrait et la pose et l'animation ne repart pas.
+    void element.offsetWidth;
+    element.classList.add(`pulse-${kind}`);
+  }
+
   /** Affiche le « +1.2 k doomscrolling » au-dessus du téléphone. */
   private announce(outcome: DoomscrollOutcome): void {
+    this.pulse(outcome.kind);
     const rect = (this.host.nativeElement as HTMLElement).getBoundingClientRect();
     const good = outcome.kind !== 'bad';
 

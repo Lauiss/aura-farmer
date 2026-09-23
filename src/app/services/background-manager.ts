@@ -92,7 +92,7 @@ export class BackgroundManager {
   buy(id: BackgroundId): boolean {
     if (this.isOwned(id)) return false;
 
-    const price = backgroundDefinition(id).price;
+    const price = this.shopManager.scaled(backgroundDefinition(id).price);
     if (this.auraManager.auraCount() < price) return false;
 
     this.auraManager.auraCount.update(aura => aura - price);

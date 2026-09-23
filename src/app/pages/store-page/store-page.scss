@@ -296,3 +296,44 @@
   border: 1px dashed $menu-border-strong;
   border-radius: $radius-100;
 }
+
+/* --- Achat : la carte accuse le coup ----------------------------------- */
+// Sans réaction, cliquer « acheter » ne se distinguait pas d'un clic raté :
+// seule la ligne de gemmes changeait, tout en haut de l'écran.
+.good.bought {
+  animation: good-pop 0.45s cubic-bezier(0.2, 1.5, 0.4, 1);
+}
+
+.good.bought .good-icon {
+  animation: good-lift 0.45s cubic-bezier(0.2, 1.5, 0.4, 1);
+}
+
+@keyframes good-pop {
+  0% {
+    box-shadow: 0 0 0 0 rgba(232, 184, 75, 0.9);
+    border-color: $menu-accent;
+  }
+  100% {
+    box-shadow: 0 0 0 1.4rem rgba(232, 184, 75, 0);
+    border-color: $menu-border-strong;
+  }
+}
+
+@keyframes good-lift {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  45% {
+    transform: translateY(-0.6rem) scale(1.14);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .good.bought,
+  .good.bought .good-icon {
+    animation: none;
+  }
+}

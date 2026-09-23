@@ -94,9 +94,12 @@
        bougent pas : posés dans la scène, ils tournaient avec la caméra qui
        orbite autour de la statue. -->
   @if (store.shownCompanions().length) {
-    <div class="companions" aria-hidden="true">
+    <div class="companions">
       @for (id of store.shownCompanions(); track id) {
-        <img class="companion" [src]="companionIcon(id)" alt="">
+        <span class="companion" [attr.data-label]="companionLabel(id)">
+          <img [src]="companionIcon(id)" alt="" aria-hidden="true">
+          <span class="companion-tip">{{ companionLabel(id) }}</span>
+        </span>
       }
     </div>
   }

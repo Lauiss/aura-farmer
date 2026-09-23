@@ -118,6 +118,34 @@ export class ShopManager {
     this.purchaseRevision.update(revision => revision + 1);
   }
 
+  /**
+   * Indexation des prix sur le stock de multiplicateurs.
+   *
+   * Les prix étaient **absolus** quand les revenus sont **multiplicatifs** :
+   * chaque source de multiplicateur ajoutée au jeu — reliques, compagnons,
+   * canettes, décors — divisait d'autant l'échelle de prix tout entière.
+   * Mesuré : passé un million de multiplicateur cumulé, le niveau le plus cher
+   * du jeu se remboursait en trois secondes.
+   *
+   * Les prix suivent donc ce stock, mais **moins vite que lui** (exposant
+   * inférieur à 1) : monter son multiplicateur reste payant, sans rendre
+   * l'échelle dérisoire. Le plancher laisse le début de partie intact — sous
+   * mille de multiplicateur, rien ne change.
+   */
+  private static readonly PRICE_SCALE_FLOOR = 1000;
+  private static readonly PRICE_SCALE_EXPONENT = 0.85;
+
+  readonly priceScale = computed(() => {
+    const stock = this.finalMultiplier() * this.styleBonus();
+    if (stock <= ShopManager.PRICE_SCALE_FLOOR) return 1;
+    return Math.pow(stock / ShopManager.PRICE_SCALE_FLOOR, ShopManager.PRICE_SCALE_EXPONENT);
+  });
+
+  /** Ce que coûte réellement un prix affiché, indexation et remises comprises. */
+  scaled(price: number): number {
+    return Math.round(price * this.priceScale() * this.priceReduction());
+  }
+
   /** Production passive par seconde. */
   readonly production = computed(() => {
     const base = this.items().reduce((total, item) => total + item.value() * item.level(), 0);
@@ -173,16 +201,16 @@ export class ShopManager {
     return Math.round(item.basePrice * Math.pow(item.factor, level));
   }
 
-  /** Prix du prochain niveau, réductions comprises. */
+  /** Prix du prochain niveau, indexation et réductions comprises. */
   itemPrice(item: Item): number {
-    return Math.round(item.price() * this.priceReduction());
+    return this.scaled(item.price());
   }
 
   /** Prix cumulé des `count` prochains niveaux. */
   batchPrice(item: Item, count: number): number {
     let total = 0;
     for (let i = 0; i < count; i++) {
-      total += Math.round(this.priceAtLevel(item, item.level() + i) * this.priceReduction());
+      total += this.scaled(this.priceAtLevel(item, item.level() + i));
     }
     return total;
   }
@@ -204,7 +232,7 @@ export class ShopManager {
 
   /** Prix du prochain exemplaire : chaque achat renchérit le suivant. */
   upgradePrice(upgrade: Purchasable): number {
-    return Math.round(upgrade.price * Math.pow(UPGRADE_PRICE_FACTOR, this.upgradePurchases(upgrade)));
+    return this.scaled(upgrade.price * Math.pow(UPGRADE_PRICE_FACTOR, this.upgradePurchases(upgrade)));
   }
 
   isUpgradeMaxed(upgrade: Purchasable): boolean {
@@ -225,7 +253,7 @@ export class ShopManager {
     let aura = this.auraService.auraCount();
 
     while (count < this.remainingLevels(item)) {
-      const price = Math.round(this.priceAtLevel(item, item.level() + count) * this.priceReduction());
+      const price = this.scaled(this.priceAtLevel(item, item.level() + count));
       if (aura < price) break;
       aura -= price;
       count++;
@@ -298,9 +326,10 @@ export class ShopManager {
   buyMoyaiUpgrade(index: number): void {
     const piece = this.moyaiUpgrades()[index];
     if (!piece || piece.unlocked) return;
-    if (this.auraService.auraCount() < piece.price) return;
+    const price = this.scaled(piece.price);
+    if (this.auraService.auraCount() < price) return;
 
-    this.auraService.auraCount.update(c => c - piece.price);
+    this.auraService.auraCount.update(c => c - price);
     this.unlockMoyaiUpgrade(index);
   }
 
@@ -385,7 +414,7 @@ export class ShopManager {
     const owned = this.upgradePurchases(upgrade);
     let total = 0;
     for (let i = 0; i < count; i++) {
-      total += Math.round(upgrade.price * Math.pow(UPGRADE_PRICE_FACTOR, owned + i));
+      total += this.scaled(upgrade.price * Math.pow(UPGRADE_PRICE_FACTOR, owned + i));
     }
     return total;
   }

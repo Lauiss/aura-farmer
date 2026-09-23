@@ -26,7 +26,7 @@ import { CollectionManager } from '../../services/collection-manager';
 import { BattleManager } from '../../services/battle-manager';
 import { Onboarding } from '../../services/onboarding';
 import { StoreManager } from '../../services/store-manager';
-import { CompanionId } from '../../../assets/static/companions';
+import { CompanionId, companionDefinition } from '../../../assets/static/companions';
 import { Router } from '@angular/router';
 
 @Component({
@@ -80,7 +80,7 @@ export class GamePage {
   );
 
   readonly chestIcon = this.modelIcons.chest('premium');
-  readonly storeIcon = this.modelIcons.can('monster');
+  readonly storeIcon = this.modelIcons.coin();
   private readonly secretTracker = inject(SecretTracker);
 
   readonly hangerIcon = this.modelIcons.hanger();
@@ -138,7 +138,7 @@ export class GamePage {
   /** L'accès aux battles apparaît au débit conseillé du premier boss. */
   readonly showBattles = this.battles.discovered;
 
-  readonly battleIcon = this.modelIcons.boss('tralalero');
+  readonly battleIcon = this.modelIcons.swords();
   readonly shopIcon = this.modelIcons.shop();
   readonly trophyIcon = this.modelIcons.trophy(true);
   readonly gearIcon = this.modelIcons.gear();
@@ -160,6 +160,13 @@ export class GamePage {
   /** Vignette d'un compagnon, rendue une fois puis conservée. */
   companionIcon(id: CompanionId): string {
     return this.modelIcons.companion(id);
+  }
+
+  /** Nom et bonus d'un compagnon, pour son infobulle. */
+  companionLabel(id: CompanionId): string {
+    const definition = companionDefinition(id);
+    const name = this.translate.instant(`COMPANION_${id.toUpperCase()}`);
+    return `${name} · +${Math.round(definition.bonus * 100)} %`;
   }
 
   openStore() {

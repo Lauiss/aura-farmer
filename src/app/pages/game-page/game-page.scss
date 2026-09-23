@@ -142,16 +142,24 @@
   transform: translateY(-50%);
 }
 
-// Akimbo : le second téléphone, en miroir du premier.
+// Akimbo : le second téléphone, en miroir du premier. Les deux sont inclinés
+// vers le centre de l'écran, comme deux mains qui tiennent chacune un appareil
+// tourné vers soi ; posés bien à plat, ils avaient l'air collés aux bords.
+.phone {
+  transform: translateY(-50%) rotate(4deg);
+}
+
 .phone.left {
   right: auto;
   left: clamp(1rem, 6vw, 7rem);
+  transform: translateY(-50%) rotate(-4deg);
 }
 
 @media (max-width: 40rem) {
   .phone.left {
     left: 0.5rem;
     right: auto;
+    transform: rotate(-4deg);
   }
 
   .phone {
@@ -159,7 +167,7 @@
     top: auto;
     bottom: 7rem;
     width: 9rem;
-    transform: none;
+    transform: rotate(4deg);
   }
 }
 
@@ -335,16 +343,56 @@
   pointer-events: none;
 }
 
+.companions {
+  pointer-events: auto;
+}
+
 .companion {
-  width: 3.4rem;
-  height: 3.4rem;
+  position: relative;
+  display: block;
+}
+
+.companion img {
+  display: block;
+  width: 5rem;
+  height: 5rem;
   object-fit: contain;
-  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.6));
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.65));
+  transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.companion:hover img,
+.companion:focus-within img {
+  transform: translateY(-4px) scale(1.06);
+}
+
+/* --- Infobulle : le nom et ce que le compagnon rapporte --- */
+.companion-tip {
+  position: absolute;
+  bottom: calc(100% + #{$spacing-100});
+  left: 50%;
+  transform: translateX(-50%);
+  padding: $spacing-50 $spacing-150;
+  white-space: nowrap;
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  color: $menu-text;
+  background: $menu-surface;
+  border: 1px solid $menu-accent;
+  border-radius: $radius-100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.companion:hover .companion-tip,
+.companion:focus-within .companion-tip {
+  opacity: 1;
 }
 
 @media (max-width: 40rem) {
-  .companion {
-    width: 2.4rem;
-    height: 2.4rem;
+  .companion img {
+    width: 3.2rem;
+    height: 3.2rem;
   }
 }
