@@ -79,6 +79,15 @@ export class BattlePage {
   readonly playerRatio = computed(() => this.playerHp() / this.playerMaxHp());
   readonly bossRatio = computed(() => this.bossHp() / this.bossMaxHp());
 
+  /**
+   * Le portrait du joueur, qui suit ce qu'il porte : sa statue, ou le brainrot
+   * ramené d'une victoire précédente.
+   */
+  readonly playerIcon = computed(() => {
+    const worn = this.battles.worn();
+    return worn ? this.modelIcons.boss(worn) : this.modelIcons.moyai();
+  });
+
   bossIcon(boss: BossDefinition): string {
     return this.modelIcons.boss(boss.id);
   }

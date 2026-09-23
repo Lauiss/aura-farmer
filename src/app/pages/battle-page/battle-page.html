@@ -14,13 +14,15 @@
   @if (boss(); as current) {
     <!-- ------------------------------- Combat ------------------------------- -->
     <main class="fight">
-      <section class="side boss">
-        <img [src]="bossIcon(current)" alt="" class="portrait">
-        <h2 class="name">{{ ('BOSS_' + current.id.toUpperCase()) | translate }}</h2>
-        <div class="bar-hp boss-hp">
-          <span [style.width.%]="bossRatio() * 100"></span>
+      <!-- Le joueur à gauche, l'adversaire à droite : la convention de tout
+           jeu de combat, et l'ordre dans lequel les deux dés sont déjà lus. -->
+      <section class="side player">
+        <img [src]="playerIcon()" alt="" class="portrait">
+        <h2 class="name">{{ 'BATTLE_YOU' | translate }}</h2>
+        <div class="bar-hp player-hp">
+          <span [style.width.%]="playerRatio() * 100"></span>
         </div>
-        <p class="hp">{{ bossHp() | formatAura }} / {{ bossMaxHp() | formatAura }}</p>
+        <p class="hp">{{ playerHp() | formatAura }} / {{ playerMaxHp() | formatAura }}</p>
       </section>
 
       <section class="middle">
@@ -73,12 +75,13 @@
         }
       </section>
 
-      <section class="side player">
-        <h2 class="name">{{ 'BATTLE_YOU' | translate }}</h2>
-        <div class="bar-hp player-hp">
-          <span [style.width.%]="playerRatio() * 100"></span>
+      <section class="side boss">
+        <img [src]="bossIcon(current)" alt="" class="portrait">
+        <h2 class="name">{{ ('BOSS_' + current.id.toUpperCase()) | translate }}</h2>
+        <div class="bar-hp boss-hp">
+          <span [style.width.%]="bossRatio() * 100"></span>
         </div>
-        <p class="hp">{{ playerHp() | formatAura }} / {{ playerMaxHp() | formatAura }}</p>
+        <p class="hp">{{ bossHp() | formatAura }} / {{ bossMaxHp() | formatAura }}</p>
       </section>
     </main>
 
