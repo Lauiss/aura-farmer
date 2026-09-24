@@ -18,9 +18,9 @@ export const moyaiUpgrades: MoyaiUpgrades[] = [
         {
         id: 1,
         name: 'sunglasses',
-        description: 'x2 aura per click',
+        description: '+50% aura per click',
         unlocked: false,
-        effect : { type: UpgradeType.CLICK, value: 1 },
+        effect : { type: UpgradeType.CLICK, value: 0.5 },
         price: 30000000,
         displayCondition: signal(true),
         upgrades: [],
@@ -48,9 +48,9 @@ export const moyaiUpgrades: MoyaiUpgrades[] = [
         {
         id: 4,
         name: 'tie',
-        description: '+20% Aura per click',
+        description: '+10% Aura per click',
         unlocked: false,
-        effect: { type: UpgradeType.CLICK, value: 0.20 },
+        effect: { type: UpgradeType.CLICK, value: 0.10 },
         price: 3000000,
         displayCondition: signal(true),
         upgrades: [],

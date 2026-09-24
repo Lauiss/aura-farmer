@@ -15,6 +15,7 @@ import { createPhone } from '../../three/models/phone';
 import { Doomscroll, DoomscrollOutcome, PostKind } from '../../services/doomscroll';
 import { UtilityManager } from '../../services/utility-manager';
 import { formatAura } from '../../pipes/format-aura';
+import { SettingsManager } from '../../services/settings-manager';
 
 const TEXTURE = { width: 256, height: 512 };
 /** Barre du haut de l'application, au-dessus du fil. */
@@ -77,6 +78,9 @@ export class DoomPhone implements AfterViewInit, OnDestroy {
   private readonly doomscroll = inject(Doomscroll);
   readonly utilityManager = inject(UtilityManager);
   private readonly translate = inject(TranslateService);
+  private readonly settings = inject(SettingsManager);
+  /** Temps écoulé depuis la dernière image peinte, pour le plafond d'images. */
+  private sinceRender = 0;
 
   readonly label = this.translate.instant('DOOMSCROLL_LABEL');
   readonly autoLabel = this.translate.instant('DOOMSCROLL_AUTO_TOGGLE');
@@ -125,8 +129,14 @@ export class DoomPhone implements AfterViewInit, OnDestroy {
   private setup(): void {
     const canvas = this.canvasRef().nativeElement;
 
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const eco = this.settings.isEco();
+    this.renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: !eco,
+      alpha: true,
+      powerPreference: eco ? 'low-power' : 'default'
+    });
+    this.renderer.setPixelRatio(this.settings.pixelRatio(2));
 
     const surface = document.createElement('canvas');
     surface.width = TEXTURE.width;
@@ -236,6 +246,15 @@ export class DoomPhone implements AfterViewInit, OnDestroy {
       // Léger flottement, et un sursaut d'inclinaison quand on scrolle vite.
       this.phone.position.y = Math.sin(this.elapsed * 1.4) * 0.03;
       this.phone.rotation.x = -0.06 - (step / (MAX_SPEED * Math.max(delta, 1e-3))) * 0.05;
+    }
+
+    // Plafond d'images des options : le fil continue d'avancer et de se
+    // résoudre à chaque image, seule la peinture est sautée.
+    const fps = this.settings.frameCap();
+    if (fps > 0) {
+      this.sinceRender += delta;
+      if (this.sinceRender < 1 / fps) return;
+      this.sinceRender = 0;
     }
 
     if (this.dirty) {

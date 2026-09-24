@@ -62,12 +62,6 @@ export class CollectionPage {
     return this.collection.isOwned(collectible.id) ? this.modelIcons.moyaiSkin(collectible.id) : this.questionIcon;
   }
 
-  toggleSkin(collectible: CollectibleDefinition): void {
-    if (!this.collection.isOwned(collectible.id)) return;
-    this.soundManager.playFX(Sound.Plop);
-    this.collection.applySkin(this.collection.skin() === collectible.id ? null : collectible.id);
-  }
-
   openStore(): void {
     this.soundManager.playFX(Sound.Plop);
     this.router.navigate(['/store']);

@@ -24,8 +24,8 @@ import { CollectionManager } from '../../services/collection-manager';
 import { UpgradeType } from '../../../assets/static/enum/upgrade-types';
 import { StoreManager } from '../../services/store-manager';
 import { CHESTS, ChestTier } from '../../../assets/static/collectibles';
-import { CONSUMABLES, ConsumableDefinition } from '../../../assets/static/consumables';
-import { COMPANIONS, CompanionDefinition } from '../../../assets/static/companions';
+import { DRINKS, FOODS, ConsumableDefinition } from '../../../assets/static/consumables';
+import { COMPANIONS, COMPANION_PHONE_PAYOUT, CompanionDefinition } from '../../../assets/static/companions';
 
 type NodeKind =
   | 'root'
@@ -41,7 +41,7 @@ type NodeKind =
   | 'chest-unlock'
   | 'drink-unlock'
   | 'companion'
-  | 'soon';
+  | 'phones';
 
 /** Branche d'un nœud : elle en donne la couleur, comme dans Sludgeneer. */
 type Branch = 'root' | 'teachings' | 'outfit' | 'scenery' | 'utilities' | 'store';
@@ -329,7 +329,7 @@ export class ShopMap {
     }
 
     previous = store;
-    for (const [index, drink] of CONSUMABLES.entries()) {
+    for (const [index, drink] of DRINKS.entries()) {
       const spot = { x: store.x + (index + 1) * STEP, y: store.y + STEP * 1.05 };
       nodes.push({
         key: `drink-${drink.id}`,
@@ -343,6 +343,22 @@ export class ShopMap {
       // Un cran à la fois, comme les enseignements : on ne voit jamais plus
       // loin que la canette suivante.
       if (!this.store.isDrinkUnlocked(drink.id)) break;
+    }
+
+    // Les plats, une rangée sous les canettes : même mécanique, rayon voisin.
+    previous = store;
+    for (const [index, food] of FOODS.entries()) {
+      const spot = { x: store.x + (index + 1) * STEP, y: store.y + STEP * 2.1 };
+      nodes.push({
+        key: `food-${food.id}`,
+        kind: 'drink-unlock',
+        branch: 'store',
+        ...spot,
+        parent: previous,
+        drink: food
+      });
+      previous = spot;
+      if (!this.store.isDrinkUnlocked(food.id)) break;
     }
 
     // Sous-catégorie des compagnons, au-dessus de la boutique. Ils s'étirent
@@ -373,17 +389,18 @@ export class ShopMap {
       if (!this.store.hasCompanion(companion.id)) break;
     }
 
-    // Le casino : annoncé, chiffré, mais pas encore jouable. Il tient sa
-    // place dans l'arbre pour dire où va le jeu, sans prétendre exister.
-    nodes.push({
-      key: 'soon-casino',
-      kind: 'soon',
-      branch: 'store',
-      x: store.x - STEP * 1.4,
-      y: store.y,
-      parent: store,
-      labelKey: 'SHOP_CASINO'
-    });
+    // Au bout de la rangée, une fois tous les compagnons réunis : un téléphone
+    // pour chacun.
+    if (COMPANIONS.every(companion => this.store.hasCompanion(companion.id))) {
+      nodes.push({
+        key: 'companion-phones',
+        kind: 'phones',
+        branch: 'store',
+        x: previous.x + STEP,
+        y: previous.y,
+        parent: previous
+      });
+    }
 
     return nodes;
   });
@@ -481,9 +498,7 @@ export class ShopMap {
 
   isOwned(node: MapNode): boolean {
     // La racine et les catégories sont acquises d'entrée : ce sont les
-    // points de départ de chaque branche. Un nœud « à venir » n'est jamais
-    // acquis, faute d'exister.
-    if (node.kind === 'soon') return false;
+    // points de départ de chaque branche.
     if (this.isHub(node)) return true;
     const level = this.levelOf(node)!;
     return level.current >= level.max;
@@ -513,9 +528,8 @@ export class ShopMap {
         return { current: this.store.isDrinkUnlocked(node.drink!.id) ? 1 : 0, max: 1 };
       case 'companion':
         return { current: this.store.hasCompanion(node.companion!.id) ? 1 : 0, max: 1 };
-      // Le casino n'a pas de niveau : il n'est pas encore achetable.
-      case 'soon':
-        return null;
+      case 'phones':
+        return { current: this.store.phones() ? 1 : 0, max: 1 };
       default:
         return null;
     }
@@ -545,8 +559,8 @@ export class ShopMap {
       case 'drink-unlock':
       case 'companion':
         return this.storeName(node);
-      case 'soon':
-        return this.translate.instant(node.labelKey!);
+      case 'phones':
+        return this.translate.instant('SHOP_COMPANION_PHONES');
       case 'utility-upgrade':
         return this.translate.instant(node.utilityUpgrade!.name);
       case 'background-upgrade':
@@ -579,7 +593,7 @@ export class ShopMap {
       'chest-unlock': 'SHOP_KIND_SHELF',
       'drink-unlock': 'SHOP_KIND_SHELF',
       companion: 'SHOP_KIND_COMPANION',
-      soon: 'SHOP_KIND_SOON'
+      phones: 'SHOP_KIND_UPGRADE'
     };
     return keys[node.kind];
   }
@@ -602,8 +616,8 @@ export class ShopMap {
         return this.modelIcons.can(node.drink!.id);
       case 'companion':
         return this.modelIcons.companion(node.companion!.id);
-      case 'soon':
-        return this.icons.question;
+      case 'phones':
+        return this.icons.phone;
       case 'utility':
         switch (node.utility!.id) {
           case 'doomscroll':
@@ -666,8 +680,8 @@ export class ShopMap {
         return this.store.drinkPrice(node.drink!);
       case 'companion':
         return this.store.companionPrice(node.companion!);
-      case 'soon':
-        return this.shopManager.scaled(1e15);
+      case 'phones':
+        return this.store.phonesPrice();
       // Les améliorations suivent le réglage d'achat multiple comme les
       // articles : le prix affiché est celui du lot, pas d'un exemplaire.
       case 'utility-upgrade':
@@ -773,7 +787,7 @@ export class ShopMap {
       case 'drink-unlock':
         return [
           {
-            key: 'SHOP_SHELF_DRINK_DESC',
+            key: node.drink!.category === 'food' ? 'SHOP_SHELF_FOOD_DESC' : 'SHOP_SHELF_DRINK_DESC',
             params: {
               multiplier: `${node.drink!.multiplier}`,
               minutes: `${Math.round(node.drink!.duration / 60)}`
@@ -784,8 +798,16 @@ export class ShopMap {
         return [
           { key: 'SHOP_COMPANION_DESC', params: { value: `${Math.round(node.companion!.bonus * 100)}` } }
         ];
-      case 'soon':
-        return [{ key: 'SHOP_CASINO_DESC', params: {} }];
+      case 'phones':
+        return [
+          {
+            key: 'SHOP_COMPANION_PHONES_DESC',
+            params: {
+              value: `${Math.round(COMPANION_PHONE_PAYOUT * 100)}`,
+              total: `${Math.round(COMPANION_PHONE_PAYOUT * COMPANIONS.length * 100)}`
+            }
+          }
+        ];
       default:
         return [{ key: `SHOP_HUB_${node.branch.toUpperCase()}_DESC`, params: {} }];
     }
@@ -945,10 +967,6 @@ export class ShopMap {
       this.hintManager.show('SHOP_LOCKED_HINT');
       return;
     }
-    if (node.kind === 'soon') {
-      this.hintManager.show('SHOP_SOON_HINT');
-      return;
-    }
     if (this.isOwned(node)) return;
     if (!this.affordable(node)) {
       this.hintManager.show('SHOP_TOO_EXPENSIVE_HINT');
@@ -985,6 +1003,9 @@ export class ShopMap {
         if (this.store.buyCompanion(node.companion!)) {
           this.hintManager.show(`COMPANION_${node.companion!.id.toUpperCase()}_HINT`);
         }
+        break;
+      case 'phones':
+        if (this.store.buyPhones()) this.hintManager.show('SHOP_COMPANION_PHONES_HINT');
         break;
       default:
         // Toutes les familles d'améliorations passent par le même chemin, et

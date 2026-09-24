@@ -1,0 +1,136 @@
+<div class="casino-page">
+  <header class="bar">
+    <button type="button" class="back" (click)="back()">&larr; {{ 'BACK' | translate }}</button>
+    <h1 class="heading">{{ 'CASINO' | translate }}</h1>
+    <p class="gems" [attr.aria-label]="'GEMS' | translate">
+      {{ collection.gems() }} <span aria-hidden="true">💎</span>
+    </p>
+  </header>
+
+  <main class="content">
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" class="tab" [class.active]="game() === 'roulette'"
+        [attr.aria-selected]="game() === 'roulette'" [disabled]="busy()" (click)="select('roulette')">
+        {{ 'CASINO_ROULETTE' | translate }}
+      </button>
+      <button type="button" role="tab" class="tab" [class.active]="game() === 'crash'"
+        [attr.aria-selected]="game() === 'crash'" [disabled]="busy()" (click)="select('crash')">
+        {{ 'CASINO_CRASH' | translate }}
+      </button>
+    </div>
+
+    <!-- Mise commune aux deux jeux. -->
+    <section class="bet">
+      <label class="bet-field">
+        <span>{{ 'CASINO_BET' | translate }}</span>
+        <input type="number" min="1" step="1" inputmode="numeric"
+          [max]="collection.gems()" [value]="bet()" [disabled]="busy()" (input)="onBetInput($event)">
+        <span aria-hidden="true">💎</span>
+      </label>
+      <div class="bet-quick">
+        <button type="button" class="chip" [disabled]="busy()" (click)="adjustBet('half')">½</button>
+        <button type="button" class="chip" [disabled]="busy()" (click)="adjustBet('double')">×2</button>
+        <button type="button" class="chip" [disabled]="busy()" (click)="adjustBet('max')">{{ 'CASINO_MAX' | translate }}</button>
+      </div>
+    </section>
+
+    @if (game() === 'roulette') {
+      <section class="panel">
+        <!-- Bandeau : les cases défilent sous le repère central puis
+             ralentissent jusqu'à la case tirée. -->
+        <div class="wheel" aria-hidden="true">
+          <div class="strip" [class.animated]="animated()" [style.transform]="stripShift()"
+            [style.transition-duration.ms]="animated() ? spinMs : 0">
+            @for (pocket of strip; track $index) {
+              <span [class]="'pocket ' + colorOf(pocket)">{{ pocket }}</span>
+            }
+          </div>
+          <span class="marker"></span>
+        </div>
+
+        <p class="result" role="status">
+          @if (spinning()) {
+            {{ 'CASINO_SPINNING' | translate }}
+          } @else if (lastSpin(); as spin) {
+            <span [class]="'dot ' + spin.color">{{ spin.pocket }}</span>
+            @if (spin.won) {
+              <strong class="win">{{ 'CASINO_WIN' | translate: { amount: spin.payout } }}</strong>
+            } @else {
+              <span class="lose">{{ 'CASINO_LOSE' | translate }}</span>
+            }
+          } @else {
+            {{ 'CASINO_ROULETTE_LEAD' | translate }}
+          }
+        </p>
+
+        <div class="colors" role="radiogroup" [attr.aria-label]="'CASINO_PICK_COLOR' | translate">
+          @for (color of colors; track color) {
+            <button type="button" role="radio" [class]="'color ' + color" [class.picked]="choice() === color"
+              [attr.aria-checked]="choice() === color" [disabled]="busy()" (click)="choice.set(color)">
+              <span class="color-name">{{ ('CASINO_' + color.toUpperCase()) | translate }}</span>
+              <span class="color-payout">×{{ payouts[color] }}</span>
+            </button>
+          }
+        </div>
+
+        <button type="button" class="play" [disabled]="busy() || !betValid()" (click)="spin()">
+          {{ 'CASINO_SPIN' | translate }}
+        </button>
+
+        @if (casino.history().length) {
+          <div class="history" [attr.aria-label]="'CASINO_HISTORY' | translate">
+            @for (pocket of casino.history(); track $index) {
+              <span [class]="'dot ' + colorOf(pocket)">{{ pocket }}</span>
+            }
+          </div>
+        }
+      </section>
+    } @else {
+      <section class="panel">
+        <div class="chart" [class.busted]="crashPhase() === 'busted'" [class.cashed]="crashPhase() === 'cashed'">
+          <svg [attr.viewBox]="'0 0 ' + chart.width + ' ' + chart.height" aria-hidden="true">
+            <line class="axis" [attr.x1]="chart.pad" [attr.y1]="chart.height - chart.pad"
+              [attr.x2]="chart.width - chart.pad" [attr.y2]="chart.height - chart.pad" />
+            <polyline #curve class="curve" points="" />
+            <polygon #arrow class="arrow" points="" />
+          </svg>
+          <p #readout class="readout" aria-live="off">×1.00</p>
+        </div>
+
+        <p class="result" role="status">
+          @switch (crashPhase()) {
+            @case ('running') { {{ 'CASINO_CRASH_RUNNING' | translate }} }
+            @case ('cashed') {
+              <strong class="win">{{ 'CASINO_CASHED' | translate: { multiplier: crashResult().toFixed(2), amount: crashPayout() } }}</strong>
+            }
+            @case ('busted') {
+              <span class="lose">{{ 'CASINO_BUSTED' | translate: { multiplier: crashResult().toFixed(2) } }}</span>
+            }
+            @default { {{ 'CASINO_CRASH_LEAD' | translate }} }
+          }
+        </p>
+
+        <label class="auto">
+          <span>{{ 'CASINO_AUTO_CASHOUT' | translate }}</span>
+          <input type="number" min="1.01" step="0.01" [placeholder]="'CASINO_AUTO_OFF' | translate"
+            [disabled]="busy()" (input)="onAutoCashOutInput($event)">
+        </label>
+
+        @if (crashPhase() === 'running') {
+          <button type="button" class="play cash" (click)="cashOut()">{{ 'CASINO_CASH_OUT' | translate }}</button>
+        } @else {
+          <button type="button" class="play" [disabled]="!betValid()" (click)="startCrash()">
+            {{ 'CASINO_START_CRASH' | translate }}
+          </button>
+        }
+      </section>
+    }
+
+    <p class="stats">
+      {{ 'CASINO_STATS' | translate: { wagered: casino.wagered(), won: casino.won() } }}
+      @if (casino.bestCrash() > 0) {
+        · {{ 'CASINO_BEST_CRASH' | translate: { multiplier: casino.bestCrash().toFixed(2) } }}
+      }
+    </p>
+  </main>
+</div>

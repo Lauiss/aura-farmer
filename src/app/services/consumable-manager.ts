@@ -3,10 +3,14 @@ import { CollectionManager } from './collection-manager';
 import { SaveLocation, SaveManager } from './save-manager';
 import {
   CONSUMABLES,
+  ConsumableCategory,
   ConsumableDefinition,
   ConsumableId,
   consumableDefinition
 } from '../../assets/static/consumables';
+
+/** Pourquoi un achat a été refusé : faute de gemmes, ou déjà un effet en cours. */
+export type BuyResult = 'ok' | 'gems' | 'busy';
 
 /** Un effet en cours : l'instant, en millisecondes, où il s'arrête. */
 type ActiveMap = Partial<Record<ConsumableId, number>>;
@@ -68,27 +72,39 @@ export class ConsumableManager {
     return (this.active()[id] ?? 0) > this.now();
   }
 
+  /** Effet en cours dans une catégorie, s'il y en a un. */
+  activeIn(category: ConsumableCategory): ConsumableDefinition | null {
+    const now = this.now();
+    for (const [id, until] of Object.entries(this.active())) {
+      const definition = consumableDefinition(id as ConsumableId);
+      if (definition.category === category && (until ?? 0) > now) return definition;
+    }
+    return null;
+  }
+
   /** Secondes restantes sur un effet, 0 s'il ne tourne pas. */
   remaining(id: ConsumableId): number {
     return Math.max(0, Math.ceil(((this.active()[id] ?? 0) - this.now()) / 1000));
   }
 
   /**
-   * Achète une canette et lance son effet. Boire deux fois la même **prolonge**
-   * la durée au lieu d'empiler le facteur : sinon il suffirait d'en acheter
-   * dix d'un coup pour multiplier la production par mille.
+   * Achète un consommable et lance son effet.
+   *
+   * **Un seul effet par catégorie** : tant qu'une canette tourne, on n'en boit
+   * pas d'autre, pas même la même. Prolonger ou empiler les canettes laissait
+   * enchaîner les effets sans fin. Une canette et un plat, en revanche, se
+   * prennent ensemble.
    */
-  buy(definition: ConsumableDefinition): boolean {
-    if (this.collection.gems() < definition.price) return false;
+  buy(definition: ConsumableDefinition): BuyResult {
+    if (this.activeIn(definition.category)) return 'busy';
+    if (this.collection.gems() < definition.price) return 'gems';
 
     this.collection.spendGems(definition.price);
     const now = Date.now();
-    this.active.update(active => {
-      const from = Math.max(active[definition.id] ?? 0, now);
-      return { ...active, [definition.id]: from + definition.duration * 1000 };
-    });
+    this.now.set(now);
+    this.active.update(active => ({ ...active, [definition.id]: now + definition.duration * 1000 }));
     this.persist();
-    return true;
+    return 'ok';
   }
 
   /**

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { ChestOpening } from '../../components/chest-opening/chest-opening';
 import { MoyaiViewer } from '../../components/moyai-viewer/moyai-viewer';
 import { CollectionManager } from '../../services/collection-manager';
@@ -17,7 +18,6 @@ import {
   ChestTier,
   RARITIES,
   RARITY_COLORS,
-  RELIC_CHEST_CHANCE,
   Rarity
 } from '../../../assets/static/collectibles';
 import { ConsumableDefinition } from '../../../assets/static/consumables';
@@ -33,7 +33,7 @@ import { ConsumableDefinition } from '../../../assets/static/consumables';
 @Component({
   selector: 'app-store-page',
   standalone: true,
-  imports: [TranslatePipe, MoyaiViewer],
+  imports: [TranslatePipe, MoyaiViewer, NgTemplateOutlet],
   templateUrl: './store-page.html',
   styleUrl: './store-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -95,10 +95,6 @@ export class StorePage {
     }));
   }
 
-  relicOdds(chest: ChestDefinition): string {
-    return `${(RELIC_CHEST_CHANCE[chest.tier] * 100).toFixed(1)}`;
-  }
-
   /** Durée d'un consommable, en minutes, pour l'étiquette. */
   minutes(definition: ConsumableDefinition): number {
     return Math.round(definition.duration / 60);
@@ -125,14 +121,29 @@ export class StorePage {
     this.modalManager.open(ChestOpening, { tier });
   }
 
-  buyDrink(definition: ConsumableDefinition): void {
-    if (!this.consumables.buy(definition)) {
-      this.hintManager.show('COLLECTION_NOT_ENOUGH_GEMS');
-      return;
+  /**
+   * Un seul effet par catégorie : tant qu'une canette tourne, le marchand
+   * refuse d'en vendre une autre — d'où l'arrêt cardiaque. Idem pour un plat.
+   */
+  buyConsumable(definition: ConsumableDefinition): void {
+    const food = definition.category === 'food';
+    switch (this.consumables.buy(definition)) {
+      case 'busy':
+        this.hintManager.show(food ? 'STORE_FOOD_FULL' : 'STORE_HEART_ATTACK');
+        return;
+      case 'gems':
+        this.hintManager.show('COLLECTION_NOT_ENOUGH_GEMS');
+        return;
     }
     this.soundManager.playFX(Sound.Buy);
     this.celebrate(`drink-${definition.id}`);
-    this.hintManager.show('STORE_DRINK_HINT');
+    this.hintManager.show(food ? 'STORE_FOOD_HINT' : 'STORE_DRINK_HINT');
+  }
+
+  /** Vrai si un autre article de la même catégorie tourne déjà. */
+  blocked(definition: ConsumableDefinition): boolean {
+    const active = this.consumables.activeIn(definition.category);
+    return !!active && active.id !== definition.id;
   }
 
   openCollection(): void {

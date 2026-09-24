@@ -7,6 +7,10 @@
     </p>
   </header>
 
+  <!-- Tout ce qui suit la barre défile dans son propre conteneur : sur itch.io,
+       l'iframe interdit souvent le défilement du document, et les coffres, en
+       bas de page, n'étaient plus atteignables. -->
+  <div class="scroll">
   <!-- Le vendeur derrière son comptoir : c'est lui qui donne son identité à
        l'écran, les étagères viennent en dessous. -->
   <section class="counter-scene">
@@ -62,29 +66,50 @@
       }
       <div class="goods">
         @for (drink of store.availableDrinks(); track drink.id) {
-          <div
-            class="good"
-            [class.running]="consumables.isActive(drink.id)"
-            [class.bought]="bought() === 'drink-' + drink.id"
-          >
-            <img [src]="canIcon(drink)" alt="" class="good-icon">
-            <span class="good-name">{{ ('DRINK_' + drink.id.toUpperCase()) | translate }}</span>
-            <span class="good-effect">&times;{{ drink.multiplier }} {{ 'STORE_FOR' | translate }} {{ minutes(drink) }} min</span>
-            @if (consumables.isActive(drink.id)) {
-              <span class="good-note">{{ 'STORE_RUNNING' | translate }} {{ countdown(drink) }}</span>
-            }
-            <button
-              type="button"
-              class="price buy"
-              [disabled]="collection.gems() < drink.price"
-              (click)="buyDrink(drink)"
-            >
-              {{ drink.price }} 💎
-            </button>
-          </div>
+          <ng-container *ngTemplateOutlet="good; context: { $implicit: drink }"></ng-container>
         }
       </div>
     </section>
+
+    <section class="shelf">
+      <h2 class="shelf-title">{{ 'STORE_FOODS' | translate }}</h2>
+      <p class="shelf-lead">{{ 'STORE_FOODS_LEAD' | translate }}</p>
+      @if (!store.availableFoods().length) {
+        <p class="shelf-empty">{{ 'STORE_LOCKED' | translate }}</p>
+      }
+      <div class="goods">
+        @for (food of store.availableFoods(); track food.id) {
+          <ng-container *ngTemplateOutlet="good; context: { $implicit: food }"></ng-container>
+        }
+      </div>
+    </section>
+
+    <!-- Une case de rayon, canette ou plat. Le bouton reste actif quand un
+         autre article tourne : c'est au clic que le marchand refuse, avec sa
+         réplique. -->
+    <ng-template #good let-item>
+      <div
+        class="good"
+        [class.running]="consumables.isActive(item.id)"
+        [class.blocked]="blocked(item)"
+        [class.bought]="bought() === 'drink-' + item.id"
+      >
+        <img [src]="canIcon(item)" alt="" class="good-icon">
+        <span class="good-name">{{ ('DRINK_' + item.id.toUpperCase()) | translate }}</span>
+        <span class="good-effect">&times;{{ item.multiplier }} {{ 'STORE_FOR' | translate }} {{ minutes(item) }} min</span>
+        @if (consumables.isActive(item.id)) {
+          <span class="good-note">{{ 'STORE_RUNNING' | translate }} {{ countdown(item) }}</span>
+        }
+        <button
+          type="button"
+          class="price buy"
+          [disabled]="collection.gems() < item.price && !consumables.isActive(item.id)"
+          (click)="buyConsumable(item)"
+        >
+          {{ item.price }} 💎
+        </button>
+      </div>
+    </ng-template>
 
     <section class="shelf">
       <h2 class="shelf-title">{{ 'COLLECTION_SHOP' | translate }}</h2>
@@ -103,9 +128,6 @@
                   {{ ('RARITY_' + line.rarity.toUpperCase()) | translate }} {{ line.percent }} %
                 </li>
               }
-              <li class="relic-odds">
-                {{ 'COLLECTION_RELIC_ODDS' | translate: { percent: relicOdds(chest) } }}
-              </li>
             </ul>
             <button
               type="button"
@@ -126,4 +148,5 @@
       </button>
     </p>
   </main>
+  </div>
 </div>

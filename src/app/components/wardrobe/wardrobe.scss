@@ -58,6 +58,18 @@
   font-weight: $menu-weight;
 }
 
+.name.with-icon {
+  display: flex;
+  align-items: center;
+  gap: $spacing-150;
+}
+
+.skin-icon {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+}
+
 .state {
   font-size: $menu-size-small;
   font-weight: $menu-weight;

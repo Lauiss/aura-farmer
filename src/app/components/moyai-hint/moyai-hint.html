@@ -3,6 +3,8 @@
     <div class="speaker">
       @if (message.icon) {
         <img [src]="message.icon" alt="" class="icon">
+      } @else if (settings.graphics() === 'eco') {
+        <img [src]="moyaiIcon" alt="" class="icon">
       } @else {
         <!-- Orientation de trois quarts, figée : l'indication ne doit pas
              attirer l'œil plus que le message qu'elle porte. -->

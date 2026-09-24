@@ -90,9 +90,69 @@
   font-size: $menu-size-small;
 }
 
+/* --- Effets en cours : canette, plat, et le temps qu'il leur reste --- */
+.effects {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: $spacing-100;
+  margin-top: $spacing-100;
+  list-style: none;
+  text-shadow: none;
+}
+
+.effect {
+  display: flex;
+  align-items: center;
+  gap: $spacing-100;
+  padding: $spacing-50 $spacing-150 $spacing-50 $spacing-50;
+  font-size: $menu-size-small;
+  font-weight: $menu-weight;
+  background: rgba(18, 18, 17, 0.72);
+  border: 1px solid $menu-accent-border;
+  border-radius: 999px;
+}
+
+// Les trente dernières secondes : la pastille prévient que le bonus va tomber.
+.effect.ending {
+  border-color: #e8836b;
+  animation: effect-ending 1s ease-in-out infinite;
+}
+
+@keyframes effect-ending {
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.effect-icon {
+  width: 1.8rem;
+  height: 1.8rem;
+  object-fit: contain;
+}
+
+.effect-multiplier {
+  color: $menu-accent;
+  font-weight: $menu-weight-strong;
+}
+
+.effect-time {
+  min-width: 2.6rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: $menu-text;
+}
+
+@media (max-width: 560px) {
+  .effect-name {
+    display: none;
+  }
+}
+
 // La statue remplace l'ancien logo d'aura : elle tourne en continu.
 .aura-mark {
   display: block;
+  object-fit: contain;
   width: 2.2rem;
   height: 2.2rem;
 }

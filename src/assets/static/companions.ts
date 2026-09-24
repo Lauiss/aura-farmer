@@ -35,11 +35,20 @@ export const COMPANIONS: readonly CompanionDefinition[] = [
   { id: 'cigarettes', price: 9e9, bonus: 0.25, color: 0xe8e2d4, accent: 0xc4352f },
   { id: 'racecar', price: 2e11, bonus: 0.4, color: 0xc4352f, accent: 0x1c1f24 },
   { id: 'skibidi', price: 5e12, bonus: 0.6, color: 0xeef1f4, accent: 0xd8b48a },
-  { id: 'braulo', price: 2e14, bonus: 1, color: 0x7a736b, accent: 0x7ed957 },
-  { id: 'ivank', price: 4e15, bonus: 1.5, color: 0x5a6350, accent: 0x33382d },
+  { id: 'ivank', price: 2e14, bonus: 1, color: 0x5a6350, accent: 0x33382d },
+  // Braulo passe après Ivank : Makouille, sa femelle, le suit directement.
+  { id: 'braulo', price: 4e15, bonus: 1.5, color: 0x7a736b, accent: 0x7ed957 },
   // Makouille ferme la marche : la femelle de Braulo, et le meilleur bonus.
   { id: 'makouille', price: 8e16, bonus: 2.5, color: 0xc4a88a, accent: 0xffb3c8 }
 ];
+
+/**
+ * Dernière amélioration de la branche : un téléphone pour chaque compagnon.
+ * Chaque compagnon possédé ajoute `COMPANION_PHONE_PAYOUT` au gain du
+ * doomscrolling — ils scrollent avec toi.
+ */
+export const COMPANION_PHONES_PRICE = 2e17;
+export const COMPANION_PHONE_PAYOUT = 0.15;
 
 export function companionDefinition(id: CompanionId): CompanionDefinition {
   return COMPANIONS.find(companion => companion.id === id)!;

@@ -821,6 +821,248 @@ function shapeOf(definition: BossDefinition): THREE.Group {
       break;
     }
 
+    /**
+     * Chimpanzini Bananini : un chimpanzé qui sort d'une banane à moitié
+     * épluchée. Les pans de peau rabattus vers l'extérieur font toute la
+     * lecture — sans eux, ce n'est qu'un singe sur un pied jaune.
+     */
+    case 'banana': {
+      // Le bas de la banane, encore dans sa peau, et son bout sombre.
+      group.add(
+        part(color, [
+          { y: -1.55, halfWidth: 0.1, front: 0.1, back: -0.1, chamfer: 0.3 },
+          { y: -1.1, halfWidth: 0.32, front: 0.3, back: -0.3, chamfer: 0.3 },
+          { y: -0.3, halfWidth: 0.46, front: 0.44, back: -0.44, chamfer: 0.28 },
+          { y: 0.15, halfWidth: 0.48, front: 0.46, back: -0.46, chamfer: 0.28 }
+        ])
+      );
+      group.add(
+        part(0x4a3a22, [
+          { y: -1.72, halfWidth: 0.06, front: 0.06, back: -0.06, chamfer: 0.3 },
+          { y: -1.5, halfWidth: 0.09, front: 0.09, back: -0.09, chamfer: 0.3 }
+        ])
+      );
+
+      // Les pans de peau, rabattus vers l'extérieur. Chacun pivote à sa
+      // base : les anneaux partent de zéro pour que la rotation s'y fasse.
+      const flap: Ring[] = [
+        { y: 0, halfWidth: 0.26, front: 0.07, back: -0.07, chamfer: 0.3 },
+        { y: 0.55, halfWidth: 0.22, front: 0.06, back: -0.06, chamfer: 0.3 },
+        { y: 1.0, halfWidth: 0.08, front: 0.04, back: -0.04, chamfer: 0.3 }
+      ];
+      group.add(part(color, flap, [0, 0.1, 0.4], [1.15, 0, 0]));
+      group.add(part(color, flap, [0, 0.1, -0.4], [-0.95, 0, 0]));
+      group.add(part(color, flap, [-0.4, 0.1, 0], [0, Math.PI / 2, 0.95]));
+      group.add(part(color, flap, [0.4, 0.1, 0], [0, Math.PI / 2, -0.95]));
+
+      // Le chimpanzé : buste, puis tête ronde.
+      group.add(
+        rough(accent, [
+          { y: 0, halfWidth: 0.4, front: 0.36, back: -0.36, chamfer: 0.3 },
+          { y: 0.75, halfWidth: 0.44, front: 0.38, back: -0.38, chamfer: 0.3 },
+          { y: 0.95, halfWidth: 0.3, front: 0.3, back: -0.3, chamfer: 0.34 }
+        ], 91)
+      );
+      group.add(
+        rough(accent, [
+          { y: 0.9, halfWidth: 0.34, front: 0.34, back: -0.36, chamfer: 0.36 },
+          { y: 1.35, halfWidth: 0.46, front: 0.44, back: -0.44, chamfer: 0.34 },
+          { y: 1.8, halfWidth: 0.3, front: 0.3, back: -0.34, chamfer: 0.38 }
+        ], 92)
+      );
+      // Masque facial clair et museau en avant : c'est ce qui dit « singe ».
+      group.add(
+        part(0xd9b48a, [
+          { y: 1.0, halfWidth: 0.26, front: 0.62, back: 0.2, chamfer: 0.36 },
+          { y: 1.25, halfWidth: 0.28, front: 0.6, back: 0.2, chamfer: 0.36 },
+          { y: 1.6, halfWidth: 0.3, front: 0.46, back: 0.2, chamfer: 0.36 }
+        ])
+      );
+      for (const side of [-1, 1]) {
+        // Oreilles décollées.
+        group.add(
+          mesh(new THREE.SphereGeometry(0.15, 6, 4), material(0xd9b48a), [side * 0.48, 1.38, 0])
+        );
+        // Bras posés sur les pans de peau, comme accoudé au bord.
+        group.add(
+          part(accent, [
+            { y: -0.5, halfWidth: 0.1, front: 0.1, back: -0.1, chamfer: 0.32 },
+            { y: 0.25, halfWidth: 0.12, front: 0.12, back: -0.12, chamfer: 0.32 }
+          ], [side * 0.5, 0.55, 0.1], [0, 0, side * 1.1])
+        );
+      }
+      group.add(eyes([0, 1.44, 0.46], 0.17, 0.75));
+      break;
+    }
+
+    /**
+     * Cappuccino Assassino : une tasse de cappuccino en ninja. Bandeau noir,
+     * deux katanas croisés dans le dos et des jambes pour courir.
+     */
+    case 'cup': {
+      // La tasse, évasée vers le haut.
+      group.add(
+        part(color, [
+          { y: -1.0, halfWidth: 0.5, front: 0.5, back: -0.5, chamfer: 0.3 },
+          { y: -0.8, halfWidth: 0.56, front: 0.56, back: -0.56, chamfer: 0.3 },
+          { y: 0.9, halfWidth: 0.72, front: 0.72, back: -0.72, chamfer: 0.3 }
+        ])
+      );
+      // Le café et sa mousse, à ras bord.
+      group.add(
+        part(0x6b4226, [
+          { y: 0.82, halfWidth: 0.66, front: 0.66, back: -0.66, chamfer: 0.3 },
+          { y: 0.94, halfWidth: 0.66, front: 0.66, back: -0.66, chamfer: 0.3 }
+        ])
+      );
+      group.add(
+        part(0xe9dcc4, [
+          { y: 0.94, halfWidth: 0.34, front: 0.34, back: -0.34, chamfer: 0.34 },
+          { y: 0.99, halfWidth: 0.24, front: 0.24, back: -0.24, chamfer: 0.34 }
+        ])
+      );
+      // Anse, sur le côté.
+      group.add(mesh(new THREE.TorusGeometry(0.3, 0.08, 4, 8), material(color), [0.78, 0, 0]));
+
+      // Le bandeau de ninja, et ses deux pans qui flottent derrière.
+      group.add(
+        part(accent, [
+          { y: 0.22, halfWidth: 0.67, front: 0.67, back: -0.67, chamfer: 0.3 },
+          { y: 0.62, halfWidth: 0.7, front: 0.7, back: -0.7, chamfer: 0.3 }
+        ])
+      );
+      for (const side of [-1, 1]) {
+        group.add(
+          part(accent, [
+            { y: 0, halfWidth: 0.09, front: 0.03, back: -0.03, chamfer: 0.2 },
+            { y: 0.7, halfWidth: 0.06, front: 0.03, back: -0.03, chamfer: 0.2 }
+          ], [side * 0.12, 0.42, -0.68], [-1.9, 0, side * 0.35])
+        );
+      }
+      group.add(eyes([0, 0.42, 0.62], 0.24, 0.72));
+
+      // Deux katanas croisés dans le dos : lame claire, garde dorée,
+      // poignée noire.
+      for (const side of [-1, 1]) {
+        const katana = new THREE.Group();
+        katana.add(mesh(new THREE.BoxGeometry(0.07, 1.9, 0.025), material(0xc9ced6, 0.4)));
+        katana.add(mesh(new THREE.BoxGeometry(0.28, 0.05, 0.14), material(0xb59a6d), [0, 0.95, 0]));
+        katana.add(mesh(new THREE.BoxGeometry(0.11, 0.5, 0.11), material(0x1c1c1f), [0, 1.18, 0]));
+        katana.position.set(0, 0.2, -0.8);
+        katana.rotation.z = side * 0.62;
+        group.add(katana);
+      }
+
+      // Jambes courtes et pieds, sous la tasse.
+      for (const side of [-1, 1]) {
+        group.add(
+          part(accent, [
+            { y: -1.6, halfWidth: 0.1, front: 0.1, back: -0.1, chamfer: 0.3 },
+            { y: -0.95, halfWidth: 0.12, front: 0.12, back: -0.12, chamfer: 0.3 }
+          ], [side * 0.26, 0, 0])
+        );
+        group.add(
+          part(accent, [
+            { y: -1.78, halfWidth: 0.15, front: 0.3, back: -0.14, chamfer: 0.3 },
+            { y: -1.58, halfWidth: 0.14, front: 0.22, back: -0.14, chamfer: 0.3 }
+          ], [side * 0.26, 0, 0.04])
+        );
+      }
+      break;
+    }
+
+    /**
+     * Ballerina Cappuccina : une danseuse dont la tête est une tasse de
+     * cappuccino. Tutu rose, pointes, bras levés en couronne.
+     */
+    case 'ballerina': {
+      // Jambes fines sur pointes.
+      for (const side of [-1, 1]) {
+        group.add(
+          part(SKIN, [
+            { y: -1.55, halfWidth: 0.07, front: 0.07, back: -0.07, chamfer: 0.32 },
+            { y: -0.4, halfWidth: 0.11, front: 0.11, back: -0.11, chamfer: 0.32 }
+          ], [side * 0.14, 0, 0])
+        );
+        group.add(
+          part(color, [
+            { y: -1.8, halfWidth: 0.05, front: 0.05, back: -0.05, chamfer: 0.32 },
+            { y: -1.52, halfWidth: 0.09, front: 0.1, back: -0.09, chamfer: 0.32 }
+          ], [side * 0.14, 0, 0])
+        );
+      }
+
+      // Tutu : un plateau large, deux étages de tulle.
+      group.add(
+        part(color, [
+          { y: -0.42, halfWidth: 0.95, front: 0.95, back: -0.95, chamfer: 0.3 },
+          { y: -0.3, halfWidth: 0.9, front: 0.9, back: -0.9, chamfer: 0.3 },
+          { y: -0.2, halfWidth: 0.4, front: 0.4, back: -0.4, chamfer: 0.3 }
+        ])
+      );
+      group.add(
+        part(0xf7c6d8, [
+          { y: -0.3, halfWidth: 0.75, front: 0.75, back: -0.75, chamfer: 0.3 },
+          { y: -0.16, halfWidth: 0.38, front: 0.38, back: -0.38, chamfer: 0.3 }
+        ])
+      );
+      // Bustier, puis le cou.
+      group.add(
+        part(color, [
+          { y: -0.25, halfWidth: 0.26, front: 0.2, back: -0.2, chamfer: 0.3 },
+          { y: 0.3, halfWidth: 0.3, front: 0.22, back: -0.22, chamfer: 0.3 },
+          { y: 0.5, halfWidth: 0.24, front: 0.18, back: -0.18, chamfer: 0.32 }
+        ])
+      );
+      group.add(
+        part(SKIN, [
+          { y: 0.45, halfWidth: 0.08, front: 0.08, back: -0.08, chamfer: 0.3 },
+          { y: 0.72, halfWidth: 0.08, front: 0.08, back: -0.08, chamfer: 0.3 }
+        ])
+      );
+
+      // Bras levés en couronne : le bras monte en s'écartant jusqu'à hauteur
+      // de la tasse, l'avant-bras revient se joindre au-dessus de la mousse.
+      // Coudes plus bas, les avant-bras traversaient la tasse.
+      for (const side of [-1, 1]) {
+        group.add(
+          part(SKIN, [
+            { y: 0, halfWidth: 0.06, front: 0.06, back: -0.06, chamfer: 0.32 },
+            { y: 1.1, halfWidth: 0.05, front: 0.05, back: -0.05, chamfer: 0.32 }
+          ], [side * 0.3, 0.42, 0], [0, 0, side * -0.5])
+        );
+        group.add(
+          part(SKIN, [
+            { y: 0, halfWidth: 0.05, front: 0.05, back: -0.05, chamfer: 0.32 },
+            { y: 0.75, halfWidth: 0.045, front: 0.045, back: -0.045, chamfer: 0.32 }
+          ], [side * 0.83, 1.39, 0], [0, 0, side * 1.15])
+        );
+      }
+
+      // La tête : une tasse de cappuccino, café et mousse au sommet.
+      group.add(
+        part(accent, [
+          { y: 0.7, halfWidth: 0.3, front: 0.3, back: -0.3, chamfer: 0.3 },
+          { y: 1.45, halfWidth: 0.44, front: 0.44, back: -0.44, chamfer: 0.3 }
+        ])
+      );
+      group.add(
+        part(0x6b4226, [
+          { y: 1.4, halfWidth: 0.4, front: 0.4, back: -0.4, chamfer: 0.3 },
+          { y: 1.49, halfWidth: 0.4, front: 0.4, back: -0.4, chamfer: 0.3 }
+        ])
+      );
+      group.add(
+        part(0xe9dcc4, [
+          { y: 1.49, halfWidth: 0.28, front: 0.28, back: -0.28, chamfer: 0.34 },
+          { y: 1.6, halfWidth: 0.14, front: 0.14, back: -0.14, chamfer: 0.34 }
+        ])
+      );
+      group.add(mesh(new THREE.TorusGeometry(0.17, 0.05, 4, 8), material(accent), [0.48, 1.1, 0]));
+      group.add(eyes([0, 1.12, 0.36], 0.15, 0.6));
+      break;
+    }
+
     /** Chad Moai : la tête du frère, plus carrée, coiffée d'ambre. */
     default: {
       group.add(

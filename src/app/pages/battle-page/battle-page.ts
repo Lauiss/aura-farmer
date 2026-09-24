@@ -20,6 +20,7 @@ import {
   INTENT_POOL,
   PLAYER_HP_SECONDS
 } from '../../../assets/static/bosses';
+import { RelicDefinition } from '../../../assets/static/collectibles';
 
 /** Un coup jouable : un enseignement doublé du rôle qu'il tient au combat. */
 export interface Attack {
@@ -93,6 +94,12 @@ export class BattlePage {
   /** Gemmes gagnées à la victoire, pour l'écran de fin. */
   readonly winnings = signal(0);
   readonly firstWin = signal(false);
+  /** Relique rapportée par cette victoire, la première seulement. */
+  readonly wonRelic = signal<RelicDefinition | null>(null);
+
+  relicIcon(relic: RelicDefinition): string {
+    return this.modelIcons.relic(relic.id);
+  }
 
   /** Production par seconde : tout le combat en dépend. */
   readonly production = computed(() => this.shopManager.production());
@@ -320,9 +327,10 @@ export class BattlePage {
 
   private resolveEnd(boss: BossDefinition): void {
     if (this.bossHp() <= 0) {
-      const { gems, first } = this.battles.recordWin(boss);
+      const { gems, first, relic } = this.battles.recordWin(boss);
       this.winnings.set(gems);
       this.firstWin.set(first);
+      this.wonRelic.set(relic);
       this.phase.set('won');
       this.soundManager.playFX(Sound.Buy);
       return;

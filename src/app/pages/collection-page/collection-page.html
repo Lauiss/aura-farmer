@@ -57,25 +57,21 @@
         </h3>
         <div class="figures">
           @for (collectible of group.items; track collectible.id) {
-            <button
-              type="button"
+            <!-- Vitrine seulement : la matière se porte depuis la garde-robe. -->
+            <div
               class="figure"
               [class.owned]="collection.isOwned(collectible.id)"
               [class.worn]="collection.skin() === collectible.id"
               [style.--rarity]="rarityColors[collectible.rarity]"
-              [disabled]="!collection.isOwned(collectible.id)"
-              (click)="toggleSkin(collectible)"
             >
               <img [src]="figure(collectible)" alt="" class="figure-icon">
               <span class="figure-name">
                 {{ collection.isOwned(collectible.id) ? (('COLLECTIBLE_' + collectible.id.toUpperCase()) | translate) : '?????' }}
               </span>
-              @if (collection.isOwned(collectible.id)) {
-                <span class="figure-action">
-                  {{ (collection.skin() === collectible.id ? 'COLLECTION_WORN' : 'COLLECTION_WEAR') | translate }}
-                </span>
+              @if (collection.skin() === collectible.id) {
+                <span class="figure-action">{{ 'COLLECTION_WORN' | translate }}</span>
               }
-            </button>
+            </div>
           }
         </div>
       }

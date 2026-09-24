@@ -18,6 +18,9 @@ export type BossId =
   | 'gusini'
   | 'spioniro'
   | 'piccolo'
+  | 'chimpanzini'
+  | 'cappuccino'
+  | 'ballerina'
   | 'chad';
 
 /** Allure générale d'un boss, qui commande son modèle low poly. */
@@ -32,6 +35,9 @@ export type BossShape =
   | 'goose'
   | 'spy'
   | 'namek'
+  | 'banana'
+  | 'cup'
+  | 'ballerina'
   | 'moai';
 
 export interface BossDefinition {
@@ -57,7 +63,13 @@ export interface BossDefinition {
 
 /**
  * Les boss se suivent dans l'ordre : chacun se déverrouille en battant le
- * précédent. Piccolo est l'avant-dernier, le frère Chad Moai ferme la marche.
+ * précédent. Le frère Chad Moai ferme toujours la marche.
+ *
+ * Les trois derniers brainrots sont venus s'intercaler entre Piccolo et Chad,
+ * qui a reculé d'autant (1e12 → 1e13) pour garder un écart d'environ ×3,3
+ * entre deux boss. Ses points de vie et ses dégâts, eux, n'ont pas bougé :
+ * c'est sur lui que `COMBAT` a été calé. Les nouveaux venus prennent des
+ * valeurs intermédiaires entre les siennes et celles de Piccolo.
  */
 export const BOSSES: readonly BossDefinition[] = [
   { id: 'tralalero', shape: 'shark', recommended: 500, hpSeconds: 25, damageSeconds: 4, reward: 15, color: 0x4a7fd4, accent: 0xf0f0f0 },
@@ -70,7 +82,10 @@ export const BOSSES: readonly BossDefinition[] = [
   { id: 'gusini', shape: 'goose', recommended: 1.2e+09, hpSeconds: 68, damageSeconds: 7.5, reward: 110, color: 0xeeeae0, accent: 0x7d8796 },
   { id: 'spioniro', shape: 'spy', recommended: 1e+10, hpSeconds: 75, damageSeconds: 8, reward: 145, color: 0x6b7686, accent: 0xb59a6d },
   { id: 'piccolo', shape: 'namek', recommended: 8e+10, hpSeconds: 82, damageSeconds: 8.5, reward: 190, color: 0x7fb069, accent: 0xd6d0c0 },
-  { id: 'chad', shape: 'moai', recommended: 1e+12, hpSeconds: 90, damageSeconds: 9, reward: 250, color: 0xb9b2a4, accent: 0xe8b84b }
+  { id: 'chimpanzini', shape: 'banana', recommended: 3e+11, hpSeconds: 84, damageSeconds: 8.6, reward: 205, color: 0xe8c547, accent: 0x5b3b24 },
+  { id: 'cappuccino', shape: 'cup', recommended: 1e+12, hpSeconds: 86, damageSeconds: 8.7, reward: 220, color: 0xefe6d8, accent: 0x1c1c1f },
+  { id: 'ballerina', shape: 'ballerina', recommended: 3.3e+12, hpSeconds: 88, damageSeconds: 8.8, reward: 235, color: 0xf2a7c3, accent: 0xefe6d8 },
+  { id: 'chad', shape: 'moai', recommended: 1e+13, hpSeconds: 90, damageSeconds: 9, reward: 250, color: 0xb9b2a4, accent: 0xe8b84b }
 ];
 
 /**

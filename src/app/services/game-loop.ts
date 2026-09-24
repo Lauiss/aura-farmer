@@ -123,6 +123,15 @@ export class GameLoop {
     }
   }
 
+  /**
+   * Sauvegarde tout de suite, si la partie est chargée. Depuis le menu, elle
+   * ne l'est pas encore : `createSave()` écrirait alors une partie vierge
+   * par-dessus la vraie.
+   */
+  saveIfStarted(): void {
+    if (this.started) this.createSave();
+  }
+
   createSave(): void {
     const plainItems: ItemSave[] = this.shopManager.getAllItems().map(item => ({
       id: item.id,

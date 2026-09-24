@@ -26,6 +26,8 @@ import { CollectionManager } from '../../services/collection-manager';
 import { BattleManager } from '../../services/battle-manager';
 import { Onboarding } from '../../services/onboarding';
 import { StoreManager } from '../../services/store-manager';
+import { ConsumableManager } from '../../services/consumable-manager';
+import { ConsumableId } from '../../../assets/static/consumables';
 import { CompanionId, companionDefinition } from '../../../assets/static/companions';
 import { Router } from '@angular/router';
 
@@ -69,6 +71,7 @@ export class GamePage {
   readonly battles = inject(BattleManager);
   readonly onboarding = inject(Onboarding);
   readonly store = inject(StoreManager);
+  readonly consumables = inject(ConsumableManager);
 
   /** L'accès à la collection apparaît avec le premier coffre ou la première gemme. */
   readonly showCollection = computed(
@@ -142,6 +145,8 @@ export class GamePage {
   readonly shopIcon = this.modelIcons.shop();
   readonly trophyIcon = this.modelIcons.trophy(true);
   readonly gearIcon = this.modelIcons.gear();
+  readonly moyaiIcon = this.modelIcons.moyai();
+  readonly casinoIcon = this.modelIcons.die();
 
   openShop() {
     this.router.navigate(['/shop']);
@@ -155,6 +160,16 @@ export class GamePage {
     // Cliquer la cible éteint le projecteur : l'explication a porté.
     this.onboarding.dismiss();
     this.router.navigate(['/battle']);
+  }
+
+  /** Vignette d'une canette ou d'un plat en cours. */
+  consumableIcon(id: ConsumableId): string {
+    return this.modelIcons.can(id);
+  }
+
+  /** Secondes restantes, en `m:ss`. */
+  clock(seconds: number): string {
+    return `${Math.floor(seconds / 60)}:${`${seconds % 60}`.padStart(2, '0')}`;
   }
 
   /** Vignette d'un compagnon, rendue une fois puis conservée. */
@@ -171,6 +186,10 @@ export class GamePage {
 
   openStore() {
     this.router.navigate(['/store']);
+  }
+
+  openCasino() {
+    this.router.navigate(['/casino']);
   }
 
   openCollection() {

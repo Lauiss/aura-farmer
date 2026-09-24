@@ -132,8 +132,12 @@ export class UtilityManager {
 
   // --- Doomscrolling -----------------------------------------------------
 
-  /** Probabilité qu'une publication fasse gagner de l'aura. */
-  readonly doomscrollLuck = computed(() => Math.min(0.9, 0.55 + this.bonus('doomscroll', 'luck')));
+  /**
+   * Probabilité qu'une publication fasse gagner de l'aura. Pile ou face au
+   * départ : un bon post rapporte déjà plus qu'un mauvais ne coûte (combo
+   * compris), l'espérance reste positive sans pencher la pièce.
+   */
+  readonly doomscrollLuck = computed(() => Math.min(0.9, 0.5 + this.bonus('doomscroll', 'luck')));
   /** Multiplicateur des montants, gagnés comme perdus. */
   readonly doomscrollPayout = computed(() => 1 + this.bonus('doomscroll', 'payout'));
   /** Le pilote automatique est-il acheté ? */

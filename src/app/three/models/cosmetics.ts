@@ -17,14 +17,16 @@ export type CosmeticId = 'earings' | 'sunglasses' | 'tatoos' | 'crown' | 'tuxedo
  * Ce que rapporte chaque pièce **portée**, en fraction de la production. Les
  * posséder ne suffit pas : il faut les afficher.
  */
+// Divisés par quatre : portés tous ensemble, ils doublaient déjà la
+// production à eux seuls, par-dessus les améliorations des pièces.
 export const COSMETIC_BONUS: Record<CosmeticId, number> = {
-  earings: 0.05,
-  sunglasses: 0.1,
-  tatoos: 0.08,
-  crown: 0.3,
-  tuxedo: 0.15,
-  tie: 0.12,
-  cape: 0.35
+  earings: 0.015,
+  sunglasses: 0.025,
+  tatoos: 0.02,
+  crown: 0.075,
+  tuxedo: 0.04,
+  tie: 0.03,
+  cape: 0.09
 };
 
 /** Accessoires réellement modélisés. */

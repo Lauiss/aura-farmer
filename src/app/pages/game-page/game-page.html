@@ -45,27 +45,37 @@
   <header class="counters">
     <p class="counter total">
       <span class="value">{{ auraManager.auraCount() | formatAura }}</span>
-      <app-moyai-viewer
-        class="aura-mark"
-        [interactive]="false"
-        [maxFps]="20"
-        [idleSpin]="0.9"
-        [distance]="4.4"
-        aria-hidden="true"
-      ></app-moyai-viewer>
+      <!-- En économie, une image fixe : chaque statue tient son propre
+           contexte WebGL, et celles-ci ne font que décorer. -->
+      @if (settingsManager.graphics() === 'eco') {
+        <img class="aura-mark" [src]="moyaiIcon" alt="" aria-hidden="true">
+      } @else {
+        <app-moyai-viewer
+          class="aura-mark"
+          [interactive]="false"
+          [maxFps]="20"
+          [idleSpin]="0.9"
+          [distance]="4.4"
+          aria-hidden="true"
+        ></app-moyai-viewer>
+      }
       <span class="unit">{{ 'AURA' | translate }}</span>
     </p>
 
     <p class="counter rate">
       <span class="value">{{ shopManager.getTotalValue() | formatAura }}</span>
-      <app-moyai-viewer
-        class="aura-mark small"
-        [interactive]="false"
-        [maxFps]="20"
-        [idleSpin]="0.9"
-        [distance]="4.4"
-        aria-hidden="true"
-      ></app-moyai-viewer>
+      @if (settingsManager.graphics() === 'eco') {
+        <img class="aura-mark small" [src]="moyaiIcon" alt="" aria-hidden="true">
+      } @else {
+        <app-moyai-viewer
+          class="aura-mark small"
+          [interactive]="false"
+          [maxFps]="20"
+          [idleSpin]="0.9"
+          [distance]="4.4"
+          aria-hidden="true"
+        ></app-moyai-viewer>
+      }
       <span class="unit">{{ 'AURA_PER_SECOND' | translate }}</span>
     </p>
 
@@ -75,6 +85,21 @@
       <p class="counter gems" [attr.aria-label]="'GEMS' | translate">
         <span class="value">{{ collection.gems() }}</span> <span aria-hidden="true">💎</span>
       </p>
+    }
+
+    <!-- Canette et plat en cours, avec le temps qu'il leur reste : sans cette
+         indication, on ne savait pas quand le bonus allait tomber. -->
+    @if (consumables.running().length) {
+      <ul class="effects" [attr.aria-label]="'STORE_ACTIVE' | translate">
+        @for (effect of consumables.running(); track effect.definition.id) {
+          <li class="effect" [class.ending]="effect.remaining <= 30">
+            <img [src]="consumableIcon(effect.definition.id)" alt="" class="effect-icon">
+            <span class="effect-name">{{ ('DRINK_' + effect.definition.id.toUpperCase()) | translate }}</span>
+            <span class="effect-multiplier">&times;{{ effect.definition.multiplier }}</span>
+            <span class="effect-time">{{ clock(effect.remaining) }}</span>
+          </li>
+        }
+      </ul>
     }
   </header>
 
@@ -106,7 +131,7 @@
 
   <nav class="actions">
     <app-icon-btn [icon]="shopIcon" label="SHOP" (activate)="openShop()"></app-icon-btn>
-    @if (wardrobeManager.hasAny() || backgroundManager.hasAny() || battles.defeatedCount() > 0 || store.companionCount() > 0) {
+    @if (wardrobeManager.hasAny() || backgroundManager.hasAny() || battles.defeatedCount() > 0 || collection.ownedCount() > 0) {
       <app-icon-btn [icon]="hangerIcon" label="WARDROBE" (activate)="openWardrobe()"></app-icon-btn>
     }
     @if (showBattles()) {
@@ -116,6 +141,7 @@
     }
     @if (showCollection()) {
       <app-icon-btn [icon]="storeIcon" label="STORE" (activate)="openStore()"></app-icon-btn>
+      <app-icon-btn [icon]="casinoIcon" label="CASINO" (activate)="openCasino()"></app-icon-btn>
       <span class="with-badge">
         <app-icon-btn [icon]="chestIcon" label="COLLECTION" (activate)="openCollection()"></app-icon-btn>
         @if (collection.pendingChests() > 0) {

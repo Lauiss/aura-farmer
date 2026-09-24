@@ -6,6 +6,7 @@ import { UtilityManager } from './utility-manager';
 import { CollectionManager } from './collection-manager';
 import { ModalManager } from './modal-manager';
 import { ChestOpening } from '../components/chest-opening/chest-opening';
+import { StoreManager } from './store-manager';
 
 /** Nature d'une publication, connue dès qu'elle entre à l'écran. */
 export type PostKind = 'good' | 'bad' | 'chest';
@@ -37,9 +38,12 @@ export class Doomscroll {
   private readonly spinCombo = inject(SpinCombo);
   private readonly collection = inject(CollectionManager);
   private readonly modalManager = inject(ModalManager);
+  private readonly store = inject(StoreManager);
 
   /** Une perte pèse un peu moins qu'un gain : l'espérance reste positive. */
   private static readonly LOSS_SHARE = 0.6;
+  /** Plancher de la mise, pour que les premières publications comptent. */
+  private static readonly MIN_STAKE = 10;
 
   roll(): PostKind {
     if (Math.random() < this.utilityManager.chestChance()) return 'chest';
@@ -47,9 +51,15 @@ export class Doomscroll {
   }
 
   /**
-   * Applique une publication. Le montant suit la progression — le plus fort
-   * du clic ou de la production — pour que le téléphone reste intéressant du
-   * début à la fin.
+   * Applique une publication. Le montant suit la production, pour que le
+   * téléphone reste intéressant du début à la fin.
+   *
+   * La mise valait 1,5 s de production : à deux publications par seconde, le
+   * téléphone pesait 40 % des revenus et le milieu de partie se passait à
+   * acheter sans attendre. Ramenée à 0,6 s, il en pèse autour de 15 %
+   * (simulation d'un joueur glouton). Elle ne suit plus le clic : celui-ci
+   * porte le multiplicateur de clic, et la mise réelle montait à plusieurs
+   * secondes de production.
    */
   resolve(kind: PostKind): DoomscrollOutcome {
     this.spinCombo.boost(this.utilityManager.doomscrollCombo());
@@ -70,8 +80,10 @@ export class Doomscroll {
     }
 
     const stake =
-      Math.max(this.shopManager.clickValue() * 4, this.shopManager.production() * 1.5) *
-      this.utilityManager.doomscrollPayout();
+      Math.max(Doomscroll.MIN_STAKE, this.shopManager.production() * 0.6) *
+      this.utilityManager.doomscrollPayout() *
+      // Les compagnons équipés d'un téléphone scrollent avec le joueur.
+      this.store.phonePayout();
 
     // Jamais sous zéro : une mauvaise série vide le compte sans le creuser.
     const amount =

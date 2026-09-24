@@ -25,10 +25,10 @@ export const shopItems: Item[] = [
     value: signal(1),
     baseValue: 1,
     level: signal(0),
-    price: signal(220),
-    factor: 1.285,
+    price: signal(260),
+    factor: 1.289,
     maxLevel: 25,
-    basePrice: 220,
+    basePrice: 260,
     displayCondition: computed(() => {
         if(shopItems[0].level() >= 10){
           return true;
@@ -45,10 +45,10 @@ export const shopItems: Item[] = [
     value: signal(8),
     baseValue: 8,
     level: signal(0),
-    price: signal(3000),
-    factor: 1.29,
+    price: signal(4100),
+    factor: 1.298,
     maxLevel: 25,
-    basePrice: 3000,
+    basePrice: 4100,
     displayCondition: computed(() => {
         if(shopItems[1].level() >= 10){
           return true;
@@ -65,10 +65,10 @@ export const shopItems: Item[] = [
     value: signal(60),
     baseValue: 60,
     level: signal(0),
-    price: signal(40000),
-    factor: 1.295,
+    price: signal(63000),
+    factor: 1.307,
     maxLevel: 25,
-    basePrice: 40000,
+    basePrice: 63000,
     displayCondition: computed(() => {
         if(shopItems[2].level() >= 10){
           return true;
@@ -85,10 +85,10 @@ export const shopItems: Item[] = [
     value: signal(420),
     baseValue: 420,
     level: signal(0),
-    price: signal(550000),
-    factor: 1.3,
+    price: signal(1000000),
+    factor: 1.316,
     maxLevel: 25,
-    basePrice: 550000,
+    basePrice: 1000000,
     displayCondition: computed(() => {
         if(shopItems[3].level() >= 10){
           return true;
@@ -105,10 +105,10 @@ export const shopItems: Item[] = [
     value: signal(3000),
     baseValue: 3000,
     level: signal(0),
-    price: signal(7500000),
-    factor: 1.305,
+    price: signal(16000000),
+    factor: 1.325,
     maxLevel: 25,
-    basePrice: 7500000,
+    basePrice: 16000000,
     displayCondition: computed(() => {
         if(shopItems[4].level() >= 10){
           return true;
@@ -125,10 +125,10 @@ export const shopItems: Item[] = [
     value: signal(22000),
     baseValue: 22000,
     level: signal(0),
-    price: signal(100000000),
-    factor: 1.31,
+    price: signal(250000000),
+    factor: 1.334,
     maxLevel: 25,
-    basePrice: 100000000,
+    basePrice: 250000000,
     displayCondition: computed(() => {
         if(shopItems[5].level() >= 10){
           return true;
@@ -145,10 +145,10 @@ export const shopItems: Item[] = [
     value: signal(160000),
     baseValue: 160000,
     level: signal(0),
-    price: signal(1400000000),
-    factor: 1.315,
+    price: signal(4100000000),
+    factor: 1.343,
     maxLevel: 25,
-    basePrice: 1400000000,
+    basePrice: 4100000000,
     displayCondition: computed(() => {
         if(shopItems[6].level() >= 10){
           return true;
@@ -165,10 +165,10 @@ export const shopItems: Item[] = [
     value: signal(1160000),
     baseValue: 1160000,
     level: signal(0),
-    price: signal(20000000000),
-    factor: 1.32,
+    price: signal(68000000000),
+    factor: 1.352,
     maxLevel: 25,
-    basePrice: 20000000000,
+    basePrice: 68000000000,
     displayCondition: computed(() => shopItems[7].level() >= 10),
     unlocked: false,
     upgrades: moggingUpgrades,
@@ -180,10 +180,10 @@ export const shopItems: Item[] = [
     value: signal(8500000),
     baseValue: 8500000,
     level: signal(0),
-    price: signal(270000000000),
-    factor: 1.325,
+    price: signal(1100000000000),
+    factor: 1.361,
     maxLevel: 25,
-    basePrice: 270000000000,
+    basePrice: 1100000000000,
     displayCondition: computed(() => shopItems[8].level() >= 10),
     unlocked: false,
     upgrades: sixSevenUpgrades,
@@ -195,10 +195,10 @@ export const shopItems: Item[] = [
     value: signal(62000000),
     baseValue: 62000000,
     level: signal(0),
-    price: signal(3700000000000),
-    factor: 1.33,
+    price: signal(16000000000000),
+    factor: 1.37,
     maxLevel: 25,
-    basePrice: 3700000000000,
+    basePrice: 16000000000000,
     displayCondition: computed(() => shopItems[9].level() >= 10),
     unlocked: false,
     upgrades: dabUpgrades,

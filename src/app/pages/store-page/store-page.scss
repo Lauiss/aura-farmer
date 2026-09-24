@@ -2,9 +2,24 @@
 @use '../../../variables' as *;
 
 .store-page {
-  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
   background: $menu-bg;
   color: $menu-text;
+}
+
+// Le défilement se fait ici et non sur le document : dans l'iframe d'itch.io,
+// celui du document est souvent désactivé.
+.scroll {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+// Un autre article de la même catégorie tourne : celui-ci attend son tour.
+.good.blocked {
+  opacity: 0.55;
 }
 
 /* --- Barre du haut ----------------------------------------------------- */

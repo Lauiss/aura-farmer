@@ -81,6 +81,14 @@
             <div class="verdict won" role="status">
               <p class="verdict-title">{{ 'BATTLE_WON' | translate }}</p>
               <p class="verdict-gems">+{{ winnings() }} 💎</p>
+              @if (wonRelic(); as relic) {
+                <div class="verdict-relic">
+                  <img [src]="relicIcon(relic)" alt="" class="verdict-relic-icon">
+                  <p class="verdict-relic-label">{{ 'RELIC_FOUND' | translate }}</p>
+                  <p class="verdict-relic-name">{{ ('RELIC_' + relic.id.toUpperCase()) | translate }}</p>
+                  <p class="verdict-relic-bonus">&times;{{ relic.bonus }} {{ 'RELIC_PRODUCTION' | translate }}</p>
+                </div>
+              }
               @if (firstWin()) {
                 <p class="verdict-first">{{ 'BATTLE_FIRST_WIN' | translate }}</p>
                 <button type="button" class="action primary" (click)="wear(current)">

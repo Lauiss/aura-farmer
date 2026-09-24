@@ -1,3 +1,4 @@
+import type { BossId } from './bosses';
 import type { MoyaiPalette } from '../../app/three/models/moyai';
 
 /**
@@ -107,53 +108,69 @@ export const RARITY_AURA_SECONDS: Record<Rarity, number> = {
   legendary: 1800
 };
 
-// --- Reliques sacrées ----------------------------------------------------
+// --- Reliques --------------------------------------------------------------
 
 /**
- * Dix reliques sacrées de l'aura : la collection alternative.
+ * Les reliques sont les **trophées des boss** : la basket de Tralalero, la
+ * batte de Tung Tung Tung Sahur… Chaque boss rend la sienne à sa première
+ * défaite.
  *
- * Elles ne s'achètent **jamais**, ni en aura ni en gemmes — elles ne tombent
- * que des coffres, rarement. En contrepartie leur bonus est **multiplicatif**
- * et non additif comme celui des statuettes : les dix réunies multiplient la
- * production par plus de cent.
+ * Elles tombaient auparavant des coffres, à moins d'une chance sur cent : il
+ * fallait des centaines de coffres pour les réunir. Liées aux battles, elles
+ * suivent la progression au lieu du hasard. Leur bonus reste **multiplicatif**
+ * mais plus modeste : les quatorze réunies font ×22, là où les dix d'avant
+ * faisaient ×134.
  */
-export type RelicShape = 'crystal' | 'orb' | 'obelisk';
+export type RelicShape =
+  | 'sneaker'
+  | 'bat'
+  | 'feather'
+  | 'hat'
+  | 'sandal'
+  | 'ice'
+  | 'bomb'
+  | 'grenade'
+  | 'magnifier'
+  | 'turban'
+  | 'banana'
+  | 'katana'
+  | 'slipper'
+  | 'crown';
 
 export interface RelicDefinition {
-  id: string;
+  id: RelicShape;
+  /** Boss qui la rend à sa première défaite. */
+  boss: BossId;
   /** Facteur appliqué à la production, multiplié à celui des autres reliques. */
   bonus: number;
-  shape: RelicShape;
-  /** Couleur de la pierre, et celle de son halo. */
+  /** Teinte de l'objet, et celle de son halo. */
   color: number;
   glow: number;
 }
 
 export const RELICS: readonly RelicDefinition[] = [
-  { id: 'tear', bonus: 1.25, shape: 'crystal', color: 0x7fd4ff, glow: 0x1f6c94 },
-  { id: 'ember', bonus: 1.3, shape: 'orb', color: 0xff7a3d, glow: 0x8c2f0a },
-  { id: 'root', bonus: 1.35, shape: 'obelisk', color: 0x6fae72, glow: 0x24512a },
-  { id: 'echo', bonus: 1.4, shape: 'crystal', color: 0xb98bff, glow: 0x4a2482 },
-  { id: 'tide', bonus: 1.5, shape: 'orb', color: 0x4fd6c0, glow: 0x146b5e },
-  { id: 'ash', bonus: 1.6, shape: 'obelisk', color: 0xd9d2c4, glow: 0x5c564a },
-  { id: 'dawn', bonus: 1.75, shape: 'crystal', color: 0xffc766, glow: 0x9c6510 },
-  { id: 'void', bonus: 1.9, shape: 'orb', color: 0x5a5fa8, glow: 0x191b45 },
-  { id: 'crown', bonus: 2.2, shape: 'obelisk', color: 0xe8b84b, glow: 0x8a6412 },
-  { id: 'origin', bonus: 2.5, shape: 'crystal', color: 0xfff3d6, glow: 0xb08a2c }
+  { id: 'sneaker', boss: 'tralalero', bonus: 1.1, color: 0x2f6fd0, glow: 0x1f4f94 },
+  { id: 'bat', boss: 'sahur', bonus: 1.12, color: 0xc9a26b, glow: 0x7a5a38 },
+  { id: 'feather', boss: 'piccione', bonus: 1.14, color: 0x9aa7b8, glow: 0x4a5566 },
+  { id: 'hat', boss: 'patapim', bonus: 1.16, color: 0xe8b84b, glow: 0x8a6412 },
+  { id: 'sandal', boss: 'lirili', bonus: 1.18, color: 0xa9793f, glow: 0x5c4326 },
+  { id: 'ice', boss: 'frigo', bonus: 1.2, color: 0xbfe8ff, glow: 0x3f8fb8 },
+  { id: 'bomb', boss: 'bombardiro', bonus: 1.22, color: 0x3a3f46, glow: 0xc4352f },
+  { id: 'grenade', boss: 'gusini', bonus: 1.25, color: 0x4b5a3c, glow: 0x2a3321 },
+  { id: 'magnifier', boss: 'spioniro', bonus: 1.28, color: 0xb59a6d, glow: 0x6b7686 },
+  { id: 'turban', boss: 'piccolo', bonus: 1.3, color: 0xeeeae0, glow: 0x7fb069 },
+  { id: 'banana', boss: 'chimpanzini', bonus: 1.33, color: 0xe8c547, glow: 0x8a6412 },
+  { id: 'katana', boss: 'cappuccino', bonus: 1.36, color: 0xc9ced6, glow: 0x1c1c1f },
+  { id: 'slipper', boss: 'ballerina', bonus: 1.4, color: 0xf2a7c3, glow: 0xa84a74 },
+  { id: 'crown', boss: 'chad', bonus: 1.5, color: 0xe8b84b, glow: 0xb08a2c }
 ];
+
+/** Relique rendue par un boss. */
+export function relicForBoss(boss: BossId): RelicDefinition | undefined {
+  return RELICS.find(relic => relic.boss === boss);
+}
 
 export function relicDefinition(id: string): RelicDefinition | undefined {
   return RELICS.find(relic => relic.id === id);
 }
 
-/**
- * Chance qu'un coffre donne une relique, avant tout autre tirage. Le coffre du
- * doomscrolling, qui tombe gratuitement, est le plus avare ; le mythique reste
- * le meilleur moyen d'en trouver sans pour autant les garantir.
- */
-export const RELIC_CHEST_CHANCE: Record<ChestTier, number> = {
-  doomscroll: 0.004,
-  basic: 0.006,
-  premium: 0.02,
-  mythic: 0.06
-};

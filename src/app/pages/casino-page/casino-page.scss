@@ -1,0 +1,446 @@
+@use '../../../menu-theme' as *;
+@use '../../../variables' as *;
+
+// Couleurs de la table : celles d'une roulette, désaturées pour tenir sur le
+// gris du menu sans crier.
+$red: #b8413a;
+$black: #1b1b19;
+$green: #3d8a55;
+$win: #7ed28f;
+$lose: #e8836b;
+
+.casino-page {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  background-color: $menu-bg;
+  color: $menu-text;
+}
+
+/* --- Barre supérieure, sur le modèle de la collection --- */
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-200;
+  padding: $spacing-150 $spacing-300;
+  border-bottom: 1px solid $menu-border;
+}
+
+.heading {
+  font-size: $menu-size-title;
+  font-weight: $menu-weight-strong;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gems {
+  font-size: $menu-size-title;
+  font-weight: $menu-weight-strong;
+  font-variant-numeric: tabular-nums;
+}
+
+.back {
+  padding: $spacing-100 $spacing-150;
+  font-size: $menu-size-small;
+  font-weight: $menu-weight;
+  color: $menu-text-dim;
+  background: $menu-surface-raised;
+  border: 1px solid $menu-border;
+  border-radius: $radius-100;
+  cursor: pointer;
+}
+
+.back:hover,
+.back:focus-visible {
+  color: $menu-accent;
+  border-color: $menu-accent-border;
+  outline: none;
+}
+
+.content {
+  overflow-y: auto;
+  padding: $spacing-400 $spacing-300;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-300;
+}
+
+.content > * {
+  width: 100%;
+  max-width: 40rem;
+}
+
+/* --- Onglets --- */
+.tabs {
+  display: flex;
+  gap: $spacing-100;
+  border-bottom: 1px solid $menu-border;
+}
+
+.tab {
+  padding: $spacing-100 $spacing-200;
+  font-size: $menu-size-body;
+  font-weight: $menu-weight-strong;
+  color: $menu-text-faint;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+
+  &.active {
+    color: $menu-text;
+    border-bottom-color: $menu-accent;
+  }
+
+  &:focus-visible {
+    outline: 1px solid $menu-accent-border;
+  }
+
+  &[disabled]:not(.active) {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+/* --- Mise --- */
+.bet {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-150;
+}
+
+.bet-field,
+.auto {
+  display: flex;
+  align-items: center;
+  gap: $spacing-100;
+  font-size: $menu-size-body;
+  font-weight: $menu-weight;
+  color: $menu-text-dim;
+
+  input {
+    width: 7rem;
+    padding: $spacing-100 $spacing-150;
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    color: $menu-text;
+    background: $menu-surface-raised;
+    border: 1px solid $menu-border;
+    border-radius: $radius-100;
+
+    &:focus-visible {
+      outline: none;
+      border-color: $menu-accent-border;
+    }
+
+    &::placeholder {
+      color: $menu-text-faint;
+    }
+  }
+}
+
+.bet-quick {
+  display: flex;
+  gap: $spacing-50;
+}
+
+.chip {
+  min-width: 2.75rem;
+  padding: $spacing-100 $spacing-150;
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  color: $menu-text;
+  background: $menu-surface-raised;
+  border: 1px solid $menu-border;
+  border-radius: $radius-100;
+  cursor: pointer;
+
+  &:hover:not([disabled]),
+  &:focus-visible {
+    border-color: $menu-accent-border;
+    outline: none;
+  }
+
+  &[disabled] {
+    opacity: 0.46;
+    cursor: default;
+  }
+}
+
+/* --- Panneau de jeu --- */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-200;
+  padding: $spacing-300;
+  background: $menu-surface;
+  border: 1px solid $menu-border;
+  border-radius: $radius-150;
+}
+
+.result {
+  min-height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-150;
+  font-size: $menu-size-body;
+  font-weight: $menu-weight;
+  color: $menu-text-dim;
+  text-align: center;
+}
+
+.win {
+  color: $win;
+  font-weight: $menu-weight-strong;
+}
+
+.lose {
+  color: $lose;
+}
+
+.play {
+  padding: $spacing-150;
+  font-size: $menu-size-subtitle;
+  font-weight: $menu-weight-strong;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $menu-accent;
+  background: $menu-accent-soft;
+  border: 1px solid $menu-accent-border;
+  border-radius: $radius-100;
+  cursor: pointer;
+
+  &:hover:not([disabled]),
+  &:focus-visible {
+    background: rgba(232, 184, 75, 0.26);
+    outline: none;
+  }
+
+  &[disabled] {
+    opacity: 0.46;
+    cursor: default;
+  }
+
+  &.cash {
+    color: $win;
+    background: rgba(126, 210, 143, 0.14);
+    border-color: rgba(126, 210, 143, 0.5);
+  }
+}
+
+/* --- Roulette --- */
+.wheel {
+  position: relative;
+  height: 4rem;
+  overflow: hidden;
+  border-radius: $radius-100;
+  background: $menu-bg;
+  // Fondu sur les bords : on devine les cases qui arrivent.
+  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+}
+
+.strip {
+  position: absolute;
+  inset: 0 auto 0 50%;
+  display: flex;
+  will-change: transform;
+
+  &.animated {
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.1, 0.75, 0.15, 1);
+  }
+}
+
+// Largeur à garder en phase avec `POCKET_REM` dans le composant.
+.pocket {
+  flex: 0 0 3.5rem;
+  display: grid;
+  place-items: center;
+  font-size: $menu-size-subtitle;
+  font-weight: $menu-weight-strong;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  border-right: 1px solid rgba(0, 0, 0, 0.35);
+}
+
+.pocket.red,
+.dot.red,
+.color.red {
+  background: $red;
+}
+
+.pocket.black,
+.dot.black,
+.color.black {
+  background: $black;
+}
+
+.pocket.green,
+.dot.green,
+.color.green {
+  background: $green;
+}
+
+.marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 3px;
+  transform: translateX(-50%);
+  background: $menu-accent;
+  box-shadow: 0 0 10px rgba(232, 184, 75, 0.8);
+}
+
+.colors {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-100;
+}
+
+.color {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-50;
+  padding: $spacing-150 $spacing-100;
+  color: #fff;
+  border: 2px solid transparent;
+  border-radius: $radius-100;
+  cursor: pointer;
+  opacity: 0.6;
+
+  &.picked {
+    opacity: 1;
+    border-color: $menu-accent;
+  }
+
+  &:focus-visible {
+    outline: 1px solid $menu-accent-border;
+    outline-offset: 2px;
+  }
+
+  &[disabled] {
+    cursor: default;
+  }
+}
+
+.color-name {
+  font-size: $menu-size-body;
+  font-weight: $menu-weight-strong;
+}
+
+.color-payout {
+  font-size: $menu-size-small;
+  opacity: 0.8;
+}
+
+.dot {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 $spacing-50;
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  color: #fff;
+  border-radius: 50%;
+}
+
+.history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-50;
+  justify-content: center;
+}
+
+/* --- Crash --- */
+.chart {
+  position: relative;
+  aspect-ratio: 400 / 220;
+  background: $menu-bg;
+  border-radius: $radius-100;
+  overflow: hidden;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .axis {
+    stroke: $menu-border-strong;
+    stroke-width: 1;
+  }
+
+  .curve {
+    fill: none;
+    stroke: $menu-accent;
+    stroke-width: 3;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .arrow {
+    fill: $menu-accent;
+  }
+
+  &.cashed .curve {
+    stroke: $win;
+  }
+
+  &.cashed .arrow {
+    fill: $win;
+  }
+
+  &.busted .curve {
+    stroke: $lose;
+  }
+
+  &.busted .arrow {
+    fill: $lose;
+  }
+}
+
+.readout {
+  position: absolute;
+  top: $spacing-200;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: $menu-size-title * 1.75;
+  font-weight: $menu-weight-strong;
+  font-variant-numeric: tabular-nums;
+  color: $menu-text;
+  pointer-events: none;
+
+  .busted & {
+    color: $lose;
+  }
+
+  .cashed & {
+    color: $win;
+  }
+}
+
+.stats {
+  font-size: $menu-size-small;
+  color: $menu-text-faint;
+  text-align: center;
+}
+
+@media (max-width: 560px) {
+  .content {
+    padding: $spacing-300 $spacing-200;
+  }
+
+  .panel {
+    padding: $spacing-200;
+  }
+}

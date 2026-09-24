@@ -15,6 +15,7 @@ import { createGem } from '../three/models/gem';
 import { createHourglass } from '../three/models/hourglass';
 import { createDie } from '../three/models/die';
 import { createCan } from '../three/models/can';
+import { createDish } from '../three/models/dish';
 import { createCompanion } from '../three/models/companion';
 import { createSwords } from '../three/models/swords';
 import { createCoin } from '../three/models/coin';
@@ -157,10 +158,16 @@ export class ModelIcons {
     );
   }
 
-  /** Canette d'un consommable. */
+  /** Vignette d'un consommable : sa canette, ou l'assiette d'un plat. */
   can(id: ConsumableId): string {
+    const definition = consumableDefinition(id);
+    if (definition.category === 'food') {
+      return this.render(`dish-${id}`, () =>
+        renderToDataUrl(createDish(definition), { size: 192, distance: 4.4, rotation: [0.55, 0.4, 0] })
+      );
+    }
     return this.render(`can-${id}`, () =>
-      renderToDataUrl(createCan(consumableDefinition(id)), {
+      renderToDataUrl(createCan(definition), {
         size: 192,
         distance: 4.2,
         rotation: [0.12, 0.4, 0]

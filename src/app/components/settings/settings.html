@@ -17,4 +17,75 @@
       <option value="fr">{{ 'FRENCH' | translate }}</option>
     </select>
   </div>
+
+  <h3>{{ 'SETTINGS_PERFORMANCE' | translate }}</h3>
+  <div class="align">
+    <span>{{ 'GRAPHICS_QUALITY' | translate }}</span>
+    <select [value]="graphics" (change)="onGraphicsChange($event)">
+      <option value="high">{{ 'GRAPHICS_HIGH' | translate }}</option>
+      <option value="eco">{{ 'GRAPHICS_ECO' | translate }}</option>
+    </select>
+  </div>
+  <div class="align">
+    <span>{{ 'FPS_CAP' | translate }}</span>
+    <select [value]="'' + fpsCap" (change)="onFpsCapChange($event)">
+      @for (cap of fpsCaps; track cap) {
+        <option [value]="'' + cap">{{ cap ? cap + ' ' + ('FPS' | translate) : ('FPS_UNLIMITED' | translate) }}</option>
+      }
+    </select>
+  </div>
+  <p class="note">{{ 'GRAPHICS_NOTE' | translate }}</p>
+
+  <h3>{{ 'SETTINGS_SAVE' | translate }}</h3>
+  <div class="block">
+    <div class="buttons">
+      <button type="button" class="btn" [disabled]="busy()" (click)="exportSave()">{{ 'SAVE_EXPORT' | translate }}</button>
+      <!-- Le vrai sélecteur de fichier est masqué : le libellé tient lieu de
+           bouton, et reste atteignable au clavier par l'entrée elle-même. -->
+      <label class="btn">
+        {{ 'SAVE_IMPORT_FILE' | translate }}
+        <input type="file" accept=".txt,text/plain" class="visually-hidden" (change)="importFile($event)">
+      </label>
+    </div>
+
+    <label class="paste">
+      <span class="visually-hidden">{{ 'SAVE_PASTE_LABEL' | translate }}</span>
+      <textarea
+        rows="2"
+        spellcheck="false"
+        [placeholder]="'SAVE_PASTE_PLACEHOLDER' | translate"
+        [value]="pasted()"
+        (input)="onPaste($event)"
+      ></textarea>
+    </label>
+    <button type="button" class="btn" [disabled]="busy() || !pasted().trim()" (click)="importPasted()">
+      {{ 'SAVE_IMPORT_CODE' | translate }}
+    </button>
+
+    @switch (transfer().step) {
+      @case ('exported') {
+        <p class="status" role="status">
+          {{ (transferCopied() ? 'SAVE_EXPORTED_COPIED' : 'SAVE_EXPORTED') | translate }}
+        </p>
+      }
+      @case ('confirm') {
+        <div class="status warn" role="alert">
+          <p>{{ 'SAVE_IMPORT_CONFIRM' | translate }}</p>
+          <div class="buttons">
+            <button type="button" class="btn accent" (click)="confirmImport()">{{ 'SAVE_IMPORT_REPLACE' | translate }}</button>
+            <button type="button" class="btn" (click)="cancelImport()">{{ 'CANCEL' | translate }}</button>
+          </div>
+        </div>
+      }
+      @case ('error') {
+        <p class="status error" role="alert">{{ transferError() | translate }}</p>
+      }
+    }
+  </div>
+
+  @if (inGame) {
+    <div class="block">
+      <button type="button" class="btn menu" (click)="backToMenu()">{{ 'BACK_TO_MENU' | translate }}</button>
+    </div>
+  }
 </div>

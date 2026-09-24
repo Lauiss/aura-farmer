@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { HintManager } from '../../services/hint-manager';
 import { MoyaiViewer } from '../moyai-viewer/moyai-viewer';
+import { SettingsManager } from '../../services/settings-manager';
+import { ModelIcons } from '../../services/model-icons';
 
 /**
  * Petit moyai qui surgit en bas de l'écran avec une bulle de texte. Monté une
@@ -18,4 +20,7 @@ import { MoyaiViewer } from '../moyai-viewer/moyai-viewer';
 })
 export class MoyaiHint {
   readonly hintManager = inject(HintManager);
+  readonly settings = inject(SettingsManager);
+  /** Image fixe de la tête, à la place de la scène en mode économie. */
+  readonly moyaiIcon = inject(ModelIcons).moyai();
 }

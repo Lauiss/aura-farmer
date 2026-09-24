@@ -216,17 +216,10 @@
   color: $menu-text;
   background: color-mix(in srgb, var(--rarity) 10%, $menu-surface);
   border: 2px solid var(--rarity);
-  cursor: pointer;
 }
 
 .figure.worn {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--rarity) 45%, transparent), 0 0 24px color-mix(in srgb, var(--rarity) 35%, transparent);
-}
-
-.figure.owned:hover,
-.figure.owned:focus-visible {
-  outline: 2px solid var(--rarity);
-  outline-offset: 2px;
 }
 
 .figure-icon {

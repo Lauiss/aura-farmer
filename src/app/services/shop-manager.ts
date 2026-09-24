@@ -425,6 +425,12 @@ export class ShopManager {
    * Chaque exemplaire **ajoute** sa valeur au lieu de la multiplier : cinq
    * exemplaires à +20 % font +100 %, et non ×2,49. Empilés sur des dizaines
    * d'améliorations, les produits faisaient exploser la production.
+   *
+   * Les bonus de **clic** s'additionnent aussi d'une amélioration à l'autre.
+   * Le clic suivant la production, un multiplicateur de clic multiplie en
+   * réalité tout le revenu d'un joueur actif : multipliés entre eux, les
+   * bonus de clic atteignaient ×8 000, et le dernier enseignement tombait en
+   * une heure et demie (simulation).
    */
   recomputeEffects(): void {
     const itemFactors = new Map<number, number>();
@@ -448,7 +454,7 @@ export class ShopManager {
           }
           break;
         case UpgradeType.CLICK:
-          click *= factor;
+          click += factor - 1;
           break;
         case UpgradeType.PRICE_REDUCTION:
           prices *= factor;

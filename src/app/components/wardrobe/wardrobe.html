@@ -24,6 +24,48 @@
     </ul>
   }
 
+  @if (skins().length) {
+    <section class="scenery">
+      <h3>{{ 'WARDROBE_SKINS' | translate }}</h3>
+      <p class="section-note">{{ 'WARDROBE_SKINS_NOTE' | translate }}</p>
+      <ul class="pieces">
+        <li>
+          <button
+            type="button"
+            class="piece"
+            [class.worn]="collection.skin() === null"
+            [attr.aria-pressed]="collection.skin() === null"
+            (click)="selectSkin(null)"
+          >
+            <span class="name">{{ 'WARDROBE_STONE' | translate }}</span>
+            <span class="state">
+              {{ (collection.skin() === null ? 'WARDROBE_WORN' : 'WARDROBE_STORED') | translate }}
+            </span>
+          </button>
+        </li>
+        @for (skin of skins(); track skin.id) {
+          <li>
+            <button
+              type="button"
+              class="piece"
+              [class.worn]="collection.skin() === skin.id"
+              [attr.aria-pressed]="collection.skin() === skin.id"
+              (click)="selectSkin(skin.id)"
+            >
+              <span class="name with-icon">
+                <img [src]="skinIcon(skin.id)" alt="" class="skin-icon">
+                <span [style.color]="rarityColors[skin.rarity]">{{ ('COLLECTIBLE_' + skin.id.toUpperCase()) | translate }}</span>
+              </span>
+              <span class="state">
+                {{ (collection.skin() === skin.id ? 'WARDROBE_WORN' : 'WARDROBE_STORED') | translate }}
+              </span>
+            </button>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+
   @if (defeated().length) {
     <section class="scenery">
       <h3>{{ 'WARDROBE_BRAINROTS' | translate }}</h3>

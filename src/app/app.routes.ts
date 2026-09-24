@@ -5,6 +5,7 @@ import { ShopMap } from './pages/shop-map/shop-map';
 import { CollectionPage } from './pages/collection-page/collection-page';
 import { BattlePage } from './pages/battle-page/battle-page';
 import { StorePage } from './pages/store-page/store-page';
+import { CasinoPage } from './pages/casino-page/casino-page';
 
 export const routes: Routes = [
 	{ path: '', component: LandingPage },
@@ -13,6 +14,7 @@ export const routes: Routes = [
 	{ path: 'collection', component: CollectionPage },
 	{ path: 'battle', component: BattlePage },
 	{ path: 'store', component: StorePage },
+	{ path: 'casino', component: CasinoPage },
 	// Une adresse inconnue ramène à l'accueil plutôt qu'à un écran vide.
 	{ path: '**', redirectTo: '' }
 ];

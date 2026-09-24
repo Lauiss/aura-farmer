@@ -12,13 +12,14 @@ import {
   RARITY_COLLECTIBLE_CHANCE,
   RARITY_GEMS,
   RELICS,
-  RELIC_CHEST_CHANCE,
   Rarity,
   RelicDefinition,
   chestDefinition,
   collectibleDefinition,
-  relicDefinition
+  relicDefinition,
+  relicForBoss
 } from '../../assets/static/collectibles';
+import type { BossId } from '../../assets/static/bosses';
 import type { MoyaiPalette } from '../three/models/moyai';
 
 /** Ce que rapporte un coffre ouvert. */
@@ -28,8 +29,6 @@ export interface ChestReward {
   gems: number;
   /** Statuette obtenue, jamais un doublon. */
   collectible?: CollectibleDefinition;
-  /** Relique sacrée trouvée, qui prend le pas sur tout le reste. */
-  relic?: RelicDefinition;
   /** Aura rendue quand la rareté ne donne pas de statuette. */
   aura: number;
 }
@@ -86,7 +85,17 @@ export class CollectionManager {
       // Parties d'avant le suivi : on repart du solde, faute de mieux.
       this.gemsEarned.set(saved.gemsEarned ?? saved.gems ?? 0);
       this.ownedIds.set(new Set(saved.owned ?? []));
-      this.relicIds.set(new Set(saved.relics ?? []));
+      // Les reliques d'avant tombaient des coffres et n'existent plus : chacune
+      // est remboursée en gemmes. Celles des boss déjà battus sont rendues
+      // par `BattleManager` au chargement.
+      const relics = saved.relics ?? [];
+      const kept = relics.filter(id => relicDefinition(id));
+      const retired = relics.length - kept.length;
+      this.relicIds.set(new Set(kept));
+      if (retired > 0) {
+        this.gems.update(gems => gems + retired * CollectionManager.RETIRED_RELIC_GEMS);
+        this.persist();
+      }
       this.chests.set(saved.chests ?? {});
       this.skin.set(saved.skin ?? null);
     }
@@ -122,6 +131,21 @@ export class CollectionManager {
     }
     return total;
   });
+
+  /** Gemmes rendues pour chaque relique de l'ancienne formule. */
+  private static readonly RETIRED_RELIC_GEMS = 60;
+
+  /**
+   * Donne la relique d'un boss, s'il en a une et qu'elle manque encore.
+   * Renvoie la relique **nouvellement** obtenue, `null` sinon.
+   */
+  grantBossRelic(boss: BossId): RelicDefinition | null {
+    const relic = relicForBoss(boss);
+    if (!relic || this.relicIds().has(relic.id)) return null;
+    this.relicIds.update(owned => new Set(owned).add(relic.id));
+    this.persist();
+    return relic;
+  }
 
   isRelicOwned(id: string): boolean {
     return this.relicIds().has(id);
@@ -160,6 +184,16 @@ export class CollectionManager {
     this.persist();
   }
 
+  /**
+   * Rend des gemmes sans les compter comme gagnées : les gains du casino ne
+   * font que rendre une mise, les compter ferait monter les succès de
+   * collection en rejouant la même gemme.
+   */
+  refundGems(amount: number): void {
+    this.gems.update(gems => gems + amount);
+    this.persist();
+  }
+
   /** Achète un coffre en gemmes ; il rejoint les coffres à ouvrir. */
   buyChest(tier: ChestTier): boolean {
     const price = chestDefinition(tier).price;
@@ -177,31 +211,18 @@ export class CollectionManager {
     if (this.chestCount(tier) <= 0) return null;
     this.chests.update(chests => ({ ...chests, [tier]: (chests[tier] ?? 1) - 1 }));
 
-    // Une relique passe avant tout le reste : c'est le tirage le plus rare, et
-    // il rend le coffre mémorable quoi qu'il contienne par ailleurs.
-    const relic = this.rollRelic(tier);
-
     // La rareté tirée peut être déjà complète. Plutôt que de se rabattre
     // aussitôt sur de l'aura, on monte d'un cran : commun épuisé, le coffre
     // donne du rare, puis de l'épique, et ainsi de suite.
     const rolled = this.rollRarity(tier);
     const rarity = this.firstRarityWithMissing(rolled) ?? rolled;
-    const reward: ChestReward = { tier, rarity, gems: RARITY_GEMS[rarity], aura: 0, relic };
+    const reward: ChestReward = { tier, rarity, gems: RARITY_GEMS[rarity], aura: 0 };
 
-    if (relic) {
-      this.relicIds.update(owned => new Set(owned).add(relic.id));
-    }
-
-    // Une relique **remplace** la statuette : un coffre donne l'une ou l'autre,
-    // jamais les deux. Sans quoi le tirage le plus rare du jeu passait pour un
-    // simple supplément.
-    const missing = relic
-      ? []
-      : COLLECTIBLES.filter(c => c.rarity === rarity && !this.ownedIds().has(c.id));
+    const missing = COLLECTIBLES.filter(c => c.rarity === rarity && !this.ownedIds().has(c.id));
     if (missing.length && Math.random() < RARITY_COLLECTIBLE_CHANCE[rarity]) {
       reward.collectible = missing[Math.floor(Math.random() * missing.length)];
       this.ownedIds.update(owned => new Set(owned).add(reward.collectible!.id));
-    } else if (!relic) {
+    } else {
       // Au plancher, quelques dizaines de clics : un coffre ouvert tôt dans la
       // partie rapporte quand même quelque chose.
       reward.aura = Math.max(
@@ -235,13 +256,6 @@ export class CollectionManager {
       if (COLLECTIBLES.some(c => c.rarity === rarity && !this.ownedIds().has(c.id))) return rarity;
     }
     return null;
-  }
-
-  /** Tire une relique encore manquante, ou `undefined` la plupart du temps. */
-  private rollRelic(tier: ChestTier): RelicDefinition | undefined {
-    const missing = RELICS.filter(relic => !this.relicIds().has(relic.id));
-    if (!missing.length || Math.random() >= RELIC_CHEST_CHANCE[tier]) return undefined;
-    return missing[Math.floor(Math.random() * missing.length)];
   }
 
   private rollRarity(tier: ChestTier): Rarity {

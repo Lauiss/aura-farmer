@@ -3,14 +3,23 @@ import { AuraManager } from './aura-manager';
 import { ShopManager } from './shop-manager';
 import { SaveLocation, SaveManager } from './save-manager';
 import { ChestTier } from '../../assets/static/collectibles';
-import { COMPANIONS, CompanionDefinition, CompanionId, companionDefinition } from '../../assets/static/companions';
-import { CONSUMABLES, ConsumableDefinition, ConsumableId } from '../../assets/static/consumables';
+import {
+  COMPANIONS,
+  COMPANION_PHONES_PRICE,
+  COMPANION_PHONE_PAYOUT,
+  CompanionDefinition,
+  CompanionId,
+  companionDefinition
+} from '../../assets/static/companions';
+import { DRINKS, FOODS, ConsumableDefinition, ConsumableId } from '../../assets/static/consumables';
 import { CHEST_UNLOCK_PRICES } from '../../assets/static/store-unlocks';
 
 interface StoreSave {
   chests: ChestTier[];
   drinks: ConsumableId[];
   companions: CompanionId[];
+  /** Téléphones offerts aux compagnons. */
+  phones?: boolean;
   /** Restant d'une version où l'on pouvait ranger un compagnon. Ignoré. */
   stowed?: CompanionId[];
 }
@@ -37,6 +46,7 @@ export class StoreManager {
   private readonly chests = signal<Set<ChestTier>>(new Set());
   private readonly drinks = signal<Set<ConsumableId>>(new Set());
   private readonly companionIds = signal<Set<CompanionId>>(new Set());
+  readonly phones = signal(false);
 
   constructor() {
     const saved: StoreSave | null = this.saveManager.loadProgress(SaveLocation.Store);
@@ -44,6 +54,7 @@ export class StoreManager {
       this.chests.set(new Set(saved.chests ?? []));
       this.drinks.set(new Set(saved.drinks ?? []));
       this.companionIds.set(new Set(saved.companions ?? []));
+      this.phones.set(saved.phones ?? false);
     }
   }
 
@@ -73,9 +84,13 @@ export class StoreManager {
     return this.shopManager.scaled(definition.price);
   }
 
-  /** Canettes réellement en rayon. */
+  /** Canettes réellement en rayon. Les plats partagent le même registre. */
   readonly availableDrinks = computed<readonly ConsumableDefinition[]>(() =>
-    CONSUMABLES.filter(drink => this.drinks().has(drink.id))
+    DRINKS.filter(drink => this.drinks().has(drink.id))
+  );
+
+  readonly availableFoods = computed<readonly ConsumableDefinition[]>(() =>
+    FOODS.filter(food => this.drinks().has(food.id))
   );
 
   unlockChest(tier: ChestTier): boolean {
@@ -140,11 +155,36 @@ export class StoreManager {
     return true;
   }
 
+  // --- Téléphones des compagnons ----------------------------------------
+
+  phonesPrice(): number {
+    return this.shopManager.scaled(COMPANION_PHONES_PRICE);
+  }
+
+  /**
+   * Facteur appliqué au gain du doomscrolling : chaque compagnon possédé
+   * scrolle avec le joueur une fois les téléphones achetés.
+   */
+  readonly phonePayout = computed(() =>
+    this.phones() ? 1 + COMPANION_PHONE_PAYOUT * this.companionIds().size : 1
+  );
+
+  buyPhones(): boolean {
+    const price = this.phonesPrice();
+    if (this.phones() || this.auraManager.auraCount() < price) return false;
+
+    this.auraManager.auraCount.update(aura => aura - price);
+    this.phones.set(true);
+    this.persist();
+    return true;
+  }
+
   private persist(): void {
     this.saveManager.saveProgress(SaveLocation.Store, {
       chests: [...this.chests()],
       drinks: [...this.drinks()],
-      companions: [...this.companionIds()]
+      companions: [...this.companionIds()],
+      phones: this.phones()
     } satisfies StoreSave);
   }
 }

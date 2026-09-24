@@ -111,3 +111,134 @@ select option {
     color: $menu-text;
     background-color: $menu-surface;
 }
+
+/* --- Sections : performances, sauvegarde, retour au menu --- */
+h3 {
+    grid-column: 1 / -1;
+    margin-top: $spacing-150;
+    font-size: $menu-size-small;
+    font-weight: $menu-weight-strong;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: $menu-text-faint;
+}
+
+.note {
+    grid-column: 1 / -1;
+    font-size: $menu-size-small;
+    font-weight: $menu-weight;
+    color: $menu-text-faint;
+}
+
+// Les blocs sortent de la grille à trois colonnes : leurs boutons et le champ
+// de collage prennent toute la largeur du panneau.
+.block {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-150;
+}
+
+.buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-100;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-100 $spacing-200;
+    font: inherit;
+    font-size: $menu-size-small;
+    font-weight: $menu-weight-strong;
+    color: $menu-text;
+    background: $menu-surface-raised;
+    border: 1px solid $menu-border;
+    border-radius: $radius-100;
+    cursor: pointer;
+
+    &:hover:not([disabled]) {
+        border-color: $menu-border-strong;
+    }
+
+    // Le libellé du sélecteur de fichier porte le focus de son entrée masquée.
+    &:focus-visible,
+    &:has(input:focus-visible) {
+        outline: 1px solid $menu-accent-border;
+        outline-offset: 2px;
+    }
+
+    &[disabled] {
+        opacity: 0.46;
+        cursor: default;
+    }
+
+    &.accent {
+        color: $menu-accent;
+        background: $menu-accent-soft;
+        border-color: $menu-accent-border;
+    }
+
+    &.menu {
+        align-self: stretch;
+        margin-top: $spacing-100;
+    }
+}
+
+.paste textarea {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    padding: $spacing-100 $spacing-150;
+    font-family: ui-monospace, monospace;
+    font-size: $menu-size-small;
+    color: $menu-text;
+    background: $menu-surface-raised;
+    border: 1px solid $menu-border;
+    border-radius: $radius-100;
+
+    &::placeholder {
+        color: $menu-text-faint;
+    }
+
+    &:focus-visible {
+        outline: none;
+        border-color: $menu-accent-border;
+    }
+}
+
+.paste + .btn {
+    align-self: flex-start;
+}
+
+.status {
+    font-size: $menu-size-small;
+    font-weight: $menu-weight;
+    color: $menu-text-dim;
+
+    &.warn {
+        display: flex;
+        flex-direction: column;
+        gap: $spacing-100;
+        padding: $spacing-150;
+        color: $menu-text;
+        border: 1px solid $menu-accent-border;
+        border-radius: $radius-100;
+    }
+
+    &.error {
+        color: #e8836b;
+    }
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}

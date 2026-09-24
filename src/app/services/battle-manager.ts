@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { SaveLocation, SaveManager } from './save-manager';
 import { CollectionManager } from './collection-manager';
 import { ShopManager } from './shop-manager';
+import { RelicDefinition } from '../../assets/static/collectibles';
 import {
   BATTLE_UNLOCK,
   BOSSES,
@@ -47,6 +48,9 @@ export class BattleManager {
       this.defeatedIds.set(new Set(saved.defeated ?? []));
       this.worn.set(saved.worn ?? null);
     }
+    // Les reliques sont nées après certaines victoires : une partie en cours
+    // récupère celles des boss qu'elle a déjà battus.
+    for (const id of this.defeatedIds()) this.collection.grantBossRelic(id);
   }
 
   readonly defeatedCount = computed(() => this.defeatedIds().size);
@@ -86,17 +90,21 @@ export class BattleManager {
       : boss.reward;
   }
 
-  /** Enregistre une victoire et crédite la récompense. Renvoie ce qui a été gagné. */
-  recordWin(boss: BossDefinition): { gems: number; first: boolean } {
+  /**
+   * Enregistre une victoire et crédite la récompense. La première rend aussi
+   * la relique du boss. Renvoie ce qui a été gagné.
+   */
+  recordWin(boss: BossDefinition): { gems: number; first: boolean; relic: RelicDefinition | null } {
     const first = !this.isDefeated(boss.id);
     const gems = this.reward(boss);
 
     this.collection.addGems(gems);
+    const relic = this.collection.grantBossRelic(boss.id);
     if (first) {
       this.defeatedIds.update(defeated => new Set(defeated).add(boss.id));
       this.persist();
     }
-    return { gems, first };
+    return { gems, first, relic };
   }
 
   /**

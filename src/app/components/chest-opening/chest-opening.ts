@@ -18,6 +18,7 @@ import { ChestReward, CollectionManager } from '../../services/collection-manage
 import { ModalManager } from '../../services/modal-manager';
 import { ModelIcons } from '../../services/model-icons';
 import { Sound, SoundManager } from '../../services/sound-manager';
+import { SettingsManager } from '../../services/settings-manager';
 import { FormatAuraPipe } from '../../pipes/format-aura';
 import { ChestTier, RARITIES, RARITY_COLORS, Rarity } from '../../../assets/static/collectibles';
 
@@ -52,6 +53,7 @@ export class ChestOpening implements AfterViewInit, OnDestroy {
   private readonly modalManager = inject(ModalManager);
   private readonly soundManager = inject(SoundManager);
   private readonly modelIcons = inject(ModelIcons);
+  private readonly settings = inject(SettingsManager);
   readonly collection = inject(CollectionManager);
 
   /** Tier lu une fois : une modale empilée par-dessus changerait `modalData`. */
@@ -65,11 +67,6 @@ export class ChestOpening implements AfterViewInit, OnDestroy {
   readonly rewardIcon = computed(() => {
     const collectible = this.reward()?.collectible;
     return collectible ? this.modelIcons.moyaiSkin(collectible.id) : null;
-  });
-
-  readonly relicIcon = computed(() => {
-    const relic = this.reward()?.relic;
-    return relic ? this.modelIcons.relic(relic.id) : null;
   });
 
   private renderer?: THREE.WebGLRenderer;
@@ -121,7 +118,7 @@ export class ChestOpening implements AfterViewInit, OnDestroy {
   }
 
   /** Récapitulatif d'une ouverture en série, `null` hors de ce mode. */
-  readonly bulk = signal<{ gems: number; collectibles: number; relics: number; aura: number; count: number } | null>(null);
+  readonly bulk = signal<{ gems: number; collectibles: number; aura: number; count: number } | null>(null);
 
   /**
    * Ouvre d'un coup tous les coffres du tier en réserve.
@@ -133,7 +130,7 @@ export class ChestOpening implements AfterViewInit, OnDestroy {
   openAll(): void {
     if (this.phase() !== 'idle' || this.remaining() <= 0) return;
 
-    const total = { gems: 0, collectibles: 0, relics: 0, aura: 0, count: 0 };
+    const total = { gems: 0, collectibles: 0, aura: 0, count: 0 };
     while (this.collection.chestCount(this.tier) > 0) {
       const reward = this.collection.openChest(this.tier);
       if (!reward) break;
@@ -141,7 +138,6 @@ export class ChestOpening implements AfterViewInit, OnDestroy {
       total.gems += reward.gems;
       total.aura += reward.aura;
       if (reward.collectible) total.collectibles++;
-      if (reward.relic) total.relics++;
     }
 
     this.bulk.set(total);
@@ -157,8 +153,14 @@ export class ChestOpening implements AfterViewInit, OnDestroy {
 
   private setup(): void {
     const canvas = this.canvasRef().nativeElement;
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const eco = this.settings.isEco();
+    this.renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: !eco,
+      alpha: true,
+      powerPreference: eco ? 'low-power' : 'default'
+    });
+    this.renderer.setPixelRatio(this.settings.pixelRatio(2));
 
     this.scene = new THREE.Scene();
     this.scene.add(new THREE.HemisphereLight(0xfff4e0, 0x1a1a18, 1.2));

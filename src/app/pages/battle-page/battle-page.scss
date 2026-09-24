@@ -300,6 +300,56 @@
   color: #9fe6ff;
 }
 
+/* Relique du boss, rendue à la première victoire : un bloc à part, détaché
+   par un filet, comme une trouvaille en plus des gemmes. */
+.verdict-relic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-50;
+  padding-top: $spacing-150;
+  border-top: 1px solid $menu-accent-border;
+  animation: relic-in 0.5s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+
+.verdict-relic-icon {
+  width: 5rem;
+  height: 5rem;
+  object-fit: contain;
+}
+
+.verdict-relic-label {
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: $menu-accent;
+}
+
+.verdict-relic-name {
+  font-size: $menu-size-lead;
+  font-weight: $menu-weight-strong;
+}
+
+.verdict-relic-bonus {
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  color: $menu-accent;
+}
+
+@keyframes relic-in {
+  from {
+    opacity: 0;
+    transform: translateY(1rem) scale(0.9);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .verdict-relic {
+    animation: none;
+  }
+}
+
 .verdict-first,
 .verdict-hint {
   font-size: $menu-size-small;

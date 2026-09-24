@@ -59,7 +59,7 @@ export const rizzUpgrades: ItemUpgrade[] = [
     description: "+9 % de production de Rizz, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.09, targetItemId: [2] },
-    price: 1760,
+    price: 2050,
     unlocked: false,
   },
   {
@@ -68,7 +68,7 @@ export const rizzUpgrades: ItemUpgrade[] = [
     description: "+18 % de production de Rizz, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.18, targetItemId: [2] },
-    price: 5280,
+    price: 6150,
     unlocked: false,
   },
   {
@@ -77,7 +77,7 @@ export const rizzUpgrades: ItemUpgrade[] = [
     description: "+6 % d'aura par clic, à chaque exemplaire.",
     type: UpgradeType.CLICK,
     effect: { type: UpgradeType.CLICK, value: 0.06, targetItemId: [2] },
-    price: 15840,
+    price: 18400,
     unlocked: false,
   },
   {
@@ -86,7 +86,7 @@ export const rizzUpgrades: ItemUpgrade[] = [
     description: "+60 % de production de Rizz, à chaque exemplaire.",
     type: UpgradeType.ITEM_BOOST,
     effect: { type: UpgradeType.ITEM_BOOST, value: 0.6, targetItemId: [2] },
-    price: 47520,
+    price: 55300,
     unlocked: false,
   }
 ];
@@ -98,7 +98,7 @@ export const bicepsUpgrades: ItemUpgrade[] = [
     description: "+12 % de production de Biceps Flexing, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.12, targetItemId: [3] },
-    price: 24000,
+    price: 32600,
     unlocked: false,
   },
   {
@@ -107,7 +107,7 @@ export const bicepsUpgrades: ItemUpgrade[] = [
     description: "+24 % de production de Biceps Flexing, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.24, targetItemId: [3] },
-    price: 72000,
+    price: 97700,
     unlocked: false,
   },
   {
@@ -116,7 +116,7 @@ export const bicepsUpgrades: ItemUpgrade[] = [
     description: "+7.5 % d'aura par clic, à chaque exemplaire.",
     type: UpgradeType.CLICK,
     effect: { type: UpgradeType.CLICK, value: 0.075, targetItemId: [3] },
-    price: 216000,
+    price: 293000,
     unlocked: false,
   },
   {
@@ -125,7 +125,7 @@ export const bicepsUpgrades: ItemUpgrade[] = [
     description: "+60 % de production de Biceps Flexing, à chaque exemplaire.",
     type: UpgradeType.ITEM_BOOST,
     effect: { type: UpgradeType.ITEM_BOOST, value: 0.6, targetItemId: [3] },
-    price: 648000,
+    price: 879000,
     unlocked: false,
   }
 ];
@@ -137,7 +137,7 @@ export const mewingUpgrades: ItemUpgrade[] = [
     description: "+6 % de production de Mewing, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.06, targetItemId: [4] },
-    price: 320000,
+    price: 506000,
     unlocked: false,
   },
   {
@@ -146,7 +146,7 @@ export const mewingUpgrades: ItemUpgrade[] = [
     description: "+12 % de production de Mewing, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.12, targetItemId: [4] },
-    price: 960000,
+    price: 1520000,
     unlocked: false,
   },
   {
@@ -155,7 +155,7 @@ export const mewingUpgrades: ItemUpgrade[] = [
     description: "+18 % de production de Mewing, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.18, targetItemId: [4] },
-    price: 2880000,
+    price: 4560000,
     unlocked: false,
   },
   {
@@ -164,7 +164,7 @@ export const mewingUpgrades: ItemUpgrade[] = [
     description: "+4.5 % d'aura par clic, à chaque exemplaire.",
     type: UpgradeType.CLICK,
     effect: { type: UpgradeType.CLICK, value: 0.045, targetItemId: [4] },
-    price: 8640000,
+    price: 13600000,
     unlocked: false,
   },
   {
@@ -173,7 +173,7 @@ export const mewingUpgrades: ItemUpgrade[] = [
     description: "+30 % de production de Mewing, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.3, targetItemId: [4] },
-    price: 25920000,
+    price: 40900000,
     unlocked: false,
   },
   {
@@ -182,7 +182,7 @@ export const mewingUpgrades: ItemUpgrade[] = [
     description: "+60 % de production de Mewing, à chaque exemplaire.",
     type: UpgradeType.ITEM_BOOST,
     effect: { type: UpgradeType.ITEM_BOOST, value: 0.6, targetItemId: [4] },
-    price: 77760000,
+    price: 123000000,
     unlocked: false,
   },
   {
@@ -191,7 +191,7 @@ export const mewingUpgrades: ItemUpgrade[] = [
     description: "+7.5 % d'aura par clic, à chaque exemplaire.",
     type: UpgradeType.CLICK,
     effect: { type: UpgradeType.CLICK, value: 0.075, targetItemId: [4] },
-    price: 233280000,
+    price: 369000000,
     unlocked: false,
   },
   {
@@ -200,7 +200,7 @@ export const mewingUpgrades: ItemUpgrade[] = [
     description: "+60 % de production de Mewing, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.6, targetItemId: [4] },
-    price: 699840000,
+    price: 1110000000,
     unlocked: false,
   },
   {
@@ -209,7 +209,7 @@ export const mewingUpgrades: ItemUpgrade[] = [
     description: "+120 % de production de Mewing, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 1.2, targetItemId: [4] },
-    price: 2099520000,
+    price: 3320000000,
     unlocked: false,
   },
   {
@@ -218,7 +218,7 @@ export const mewingUpgrades: ItemUpgrade[] = [
     description: "+15 % d'aura par clic, à chaque exemplaire.",
     type: UpgradeType.CLICK,
     effect: { type: UpgradeType.CLICK, value: 0.15, targetItemId: [4] },
-    price: 6298560000,
+    price: 9960000000,
     unlocked: false
   }
 ];
@@ -230,7 +230,7 @@ export const silenceUpgrades: ItemUpgrade[] = [
     description: "+9 % de production de Silence Farming, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.09, targetItemId: [5] },
-    price: 4400000,
+    price: 8100000,
     unlocked: false,
   },
   {
@@ -239,7 +239,7 @@ export const silenceUpgrades: ItemUpgrade[] = [
     description: "+21 % de production de Silence Farming, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.21, targetItemId: [5] },
-    price: 13200000,
+    price: 24300000,
     unlocked: false,
   },
   {
@@ -248,7 +248,7 @@ export const silenceUpgrades: ItemUpgrade[] = [
     description: "+60 % de production de Silence Farming, à chaque exemplaire.",
     type: UpgradeType.ITEM_BOOST,
     effect: { type: UpgradeType.ITEM_BOOST, value: 0.6, targetItemId: [5] },
-    price: 39600000,
+    price: 72900000,
     unlocked: false,
   }
 ];
@@ -260,7 +260,7 @@ export const gamingUpgrades: ItemUpgrade[] = [
     description: "+12 % de production de Gaming, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.12, targetItemId: [6] },
-    price: 60000000,
+    price: 129000000,
     unlocked: false,
   },
   {
@@ -269,7 +269,7 @@ export const gamingUpgrades: ItemUpgrade[] = [
     description: "+30 % de production de Gaming, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.3, targetItemId: [6] },
-    price: 180000000,
+    price: 386000000,
     unlocked: false,
   },
   {
@@ -278,7 +278,7 @@ export const gamingUpgrades: ItemUpgrade[] = [
     description: "+9 % d'aura par clic, à chaque exemplaire.",
     type: UpgradeType.CLICK,
     effect: { type: UpgradeType.CLICK, value: 0.09, targetItemId: [6] },
-    price: 540000000,
+    price: 1160000000,
     unlocked: false,
   },
   {
@@ -287,7 +287,7 @@ export const gamingUpgrades: ItemUpgrade[] = [
     description: "+60 % de production de Gaming, à chaque exemplaire.",
     type: UpgradeType.ITEM_BOOST,
     effect: { type: UpgradeType.ITEM_BOOST, value: 0.6, targetItemId: [6] },
-    price: 1620000000,
+    price: 3470000000,
     unlocked: false,
   }
 ];
@@ -299,7 +299,7 @@ export const fartUpgrades: ItemUpgrade[] = [
     description: "+15 % de production de Farting in public, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.15, targetItemId: [7] },
-    price: 800000000,
+    price: 2000000000,
     unlocked: false,
   },
   {
@@ -308,7 +308,7 @@ export const fartUpgrades: ItemUpgrade[] = [
     description: "+30 % de production de Farting in public, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.3, targetItemId: [7] },
-    price: 2400000000,
+    price: 6000000000,
     unlocked: false,
   },
   {
@@ -317,7 +317,7 @@ export const fartUpgrades: ItemUpgrade[] = [
     description: "+10.5 % d'aura par clic, à chaque exemplaire.",
     type: UpgradeType.CLICK,
     effect: { type: UpgradeType.CLICK, value: 0.105, targetItemId: [7] },
-    price: 7200000000,
+    price: 18000000000,
     unlocked: false,
   },
   {
@@ -326,7 +326,7 @@ export const fartUpgrades: ItemUpgrade[] = [
     description: "+60 % de production de Farting in public, à chaque exemplaire.",
     type: UpgradeType.ITEM_BOOST,
     effect: { type: UpgradeType.ITEM_BOOST, value: 0.6, targetItemId: [7] },
-    price: 21600000000,
+    price: 53900000000,
     unlocked: false,
   }
 ];
@@ -338,7 +338,7 @@ export const monetizeUpgrades: ItemUpgrade[] = [
     description: "+12 % de production de Monetize Aura, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.12, targetItemId: [8] },
-    price: 11200000000,
+    price: 32600000000,
     unlocked: false,
   },
   {
@@ -347,7 +347,7 @@ export const monetizeUpgrades: ItemUpgrade[] = [
     description: "+24 % de production de Monetize Aura, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.24, targetItemId: [8] },
-    price: 33600000000,
+    price: 97800000000,
     unlocked: false,
   },
   {
@@ -356,7 +356,7 @@ export const monetizeUpgrades: ItemUpgrade[] = [
     description: "+9 % d'aura par clic, à chaque exemplaire.",
     type: UpgradeType.CLICK,
     effect: { type: UpgradeType.CLICK, value: 0.09, targetItemId: [8] },
-    price: 100800000000,
+    price: 293000000000,
     unlocked: false,
   },
   {
@@ -365,7 +365,7 @@ export const monetizeUpgrades: ItemUpgrade[] = [
     description: "+60 % de production de Monetize Aura, à chaque exemplaire.",
     type: UpgradeType.ITEM_BOOST,
     effect: { type: UpgradeType.ITEM_BOOST, value: 0.6, targetItemId: [8] },
-    price: 302400000000,
+    price: 880000000000,
     unlocked: false,
   }
 ];
@@ -378,7 +378,7 @@ export const moggingUpgrades: ItemUpgrade[] = [
     description: "+12 % de production de Mogging, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.12, targetItemId: [9] },
-    price: 160000000000,
+    price: 542000000000,
     unlocked: false,
   },
   {
@@ -387,7 +387,7 @@ export const moggingUpgrades: ItemUpgrade[] = [
     description: "+24 % de production de Mogging, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.24, targetItemId: [9] },
-    price: 480000000000,
+    price: 1630000000000,
     unlocked: false,
   },
   {
@@ -396,7 +396,7 @@ export const moggingUpgrades: ItemUpgrade[] = [
     description: "+10 % d'aura par clic, à chaque exemplaire.",
     type: UpgradeType.CLICK,
     effect: { type: UpgradeType.CLICK, value: 0.1, targetItemId: [9] },
-    price: 1440000000000,
+    price: 4890000000000,
     unlocked: false,
   },
   {
@@ -405,7 +405,7 @@ export const moggingUpgrades: ItemUpgrade[] = [
     description: "+60 % de production de Mogging, à chaque exemplaire.",
     type: UpgradeType.ITEM_BOOST,
     effect: { type: UpgradeType.ITEM_BOOST, value: 0.6, targetItemId: [9] },
-    price: 4320000000000,
+    price: 14600000000000,
     unlocked: false,
   }
 ];
@@ -417,7 +417,7 @@ export const sixSevenUpgrades: ItemUpgrade[] = [
     description: "+14 % de production de Six Seven, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.14, targetItemId: [10] },
-    price: 2160000000000,
+    price: 8530000000000,
     unlocked: false,
   },
   {
@@ -426,7 +426,7 @@ export const sixSevenUpgrades: ItemUpgrade[] = [
     description: "+28 % de production de Six Seven, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.28, targetItemId: [10] },
-    price: 6480000000000,
+    price: 25600000000000,
     unlocked: false,
   },
   {
@@ -435,7 +435,7 @@ export const sixSevenUpgrades: ItemUpgrade[] = [
     description: "+12 % d'aura par clic, à chaque exemplaire.",
     type: UpgradeType.CLICK,
     effect: { type: UpgradeType.CLICK, value: 0.12, targetItemId: [10] },
-    price: 19440000000000,
+    price: 76700000000000,
     unlocked: false,
   },
   {
@@ -444,7 +444,7 @@ export const sixSevenUpgrades: ItemUpgrade[] = [
     description: "+70 % de production de Six Seven, à chaque exemplaire.",
     type: UpgradeType.ITEM_BOOST,
     effect: { type: UpgradeType.ITEM_BOOST, value: 0.7, targetItemId: [10] },
-    price: 58320000000000,
+    price: 231000000000000,
     unlocked: false,
   }
 ];
@@ -456,7 +456,7 @@ export const dabUpgrades: ItemUpgrade[] = [
     description: "+16 % de production du Dab, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.16, targetItemId: [11] },
-    price: 29600000000000,
+    price: 136000000000000,
     unlocked: false,
   },
   {
@@ -465,7 +465,7 @@ export const dabUpgrades: ItemUpgrade[] = [
     description: "+32 % de production du Dab, à chaque exemplaire.",
     type: UpgradeType.MULTIPLIER,
     effect: { type: UpgradeType.MULTIPLIER, value: 0.32, targetItemId: [11] },
-    price: 88800000000000,
+    price: 409000000000000,
     unlocked: false,
   },
   {
@@ -474,7 +474,7 @@ export const dabUpgrades: ItemUpgrade[] = [
     description: "+15 % d'aura par clic, à chaque exemplaire.",
     type: UpgradeType.CLICK,
     effect: { type: UpgradeType.CLICK, value: 0.15, targetItemId: [11] },
-    price: 266400000000000,
+    price: 1220000000000000,
     unlocked: false,
   },
   {
@@ -483,7 +483,7 @@ export const dabUpgrades: ItemUpgrade[] = [
     description: "+80 % de production du Dab, à chaque exemplaire.",
     type: UpgradeType.ITEM_BOOST,
     effect: { type: UpgradeType.ITEM_BOOST, value: 0.8, targetItemId: [11] },
-    price: 799200000000000,
+    price: 3.67e15,
     unlocked: false,
   }
 ];

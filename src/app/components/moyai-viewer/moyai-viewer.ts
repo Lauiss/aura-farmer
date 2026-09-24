@@ -24,6 +24,7 @@ import { auraShellOpacity, createAuraShard, createAuraShell } from '../../three/
 import { createBrainrot } from '../../three/models/brainrot';
 import { createMogFace, fadeMogFace } from '../../three/models/mog-face';
 import { BossId, bossDefinition } from '../../../assets/static/bosses';
+import { SettingsManager } from '../../services/settings-manager';
 
 /** Réglages des points faibles, fournis par les améliorations achetées. */
 export interface WeakPointConfig {
@@ -147,6 +148,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   private readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly zone = inject(NgZone);
+  private readonly settings = inject(SettingsManager);
 
   private renderer?: THREE.WebGLRenderer;
   private scene?: THREE.Scene;
@@ -255,6 +257,17 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
       this.zone.runOutsideAngular(() => this.syncBackground(id));
     });
 
+    // Passer en économie en cours de partie baisse la densité tout de suite ;
+    // l'anticrénelage, lui, ne se choisit qu'à la création du contexte.
+    effect(() => {
+      this.settings.graphics();
+      this.zone.runOutsideAngular(() => {
+        if (!this.renderer) return;
+        this.renderer.setPixelRatio(this.settings.pixelRatio(this.maxPixelRatio()));
+        this.resize();
+      });
+    });
+
     effect(() => {
       const level = this.auraLevel();
       this.zone.runOutsideAngular(() => this.syncAura(level));
@@ -300,11 +313,14 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     const canvas = this.canvasRef().nativeElement;
     const container = this.host.nativeElement as HTMLElement;
 
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    // Une vignette décorative n'a pas besoin de la pleine densité de l'écran :
-    // à 2x, un canevas de trente pixels en dessine quatre fois trop.
-    const maxRatio = this.interactive() ? 2 : 1.25;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxRatio));
+    const eco = this.settings.isEco();
+    this.renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: !eco,
+      alpha: true,
+      powerPreference: eco ? 'low-power' : 'default'
+    });
+    this.renderer.setPixelRatio(this.settings.pixelRatio(this.maxPixelRatio()));
 
     this.scene = new THREE.Scene();
 
@@ -385,6 +401,14 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.mogElapsed = -1;
 
     this.buildSubject();
+  }
+
+  /**
+   * Une vignette décorative n'a pas besoin de la pleine densité de l'écran :
+   * à 2x, un canevas de trente pixels en dessine quatre fois trop.
+   */
+  private maxPixelRatio(): number {
+    return this.interactive() ? 2 : 1.25;
   }
 
   /** Amortissement de base, réduit par l'inertie achetée. */
@@ -1044,7 +1068,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
 
     // Plafond d'images : on laisse le temps s'écouler mais on saute le rendu.
     // Les animations restent justes, elles se fondent sur `delta`.
-    const fps = this.maxFps();
+    const fps = this.settings.frameCap(this.maxFps());
     if (fps > 0) {
       this.sinceRender += delta;
       if (this.sinceRender < 1 / fps) return;
