@@ -255,9 +255,23 @@ Deux pièges, qui donnaient chacun une page blanche :
 - Le builder `application` range le site dans `dist/aura-farmer/browser/` : c'est **ce dossier** que Butler doit pousser, pour qu'`index.html` soit à la racine de l'archive.
 - Itch sert le jeu depuis `/html/<id>/index.html`. Le routeur prenait `index.html` pour une route inconnue : il tourne donc en **routage par hash** (`withHashLocation`), avec une route `**` qui ramène à l'accueil.
 
-## Vérifier une modification 3D sans navigateur
+## Vérifier ce qu'on a fait
 
-Aucun Chrome n'est installé. `scratchpad/render.mjs` (recréable) compile `three/` avec `npx tsc --ignoreConfig` puis rastérise les triangles en PPM → `magick` pour voir la silhouette. Penser à suffixer les imports en `.js` dans la sortie, Node en ESM ne les résout pas sans extension.
+**Il y a un navigateur** : Firefox est installé et le cache Playwright contient son build. Toute modification d'affichage se regarde avant d'être annoncée — un build qui passe ne prouve rien d'une mise en page, et la cascade CSS encore moins. La recette tient en trois lignes, hors du projet pour ne pas toucher à ses dépendances :
+
+1. `npm i playwright` dans un dossier **vide** hors du dépôt ;
+2. servir le build : `cd dist/aura_farmer/browser && python3 -m http.server 8099` ;
+3. `firefox.launch()`, routage par hash (`http://localhost:8099/#/game`).
+
+Pour voir un écran **chargé** plutôt qu'une partie vierge, semer le `localStorage` avec `page.addInitScript` avant `goto` : clés `AURA_FARMER_*`, formes exactes dans les interfaces `…Save` de chaque manager. Semer aussi `AURA_FARMER_ONBOARDING` avec ses étapes vues, sinon le projecteur d'apprentissage couvre l'écran et le pilotage ne peut plus cliquer. Une erreur console `NotAllowedError: play method is not allowed` en headless est bénigne : c'est l'autoplay audio.
+
+Ce que cette vérification a immédiatement attrapé, et qu'aucune relecture n'avait vu : `.companion img` (spécificité 0,1,1) écrasait `.companion-phone` (0,1,0), si bien que le téléphone des compagnons s'affichait à cinq rem et les masquait — une correction de sa taille faite « au code » n'avait donc rien changé. Dès qu'un élément ajouté est du même type qu'un élément déjà ciblé par une règle de son parent, le viser par `:not()` ou par une spécificité supérieure.
+
+`ng test` reste bloqué : seul `karma-chrome-launcher` est déclaré. Ajouter `karma-firefox-launcher` au projet le débloquerait ; en attendant, `npx tsc -p tsconfig.spec.json --noEmit`.
+
+### Vérifier une modification 3D sans navigateur
+
+Le rastériseur logiciel garde son intérêt pour un modèle isolé : ni serveur, ni build, ni scène à charger. `scratchpad/render.mjs` (recréable) compile `three/` avec `npx tsc --ignoreConfig` puis rastérise les triangles en PPM → `magick` pour voir la silhouette. Penser à suffixer les imports en `.js` dans la sortie, Node en ESM ne les résout pas sans extension.
 
 Deux pièges du rastériseur, qui ont chacun fait corriger un modèle qui n'avait rien :
 

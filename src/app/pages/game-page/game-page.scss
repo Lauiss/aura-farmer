@@ -456,7 +456,10 @@
   pointer-events: auto;
 }
 
-.companion img {
+// `:not()` et non `.companion img` : le téléphone est lui aussi une image
+// dans le compagnon, et la règle générale l'emportait sur sa taille propre —
+// il s'affichait à cinq rem, aussi gros que le compagnon qu'il masquait.
+.companion img:not(.companion-phone) {
   display: block;
   width: 5rem;
   height: 5rem;
@@ -465,8 +468,8 @@
   transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.companion:hover img,
-.companion:focus-within img {
+.companion:hover img:not(.companion-phone),
+.companion:focus-within img:not(.companion-phone) {
   transform: translateY(-4px) scale(1.06);
 }
 
@@ -523,7 +526,7 @@
 }
 
 @media (max-width: 40rem) {
-  .companion img {
+  .companion img:not(.companion-phone) {
     width: 3.2rem;
     height: 3.2rem;
   }

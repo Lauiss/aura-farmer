@@ -55,9 +55,12 @@ export function createAuraShell(): THREE.Group {
   // Rayons calés sur la tête, dont la demi-hauteur est d'environ 1,34 une fois
   // recentrée : plus large, la coque sortait du cadre par le haut et par le
   // bas et virait au voile plein écran au lieu du halo.
-  for (const [index, radius] of [1.78, 1.98].entries()) {
+  // Subdivision 1 et non 0 : à vingt faces, la coque se lisait comme un grand
+  // losange plat posé devant la scène — une vitre sale plutôt qu'un halo. À
+  // quatre-vingts, sa silhouette est ronde et ne dessine plus d'arête franche.
+  for (const [index, radius] of [1.62, 1.8].entries()) {
     const shell = new THREE.Mesh(
-      new THREE.IcosahedronGeometry(radius, 0),
+      new THREE.IcosahedronGeometry(radius, 1),
       new THREE.MeshBasicMaterial({
         color: index === 0 ? AURA_COLOR : AURA_GLOW,
         transparent: true,
@@ -78,11 +81,11 @@ export function createAuraShell(): THREE.Group {
 export function auraShellOpacity(level: number): [number, number] {
   switch (level) {
     case 1:
-      return [0.1, 0.05];
+      return [0.07, 0.04];
     case 2:
-      return [0.18, 0.1];
+      return [0.13, 0.07];
     case 3:
-      return [0.28, 0.17];
+      return [0.2, 0.12];
     default:
       return [0, 0];
   }

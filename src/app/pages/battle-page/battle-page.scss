@@ -491,13 +491,49 @@
   .fighter .name {
     font-size: $menu-size-small;
   }
-}
 
-@media (max-width: 52rem) {
+  // Le combat doit tenir dans l'écran : le choix des coups défile dans sa
+  // propre zone, sinon il fallait faire défiler la page entre le moment où
+  // l'on choisit et celui où l'on voit ce que ça a donné.
+  .battle-page {
+    height: 100vh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
   .fight {
-    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .actions-bar {
+    max-height: 46vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: $spacing-150 $spacing-150 $spacing-200;
+  }
+
+  .intent-detail,
+  .manual {
+    font-size: $menu-size-small;
+  }
+
+  // Le panneau central se resserre et défile s'il le faut : son texte
+  // débordait par-dessus la liste des coups.
+  .middle {
+    gap: $spacing-100;
+    min-height: 0;
+    max-height: 100%;
+    overflow-y: auto;
+  }
+
+  // Le rappel des règles disparaît : le bouton « comment ça marche ? » est
+  // juste en dessous et dit la même chose à la demande.
+  .log.hint {
+    display: none;
   }
 }
+
+
 
 @media (prefers-reduced-motion: reduce) {
   .dice {
