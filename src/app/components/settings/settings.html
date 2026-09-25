@@ -28,12 +28,21 @@
   </div>
   <div class="align">
     <span>{{ 'FPS_CAP' | translate }}</span>
-    <select [value]="'' + fpsCap" (change)="onFpsCapChange($event)">
+    <!-- La sélection est portée par les options et non par un `[value]` sur le
+         `select` : les options d'un `@for` naissent après que la liaison du
+         parent a été posée, si bien que le champ retombait sur la première
+         entrée — « illimité » — et le plafond choisi n'apparaissait plus. -->
+    <select (change)="onFpsCapChange($event)">
       @for (cap of fpsCaps; track cap) {
-        <option [value]="'' + cap">{{ cap ? cap + ' ' + ('FPS' | translate) : ('FPS_UNLIMITED' | translate) }}</option>
+        <option [value]="'' + cap" [selected]="cap === fpsCap">{{ cap ? cap + ' ' + ('FPS' | translate) : ('FPS_UNLIMITED' | translate) }}</option>
       }
     </select>
   </div>
+  <div class="align">
+    <span>{{ 'CALM_MODE' | translate }}</span>
+    <input type="checkbox" [checked]="calm" (change)="onCalmChange($event)">
+  </div>
+  <p class="note">{{ 'CALM_NOTE' | translate }}</p>
   <p class="note">{{ 'GRAPHICS_NOTE' | translate }}</p>
 
   <h3>{{ 'SETTINGS_SAVE' | translate }}</h3>

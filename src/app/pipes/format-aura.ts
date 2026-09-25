@@ -1,4 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import Decimal from 'break_infinity.js';
 
 /**
  * Suffixes de l'échelle courte, un par puissance de mille. La liste va jusqu'au
@@ -21,7 +22,16 @@ const SUFFIXES = [
  * statiques des succès s'en servent, ce qui refermait un cycle d'imports entre
  * la page, les succès et tout ce qui les charge.
  */
-export function formatAura(value: number): string {
+export function formatAura(value: number | Decimal): string {
+  if (typeof value !== 'number') {
+    // Au-delà de ce que tient un flottant, on ne peut plus repasser par un
+    // nombre : `toNumber()` rendrait `Infinity` et l'on afficherait « ∞ » pour
+    // une valeur parfaitement connue. En deçà, le chemin d'origine s'applique
+    // tel quel, suffixes compris.
+    if (value.exponent > 300) return `${value.mantissa.toFixed(2)}e${value.exponent}`;
+    return formatAura(value.toNumber());
+  }
+
   if (!Number.isFinite(value)) return value > 0 ? '∞' : '-∞';
 
   const absValue = Math.abs(value);
@@ -47,7 +57,7 @@ export function formatAura(value: number): string {
   standalone: true
 })
 export class FormatAuraPipe implements PipeTransform {
-  transform(value: number): string {
+  transform(value: number | Decimal): string {
     return formatAura(value);
   }
 }

@@ -3,6 +3,7 @@ import { Achievement } from "../../app/services/achievements-manager";
 import { COLLECTIBLES, RELICS } from "./collectibles";
 import { BOSSES, BossId } from "./bosses";
 import { COMPANIONS, CompanionId } from "./companions";
+import { CallStats } from "../../app/services/call-manager";
 
 export function createAchievements(
   getShopItems: () => any[],
@@ -18,7 +19,10 @@ export function createAchievements(
   getBossCount: () => number = () => 0,
   hasCompanion: (id: CompanionId) => boolean = () => false,
   getCompanionCount: () => number = () => 0,
-  getComboPeak: () => number = () => 1
+  getComboPeak: () => number = () => 1,
+  getCallStats: () => CallStats = () => ({
+    answeredCount: 0, john: false, colonel: false, larry: false, refused: 0, larryRefused: false
+  })
 ): Achievement[] {
   const achievements: Achievement[] = [
     {
@@ -734,6 +738,110 @@ export function createAchievements(
       description: "Réunir tous les compagnons autour de la statue.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
       condition: () => getCompanionCount() >= COMPANIONS.length,
+      unlocked: false,
+    },
+    {
+      id: 104,
+      title: "Chat-crevette",
+      description: "Vaincre Trippi Troppi en battle d'aura.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => isBossDefeated('trippi'),
+      unlocked: false,
+    },
+    {
+      id: 105,
+      title: "Grenouille à pneu",
+      description: "Vaincre Boneca Ambalabu en battle d'aura.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => isBossDefeated('boneca'),
+      unlocked: false,
+    },
+    {
+      id: 106,
+      title: "Vache spatiale",
+      description: "Vaincre La Vacca Saturno Saturnita en battle d'aura.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => isBossDefeated('vacca'),
+      unlocked: false,
+    },
+    {
+      id: 107,
+      title: "Pastèque blindée",
+      description: "Vaincre Glorbo Fruttodrillo en battle d'aura.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => isBossDefeated('glorbo'),
+      unlocked: false,
+    },
+    {
+      id: 108,
+      title: "Capybara en coque",
+      description: "Vaincre Burbaloni Luliloli en battle d'aura.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => isBossDefeated('burbaloni'),
+      unlocked: false,
+    },
+    {
+      id: 109,
+      title: "Dauphin épluché",
+      description: "Vaincre Bananita Dolphinita en battle d'aura.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => isBossDefeated('bananita'),
+      unlocked: false,
+    },
+    {
+      id: 230,
+      title: "Allô ?",
+      description: "Décrocher un appel pendant le doomscrolling.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getCallStats().answeredCount >= 1,
+      unlocked: false,
+    },
+    {
+      id: 231,
+      title: "John Pork Is Calling",
+      description: "Répondre à John Pork.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getCallStats().john,
+      unlocked: false,
+    },
+    {
+      id: 232,
+      title: "Colonel WhatsApp",
+      description: "Répondre au Colonel WhatsApp.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getCallStats().colonel,
+      unlocked: false,
+    },
+    {
+      id: 233,
+      title: "Ne rappelle jamais",
+      description: "Raccrocher au nez de quelqu'un.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getCallStats().refused >= 1,
+      unlocked: false,
+    },
+    {
+      id: 234,
+      title: "Je viens te toucher la nuit",
+      description: "Répondre à Larry. Il ne fallait pas.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getCallStats().larry,
+      unlocked: false,
+    },
+    {
+      id: 235,
+      title: "Bien vu",
+      description: "Raccrocher au nez de Larry.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getCallStats().larryRefused,
+      unlocked: false,
+    },
+    {
+      id: 236,
+      title: "Filtrage d'appels",
+      description: "Raccrocher au nez de dix personnes.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getCallStats().refused >= 10,
       unlocked: false,
     },
     {

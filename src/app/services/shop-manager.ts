@@ -168,12 +168,12 @@ export class ShopManager {
     if (amountToBuy <= 0) return;
 
     // Un lot de dix s'achète en entier ou pas du tout.
-    if (this.auraService.auraCount() < this.batchPrice(item, amountToBuy)) return;
+    if (!this.auraService.canAfford(this.batchPrice(item, amountToBuy))) return;
 
     for (let i = 0; i < amountToBuy; i++) {
       const price = this.itemPrice(item);
-      if (item.level() >= item.maxLevel || this.auraService.auraCount() < price) break;
-      this.auraService.auraCount.update(c => c - price);
+      if (item.level() >= item.maxLevel || !this.auraService.canAfford(price)) break;
+      this.auraService.spend(price);
       item.level.update(q => q + 1);
       item.price.set(this.priceAtLevel(item, item.level()));
     }
@@ -216,9 +216,18 @@ export class ShopManager {
   }
 
   /** Exemplaires achetés d'une amélioration. */
+  /**
+   * Exemplaires possédés d'une amélioration, **bornés à son plafond**. La
+   * borne n'est pas cosmétique : une sauvegarde faite avant un rééquilibrage
+   * peut porter plus d'exemplaires que le plafond du jour, et le compte de la
+   * carte affichait alors « Niv. 7/5 » et un avancement de 101 %. Elle vaut
+   * pour tout ce qui en dérive — prix du prochain exemplaire, effet, et
+   * pourcentage de complétion.
+   */
   upgradePurchases(upgrade: Purchasable): number {
     this.purchaseRevision();
-    return upgrade.purchases ?? (upgrade.unlocked ? 1 : 0);
+    const owned = upgrade.purchases ?? (upgrade.unlocked ? 1 : 0);
+    return Math.min(owned, this.upgradeMaxPurchases(upgrade));
   }
 
   /** Vrai dès le premier exemplaire acheté : la chaîne s'ouvre au suivant. */
@@ -254,8 +263,8 @@ export class ShopManager {
 
     while (count < this.remainingLevels(item)) {
       const price = this.scaled(this.priceAtLevel(item, item.level() + count));
-      if (aura < price) break;
-      aura -= price;
+      if (aura.lt(price)) break;
+      aura = aura.minus(price);
       count++;
     }
 
@@ -281,7 +290,10 @@ export class ShopManager {
         const existingUpgrade = existing.upgrades?.find(u => u.id === savedUpgrade.id);
         if (existingUpgrade) {
           existingUpgrade.unlocked = savedUpgrade.unlocked;
-          existingUpgrade.purchases = savedUpgrade.purchases ?? (savedUpgrade.unlocked ? 1 : 0);
+          existingUpgrade.purchases = Math.min(
+            savedUpgrade.purchases ?? (savedUpgrade.unlocked ? 1 : 0),
+            this.upgradeMaxPurchases(existingUpgrade)
+          );
         }
       }
     }
@@ -310,7 +322,10 @@ export class ShopManager {
         const existingUpgrade = existing.upgrades?.find(u => u.id === savedUpgrade.id);
         if (existingUpgrade) {
           existingUpgrade.unlocked = savedUpgrade.unlocked;
-          existingUpgrade.purchases = savedUpgrade.purchases ?? (savedUpgrade.unlocked ? 1 : 0);
+          existingUpgrade.purchases = Math.min(
+            savedUpgrade.purchases ?? (savedUpgrade.unlocked ? 1 : 0),
+            this.upgradeMaxPurchases(existingUpgrade)
+          );
         }
       }
     }
@@ -327,9 +342,9 @@ export class ShopManager {
     const piece = this.moyaiUpgrades()[index];
     if (!piece || piece.unlocked) return;
     const price = this.scaled(piece.price);
-    if (this.auraService.auraCount() < price) return;
+    if (!this.auraService.canAfford(price)) return;
 
-    this.auraService.auraCount.update(c => c - price);
+    this.auraService.spend(price);
     this.unlockMoyaiUpgrade(index);
   }
 
@@ -385,9 +400,9 @@ export class ShopManager {
     if (!this.isUpgradeAvailable(list, upgrade)) return false;
 
     const price = this.upgradePrice(upgrade);
-    if (this.auraService.auraCount() < price) return false;
+    if (!this.auraService.canAfford(price)) return false;
 
-    this.auraService.auraCount.update(c => c - price);
+    this.auraService.spend(price);
     upgrade.purchases = this.upgradePurchases(upgrade) + 1;
     upgrade.unlocked = true;
     this.markPurchasesChanged();

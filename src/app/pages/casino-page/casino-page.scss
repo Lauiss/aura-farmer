@@ -174,6 +174,7 @@ $lose: #e8836b;
 
 /* --- Panneau de jeu --- */
 .panel {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: $spacing-200;
@@ -181,6 +182,72 @@ $lose: #e8836b;
   background: $menu-surface;
   border: 1px solid $menu-border;
   border-radius: $radius-150;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+// Gain : le panneau s'allume d'un coup, comme une machine qui paie.
+.panel.celebrating {
+  border-color: $menu-accent;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #{$menu-accent} 35%, transparent),
+              0 0 40px color-mix(in srgb, #{$menu-accent} 25%, transparent);
+}
+
+/* --- Ampoules du fronton --- */
+.bulbs {
+  position: absolute;
+  inset: -0.35rem;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.bulb {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: $menu-border-strong;
+}
+
+// Elles ne défilent **que** pendant la fête : allumées en permanence, elles
+// feraient clignoter l'écran pendant qu'on réfléchit à sa mise.
+.panel.celebrating .bulb {
+  animation: bulb-chase 0.6s linear infinite;
+  animation-delay: calc(var(--bulb) * 0.05s);
+}
+
+@keyframes bulb-chase {
+  0%, 60% { background: $menu-border-strong; box-shadow: none; }
+  20% { background: $menu-accent; box-shadow: 0 0 10px $menu-accent; }
+}
+
+/* --- Le montant, en grand par-dessus le jeu --- */
+.payout {
+  position: absolute;
+  top: 38%;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  text-align: center;
+  font-size: $menu-size-title * 1.6;
+  font-weight: $menu-weight-strong;
+  font-variant-numeric: tabular-nums;
+  color: $win;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.85);
+  pointer-events: none;
+  animation: payout-pop 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes payout-pop {
+  0% { transform: scale(0.6) translateY(0.5rem); opacity: 0; }
+  18% { transform: scale(1.12) translateY(0); opacity: 1; }
+  30% { transform: scale(1) translateY(0); opacity: 1; }
+  75% { transform: scale(1) translateY(-0.6rem); opacity: 1; }
+  100% { transform: scale(0.95) translateY(-2rem); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel.celebrating .bulb { animation: none; background: $menu-accent; }
+  .payout { animation: none; }
 }
 
 .result {
@@ -356,8 +423,51 @@ $lose: #e8836b;
 .history {
   display: flex;
   flex-wrap: wrap;
-  gap: $spacing-50;
+  gap: $spacing-100;
   justify-content: center;
+}
+
+/* --- Historique : ce qui est sorti, et ce que ça a rapporté --- */
+.history-block {
+  display: grid;
+  gap: $spacing-100;
+  padding-top: $spacing-150;
+  border-top: 1px solid $menu-border;
+}
+
+.history-title {
+  margin: 0;
+  text-align: center;
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  color: $menu-text-faint;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+// Le tirage au-dessus, son montant dessous : lus en colonne, les deux se
+// rattachent sans qu'on ait à compter les positions.
+.past {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+
+  .amount {
+    font-size: $menu-size-small;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// Le crash n'a pas de couleur de case : c'est l'issue qui colore la pastille,
+// vert si l'on avait encaissé à temps.
+.dot.crash {
+  min-width: 3.25rem;
+  border-radius: $radius-100;
+  background: $lose;
+}
+
+.dot.crash.safe {
+  background: $green;
 }
 
 /* --- Crash --- */
@@ -391,6 +501,14 @@ $lose: #e8836b;
     fill: $menu-accent;
   }
 
+  // Le repère garde la couleur du gain : c'est le seul point de la courbe où
+  // le joueur a réellement touché quelque chose.
+  .mark {
+    fill: $win;
+    stroke: $menu-bg;
+    stroke-width: 2;
+  }
+
   &.cashed .curve {
     stroke: $win;
   }
@@ -405,6 +523,21 @@ $lose: #e8836b;
 
   &.busted .arrow {
     fill: $lose;
+  }
+
+  &.busted {
+    animation: chart-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  }
+
+  // Révélation : la courbe poursuit sa route après l'encaissement, en retrait,
+  // pour montrer ce qu'on a laissé sans le confondre avec un gain.
+  &.revealing .curve {
+    stroke: $menu-text-faint;
+    stroke-dasharray: 6 5;
+  }
+
+  &.revealing .arrow {
+    fill: $menu-text-faint;
   }
 }
 
@@ -427,6 +560,25 @@ $lose: #e8836b;
   .cashed & {
     color: $win;
   }
+
+  .revealing & {
+    color: $menu-text-faint;
+  }
+}
+
+@keyframes chart-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  45% { transform: translateX(5px); }
+  70% { transform: translateX(-3px); }
+}
+
+/* --- Ce qu'on aurait pu faire, sous le gain encaissé --- */
+.reveal,
+.reveal-lead {
+  display: block;
+  font-size: $menu-size-small;
+  color: $menu-text-faint;
 }
 
 .stats {

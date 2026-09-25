@@ -35,12 +35,13 @@
     </section>
 
     @if (game() === 'roulette') {
-      <section class="panel">
+      <section class="panel" [class.celebrating]="celebration() !== null">
+        <ng-container *ngTemplateOutlet="marquee"></ng-container>
         <!-- Bandeau : les cases défilent sous le repère central puis
              ralentissent jusqu'à la case tirée. -->
         <div class="wheel" aria-hidden="true">
           <div class="strip" [class.animated]="animated()" [style.transform]="stripShift()"
-            [style.transition-duration.ms]="animated() ? spinMs : 0">
+            [style.transition-duration.ms]="animated() ? spinMs() : 0">
             @for (pocket of strip; track $index) {
               <span [class]="'pocket ' + colorOf(pocket)">{{ pocket }}</span>
             }
@@ -78,21 +79,34 @@
         </button>
 
         @if (casino.history().length) {
-          <div class="history" [attr.aria-label]="'CASINO_HISTORY' | translate">
-            @for (pocket of casino.history(); track $index) {
-              <span [class]="'dot ' + colorOf(pocket)">{{ pocket }}</span>
-            }
+          <div class="history-block">
+            <h2 class="history-title">{{ 'CASINO_HISTORY' | translate }}</h2>
+            <div class="history" [attr.aria-label]="'CASINO_HISTORY' | translate">
+              @for (spin of casino.history(); track $index) {
+                <span class="past">
+                  <span [class]="'dot ' + spin.color">{{ spin.pocket }}</span>
+                  <span class="amount" [class.win]="spin.won" [class.lose]="!spin.won">
+                    {{ spin.won ? '+' + spin.payout : '—' }}
+                  </span>
+                </span>
+              }
+            </div>
           </div>
         }
       </section>
     } @else {
-      <section class="panel">
-        <div class="chart" [class.busted]="crashPhase() === 'busted'" [class.cashed]="crashPhase() === 'cashed'">
+      <section class="panel" [class.celebrating]="celebration() !== null">
+        <ng-container *ngTemplateOutlet="marquee"></ng-container>
+        <div class="chart" [class.busted]="crashPhase() === 'busted'" [class.cashed]="crashPhase() === 'cashed'"
+          [class.revealing]="crashPhase() === 'reveal'">
           <svg [attr.viewBox]="'0 0 ' + chart.width + ' ' + chart.height" aria-hidden="true">
             <line class="axis" [attr.x1]="chart.pad" [attr.y1]="chart.height - chart.pad"
               [attr.x2]="chart.width - chart.pad" [attr.y2]="chart.height - chart.pad" />
             <polyline #curve class="curve" points="" />
             <polygon #arrow class="arrow" points="" />
+            <!-- Repère de l'encaissement : pendant la révélation, il montre
+                 où l'on est descendu de la courbe. -->
+            <circle #mark class="mark" r="0" cx="0" cy="0" />
           </svg>
           <p #readout class="readout" aria-live="off">×1.00</p>
         </div>
@@ -100,8 +114,13 @@
         <p class="result" role="status">
           @switch (crashPhase()) {
             @case ('running') { {{ 'CASINO_CRASH_RUNNING' | translate }} }
+            @case ('reveal') {
+              <strong class="win">{{ 'CASINO_CASHED' | translate: { multiplier: crashResult().toFixed(2), amount: crashPayout() } }}</strong>
+              <span class="reveal-lead">{{ 'CASINO_REVEALING' | translate }}</span>
+            }
             @case ('cashed') {
               <strong class="win">{{ 'CASINO_CASHED' | translate: { multiplier: crashResult().toFixed(2), amount: crashPayout() } }}</strong>
+              <span class="reveal">{{ 'CASINO_REVEAL' | translate: { multiplier: crashPeak().toFixed(2) } }}</span>
             }
             @case ('busted') {
               <span class="lose">{{ 'CASINO_BUSTED' | translate: { multiplier: crashResult().toFixed(2) } }}</span>
@@ -123,8 +142,38 @@
             {{ 'CASINO_START_CRASH' | translate }}
           </button>
         }
+
+        @if (casino.crashHistory().length) {
+          <div class="history-block">
+            <h2 class="history-title">{{ 'CASINO_HISTORY' | translate }}</h2>
+            <div class="history" [attr.aria-label]="'CASINO_HISTORY' | translate">
+              @for (round of casino.crashHistory(); track $index) {
+                <span class="past">
+                  <span class="dot crash" [class.safe]="round.cashedAt !== null">×{{ round.crashAt.toFixed(2) }}</span>
+                  <span class="amount" [class.win]="round.payout > 0" [class.lose]="round.payout === 0">
+                    {{ round.payout > 0 ? '+' + round.payout : '—' }}
+                  </span>
+                </span>
+              }
+            </div>
+          </div>
+        }
       </section>
     }
+
+    <!-- Ampoules de machine à sous : éteintes au repos, elles défilent quand
+         un gain tombe. C'est ce qui manquait le plus — gagner ne se voyait
+         qu'à une ligne de texte. -->
+    <ng-template #marquee>
+      <span class="bulbs" aria-hidden="true">
+        @for (bulb of bulbs; track bulb) {
+          <span class="bulb" [style.--bulb]="bulb"></span>
+        }
+      </span>
+      @if (celebration(); as amount) {
+        <p class="payout" role="status">+{{ amount }} 💎</p>
+      }
+    </ng-template>
 
     <p class="stats">
       {{ 'CASINO_STATS' | translate: { wagered: casino.wagered(), won: casino.won() } }}

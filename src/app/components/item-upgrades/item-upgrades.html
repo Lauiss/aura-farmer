@@ -7,7 +7,7 @@
                 <p>{{ upgrade.description | translate }}</p>
                 <p>{{ 'PRICE' | translate }}: {{ upgrade.price | formatAura }} <img class="aura-logo" src="assets/imgs/aura.png"/></p>
             </div>
-            <app-action-btn (click)="buyUpgrade(upgrade)" [disabled]="upgrade.unlocked || auraManager.auraCount() < upgrade.price">
+            <app-action-btn (click)="buyUpgrade(upgrade)" [disabled]="upgrade.unlocked || !auraManager.canAfford(upgrade.price)">
                 {{ upgrade.unlocked ? ('UNLOCKED' | translate) : ('BUY' | translate) }}
             </app-action-btn>
         </div>

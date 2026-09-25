@@ -39,7 +39,7 @@ export class BackgroundManager {
       for (const background of BACKGROUNDS) {
         const purchases = saved.upgrades?.[background.id] ?? {};
         for (const upgrade of background.upgrades) {
-          upgrade.purchases = purchases[upgrade.id] ?? 0;
+          upgrade.purchases = Math.min(purchases[upgrade.id] ?? 0, upgrade.maxPurchases ?? Infinity);
           upgrade.unlocked = upgrade.purchases > 0;
         }
       }
@@ -93,9 +93,9 @@ export class BackgroundManager {
     if (this.isOwned(id)) return false;
 
     const price = this.shopManager.scaled(backgroundDefinition(id).price);
-    if (this.auraManager.auraCount() < price) return false;
+    if (!this.auraManager.canAfford(price)) return false;
 
-    this.auraManager.auraCount.update(aura => aura - price);
+    this.auraManager.spend(price);
     this.ownedIds.update(owned => new Set(owned).add(id));
     // Un décor fraîchement acheté s'affiche : c'est ce qu'on vient chercher.
     this.selected.set(id);

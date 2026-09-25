@@ -82,7 +82,7 @@ export class Onboarding {
    * réexpliquer le clic.
    */
   playIntroIfFresh(): void {
-    if (this.auraManager.auraCount() <= 0) this.play('intro');
+    if (this.auraManager.auraCount().lte(0)) this.play('intro');
   }
 
   /** Éteint le projecteur — au clic sur la cible, ou n'importe où ailleurs. */

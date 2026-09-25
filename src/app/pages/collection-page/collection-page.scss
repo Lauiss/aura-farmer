@@ -218,6 +218,17 @@
   border: 2px solid var(--rarity);
 }
 
+// La statuette obtenue est un vrai bouton : elle se porte d'ici.
+button.figure {
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-3px);
+  }
+}
+
 .figure.worn {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--rarity) 45%, transparent), 0 0 24px color-mix(in srgb, var(--rarity) 35%, transparent);
 }

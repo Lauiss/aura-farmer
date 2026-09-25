@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { ChestOpening } from '../../components/chest-opening/chest-opening';
-import { MoyaiViewer } from '../../components/moyai-viewer/moyai-viewer';
 import { CollectionManager } from '../../services/collection-manager';
 import { ConsumableManager } from '../../services/consumable-manager';
 import { StoreManager } from '../../services/store-manager';
@@ -23,17 +22,25 @@ import {
 import { ConsumableDefinition } from '../../../assets/static/consumables';
 
 /**
- * Boutique du moyai marchand : un comptoir, le vendeur derrière, et les
- * étagères en dessous.
+ * Boutique de **John Pork** : lui derrière son comptoir à gauche, la
+ * marchandise en liste à droite.
  *
- * Elle est séparée de la collection, qui ne montre plus que ce qu'on possède :
- * acheter et contempler sont deux gestes différents, et les mélanger obligeait
- * à faire défiler la moitié d'un écran pour atteindre l'autre.
+ * Le vendeur tenait toute la largeur en haut de page et il fallait le dépasser
+ * pour voir ce qu'il vendait ; en colonne, il reste visible pendant qu'on
+ * parcourt les rayons — et c'est lui qui accuse réception de l'achat, dans sa
+ * bulle, là où seule la ligne de gemmes changeait tout en haut de l'écran.
+ *
+ * Son portrait est une **vignette rendue une fois** et non une scène vivante :
+ * l'écran de jeu fait déjà tourner plusieurs contextes WebGL, et un vendeur
+ * qui tourne sur lui-même n'apprend rien de plus qu'un vendeur immobile.
+ *
+ * La boutique est séparée de la collection, qui ne montre plus que ce qu'on
+ * possède : acheter et contempler sont deux gestes différents.
  */
 @Component({
   selector: 'app-store-page',
   standalone: true,
-  imports: [TranslatePipe, MoyaiViewer, NgTemplateOutlet],
+  imports: [TranslatePipe, NgTemplateOutlet],
   templateUrl: './store-page.html',
   styleUrl: './store-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -51,6 +58,21 @@ export class StorePage {
   private readonly gameLoop = inject(GameLoop);
 
   readonly rarityColors = RARITY_COLORS;
+  readonly vendorPortrait = this.modelIcons.caller('john', 512);
+
+  /**
+   * Ce que le marchand dit à l'instant. Il part de son boniment et revient
+   * dessus après chaque réplique : une bulle qui reste sur « pas assez de
+   * gemmes » finirait par ne plus rien vouloir dire.
+   */
+  readonly line = signal('STORE_PITCH');
+  private lineTimer?: ReturnType<typeof setTimeout>;
+
+  private say(key: string): void {
+    this.line.set(key);
+    clearTimeout(this.lineTimer);
+    this.lineTimer = setTimeout(() => this.line.set('STORE_PITCH'), 3200);
+  }
 
   /**
    * Coffres en vente : ceux dont le rayon a été ouvert dans l'arbre. Celui du
@@ -108,11 +130,12 @@ export class StorePage {
 
   buyChest(chest: ChestDefinition): void {
     if (!this.collection.buyChest(chest.tier)) {
-      this.hintManager.show('COLLECTION_NOT_ENOUGH_GEMS');
+      this.say('STORE_SAY_BROKE');
       return;
     }
     this.soundManager.playFX(Sound.Buy);
     this.celebrate(`chest-${chest.tier}`);
+    this.say('STORE_SAY_THANKS');
     this.openChest(chest.tier);
   }
 
@@ -129,14 +152,15 @@ export class StorePage {
     const food = definition.category === 'food';
     switch (this.consumables.buy(definition)) {
       case 'busy':
-        this.hintManager.show(food ? 'STORE_FOOD_FULL' : 'STORE_HEART_ATTACK');
+        this.say(food ? 'STORE_FOOD_FULL' : 'STORE_HEART_ATTACK');
         return;
       case 'gems':
-        this.hintManager.show('COLLECTION_NOT_ENOUGH_GEMS');
+        this.say('STORE_SAY_BROKE');
         return;
     }
     this.soundManager.playFX(Sound.Buy);
     this.celebrate(`drink-${definition.id}`);
+    this.say('STORE_SAY_THANKS');
     this.hintManager.show(food ? 'STORE_FOOD_HINT' : 'STORE_DRINK_HINT');
   }
 
@@ -154,6 +178,10 @@ export class StorePage {
   back(): void {
     this.soundManager.playFX(Sound.Plop);
     this.router.navigate(['/game']);
+  }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.lineTimer);
   }
 
   ngOnInit(): void {

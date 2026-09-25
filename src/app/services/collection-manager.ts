@@ -42,6 +42,8 @@ interface CollectionSave {
   relics?: string[];
   chests: Partial<Record<ChestTier, number>>;
   skin: string | null;
+  /** Coffres ouverts depuis le début, pour les quêtes. */
+  chestsOpened?: number;
 }
 
 /**
@@ -71,6 +73,8 @@ export class CollectionManager {
    * gemmes » ne doit pas se perdre à la première dépense.
    */
   readonly gemsEarned = signal(0);
+  /** Coffres ouverts depuis le début de la partie : une mesure de quête. */
+  readonly chestsOpened = signal(0);
   private readonly ownedIds = signal<Set<string>>(new Set());
   private readonly relicIds = signal<Set<string>>(new Set());
   /** Coffres possédés et pas encore ouverts, par tier. */
@@ -84,6 +88,7 @@ export class CollectionManager {
       this.gems.set(saved.gems ?? 0);
       // Parties d'avant le suivi : on repart du solde, faute de mieux.
       this.gemsEarned.set(saved.gemsEarned ?? saved.gems ?? 0);
+      this.chestsOpened.set(saved.chestsOpened ?? 0);
       this.ownedIds.set(new Set(saved.owned ?? []));
       // Les reliques d'avant tombaient des coffres et n'existent plus : chacune
       // est remboursée en gemmes. Celles des boss déjà battus sont rendues
@@ -234,6 +239,7 @@ export class CollectionManager {
 
     this.gems.update(gems => gems + reward.gems);
     this.gemsEarned.update(total => total + reward.gems);
+    this.chestsOpened.update(total => total + 1);
     this.persist();
     return reward;
   }
@@ -272,6 +278,7 @@ export class CollectionManager {
     this.saveManager.saveProgress(SaveLocation.Collection, {
       gems: this.gems(),
       gemsEarned: this.gemsEarned(),
+      chestsOpened: this.chestsOpened(),
       owned: [...this.ownedIds()],
       relics: [...this.relicIds()],
       chests: this.chests(),

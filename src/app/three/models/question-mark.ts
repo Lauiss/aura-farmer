@@ -72,3 +72,52 @@ export function createQuestionMark({ seed = 909 }: QuestionMarkOptions = {}): TH
 
   return mark;
 }
+
+/**
+ * Point d'exclamation, enseigne des quêtes. Il partage la matière et la
+ * facture du point d'interrogation : les deux glyphes se répondent — l'un pour
+ * ce qu'on ignore, l'autre pour ce qu'on a à faire — et il serait absurde
+ * qu'ils ne soient pas du même atelier.
+ */
+export function createExclamation({ seed = 911 }: QuestionMarkOptions = {}): THREE.Group {
+  const random = createRandom(seed);
+  const roughness = 0.012;
+  const depth = 0.3;
+
+  const body = new THREE.MeshStandardMaterial({
+    color: 0xe8b84b,
+    flatShading: true,
+    roughness: 0.8,
+    metalness: 0.05
+  });
+  const accent = new THREE.MeshStandardMaterial({
+    color: 0xb08a2c,
+    flatShading: true,
+    roughness: 0.9,
+    metalness: 0.05
+  });
+
+  const mark = new THREE.Group();
+  mark.name = 'exclamation';
+
+  // Hampe fuselée : large en haut, effilée vers le bas. C'est cette fuite qui
+  // distingue un point d'exclamation d'une simple barre.
+  const stem = loft([
+    { y: -0.25, halfWidth: 0.12, front: depth / 2, back: -depth / 2, chamfer: 0.14 },
+    { y: 0.45, halfWidth: 0.2, front: depth / 2, back: -depth / 2, chamfer: 0.12 },
+    { y: 0.95, halfWidth: 0.22, front: depth / 2, back: -depth / 2, chamfer: 0.12 }
+  ]);
+  mark.add(mesh(chisel(stem, roughness, random), body));
+
+  const dot = loft([
+    { y: -0.75, halfWidth: 0.2, front: depth / 2, back: -depth / 2, chamfer: 0.28 },
+    { y: -0.42, halfWidth: 0.2, front: depth / 2, back: -depth / 2, chamfer: 0.28 }
+  ]);
+  mark.add(mesh(chisel(dot, roughness, random), accent));
+
+  const bounds = new THREE.Box3().setFromObject(mark);
+  const center = bounds.getCenter(new THREE.Vector3());
+  mark.children.forEach(child => child.position.sub(center));
+
+  return mark;
+}

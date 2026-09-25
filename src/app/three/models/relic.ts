@@ -209,6 +209,66 @@ function object(relic: RelicDefinition): THREE.Group {
       break;
     }
 
+    /**
+     * Pince de Trippi : deux mors qui s'écartent sur un bras segmenté. Une
+     * queue de crevette aurait été plus juste, mais dans une vignette elle se
+     * confond avec une feuille ; une pince, non.
+     */
+    case 'claw': {
+      group.add(mesh(loft([round(-1.0, 0.16), round(-0.4, 0.22), round(-0.05, 0.2)]), main));
+      // Les deux mors, ouverts en V.
+      for (const side of [-1, 1]) {
+        group.add(
+          mesh(
+            loft([round(-0.05, 0.18, 0.28), round(0.5, 0.14, 0.28), round(0.85, 0.05, 0.3)]),
+            main,
+            [side * 0.12, 0, 0],
+            [0, 0, side * 0.42]
+          )
+        );
+      }
+      // Anneaux de carapace sur le bras.
+      for (const y of [-0.8, -0.55, -0.3]) {
+        group.add(mesh(new THREE.TorusGeometry(0.2, 0.05, 3, 9), plain(0xf4c9b0), [0, y, 0], [Math.PI / 2, 0, 0]));
+      }
+      group.rotation.z = 0.15;
+      break;
+    }
+
+    /**
+     * Pneu de Boneca : couché de trois quarts, jante claire au centre. Debout
+     * et de face, il ne se distinguait pas du halo de la relique, qui est lui
+     * aussi un anneau.
+     */
+    case 'tyre': {
+      const wheel = new THREE.Group();
+      wheel.add(mesh(new THREE.TorusGeometry(0.62, 0.26, 5, 14), main));
+      wheel.add(mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.3, 8), plain(0x9aa0a8), [0, 0, 0], [Math.PI / 2, 0, 0]));
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        wheel.add(mesh(new THREE.BoxGeometry(0.1, 0.22, 0.18), plain(0x15171a),
+          [Math.cos(angle) * 0.66, Math.sin(angle) * 0.66, 0], [0, 0, -angle]));
+      }
+      wheel.rotation.set(0.95, 0.35, 0);
+      wheel.position.y = -0.2;
+      group.add(wheel);
+      break;
+    }
+
+    /**
+     * Cloche de La Vacca : jupe évasée, anse et battant. C'est l'objet le plus
+     * simple qui dise « vache » sans avoir à modéliser la bête.
+     */
+    case 'bell': {
+      group.add(mesh(loft([round(-0.75, 0.6, 0.3), round(-0.4, 0.5, 0.32), round(0.15, 0.3, 0.34), round(0.4, 0.22, 0.36)]), main));
+      // Anse, au sommet.
+      group.add(mesh(new THREE.TorusGeometry(0.18, 0.06, 3, 9), plain(0x6b6f76), [0, 0.5, 0]));
+      // Battant, qui dépasse sous la jupe.
+      group.add(mesh(new THREE.SphereGeometry(0.14, 6, 5), plain(0x3a3f46), [0, -0.88, 0]));
+      group.rotation.z = -0.14;
+      break;
+    }
+
     // Loupe de l'espion : cercle, verre bleuté, manche.
     case 'magnifier': {
       const lens = new THREE.Group();

@@ -741,7 +741,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
    * front de la statue, puis tout s'efface.
    */
   playTrickshot(): void {
-    if (!this.scene || !this.camera) return;
+    if (!this.scene || !this.camera || this.settings.calm()) return;
 
     if (!this.sniper) {
       this.sniper = createSniper();
@@ -842,6 +842,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
    * décor de fond avec la statue.
    */
   bounce(side: number): void {
+    if (this.settings.calm()) return;
     this.bounceSide = THREE.MathUtils.clamp(side, -1, 1);
     this.bounceElapsed = 0;
   }
@@ -879,7 +880,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
    * elle, donc elle la suit si on la tourne, et ne vit que le temps du clic.
    */
   playMog(): void {
-    if (!this.moyai) return;
+    if (!this.moyai || this.settings.calm()) return;
 
     if (!this.mogFace) {
       this.mogFace = createMogFace();
@@ -913,7 +914,10 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
    * coup critique, ce qui élargit la volée et l'envoie plus loin.
    */
   emitAura(power = 1): void {
-    if (!this.scene) return;
+    // Mode calme : le clic garde sa valeur, il cesse seulement de projeter une
+    // volée d'éclats à chaque fois. C'est l'effet le plus répété du jeu, donc
+    // le premier à fatiguer.
+    if (!this.scene || this.settings.calm()) return;
 
     const count = Math.round(THREE.MathUtils.clamp(5 * power, 4, 14));
     for (let i = 0; i < count; i++) {
@@ -1053,8 +1057,8 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.controls?.handleResize();
   }
 
-  /** Temps accumulé depuis la dernière image rendue, pour le plafond d'images. */
-  private sinceRender = 0;
+  /** Portillon d'images : le plafond des options et celui de la scène. */
+  private readonly frames = this.settings.gate(() => this.maxFps());
 
   private renderFrame = (): void => {
     this.frameId = requestAnimationFrame(this.renderFrame);
@@ -1068,12 +1072,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
 
     // Plafond d'images : on laisse le temps s'écouler mais on saute le rendu.
     // Les animations restent justes, elles se fondent sur `delta`.
-    const fps = this.settings.frameCap(this.maxFps());
-    if (fps > 0) {
-      this.sinceRender += delta;
-      if (this.sinceRender < 1 / fps) return;
-      this.sinceRender = 0;
-    }
+    if (!this.frames.allows(delta)) return;
     if (!this.userInteracted && this.moyai) {
       this.moyai.rotation.y += this.idleSpin() * delta;
     }

@@ -9,19 +9,6 @@
   color: $menu-text;
 }
 
-// Le défilement se fait ici et non sur le document : dans l'iframe d'itch.io,
-// celui du document est souvent désactivé.
-.scroll {
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
-// Un autre article de la même catégorie tourne : celui-ci attend son tour.
-.good.blocked {
-  opacity: 0.55;
-}
-
 /* --- Barre du haut ----------------------------------------------------- */
 .bar {
   display: flex;
@@ -63,292 +50,250 @@
   color: #9fe6ff;
 }
 
+/* --- Les deux colonnes -------------------------------------------------- */
+.shop {
+  display: grid;
+  grid-template-columns: minmax(20rem, 28rem) 1fr;
+  min-height: 0;
+}
+
+// Le défilement se fait ici et non sur le document : dans l'iframe d'itch.io,
+// celui du document est souvent désactivé.
+.scroll {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: $spacing-300;
+  display: grid;
+  gap: $spacing-400;
+  align-content: start;
+}
+
 /* --- Le comptoir et son vendeur ---------------------------------------- */
-// Le vendeur est posé derrière le comptoir, qui le coupe à mi-hauteur : c'est
-// ce chevauchement qui donne la profondeur, sans avoir à modéliser une scène.
+// Le comptoir coupe le vendeur à mi-hauteur : c'est ce chevauchement qui donne
+// la profondeur, sans avoir à modéliser une scène.
+// Le marchand est **centré dans sa colonne** et tient toute sa hauteur : collé
+// en haut et petit, il ressemblait à une vignette d'illustration plutôt qu'à
+// quelqu'un qui tient boutique.
 .counter-scene {
   position: relative;
-  height: 14rem;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  align-content: center;
+  justify-items: center;
+  gap: $spacing-200;
+  padding: $spacing-300 $spacing-200 0;
   overflow: hidden;
-  background: linear-gradient(180deg, color-mix(in srgb, #{$menu-accent} 8%, $menu-bg), $menu-bg);
+  border-right: 1px solid $menu-border;
+  background: linear-gradient(180deg, color-mix(in srgb, #{$menu-accent} 9%, $menu-bg), $menu-bg 70%);
+}
+
+.bubble {
+  position: relative;
+  max-width: 100%;
+  padding: $spacing-150 $spacing-200;
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  text-align: center;
+  color: $menu-text;
+  background: $menu-surface;
+  border: 1px solid $menu-accent;
+  border-radius: $radius-100;
+
+  // La pointe de la bulle, vers le vendeur.
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 0.7rem;
+    height: 0.7rem;
+    transform: translate(-50%, -50%) rotate(45deg);
+    background: $menu-surface;
+    border-right: 1px solid $menu-accent;
+    border-bottom: 1px solid $menu-accent;
+  }
 }
 
 .vendor {
-  position: absolute;
-  left: 50%;
-  bottom: 3.5rem;
-  width: 11rem;
-  height: 11rem;
-  transform: translateX(-50%);
-  display: block;
+  align-self: center;
+  justify-self: center;
+  width: min(22rem, 100%);
+  object-fit: contain;
+  // Il est posé derrière le comptoir, qui le recouvre jusqu'à la poitrine.
+  margin-bottom: -3.4rem;
+  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.6));
 }
 
 .counter {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 4.5rem;
-  background: $menu-surface;
-  border-top: 3px solid $menu-accent;
-  box-shadow: 0 -12px 28px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  height: 7rem;
+  background: color-mix(in srgb, #{$menu-accent} 14%, $menu-surface);
+  border-top: 2px solid $menu-border-strong;
 }
 
-// Rainures du plateau, pour qu'il ne soit pas un simple aplat.
-.counter::after {
-  content: '';
-  position: absolute;
-  inset: 0.9rem 8% auto;
-  height: 1px;
-  background: $menu-border;
+.counter-top {
+  display: block;
+  height: 0.55rem;
+  background: color-mix(in srgb, #{$menu-accent} 40%, $menu-surface);
 }
 
-.pitch {
+.vendor-name {
   position: absolute;
-  left: 50%;
-  bottom: 1.2rem;
-  transform: translateX(-50%);
-  max-width: 90%;
-  text-align: center;
+  bottom: $spacing-200;
   font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: $menu-text-dim;
+  color: $menu-text-faint;
 }
 
-/* --- Étagères ---------------------------------------------------------- */
-.shelves {
-  padding: $spacing-300;
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-400;
+/* --- Rayons ------------------------------------------------------------- */
+.shelf {
+  display: grid;
+  gap: $spacing-100;
 }
 
 .shelf-title {
   font-size: $menu-size-lead;
   font-weight: $menu-weight-strong;
-  letter-spacing: 0.06em;
 }
 
-.shelf-lead {
-  margin-top: $spacing-50;
+.shelf-lead,
+.shelf-empty {
   font-size: $menu-size-small;
-  color: $menu-text-dim;
+  color: $menu-text-faint;
 }
 
-.goods {
-  margin-top: $spacing-200;
+.rows {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
-  gap: $spacing-200;
-  // Le rayonnage : un filet sous chaque rangée d'articles.
-  padding-bottom: $spacing-200;
-  border-bottom: 2px solid $menu-border-strong;
-}
-
-.good {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: $spacing-50;
-  padding: $spacing-200 $spacing-150;
-  font: inherit;
-  color: $menu-text;
-  text-align: center;
-  background: $menu-surface;
-  border: 2px solid $menu-border-strong;
-  border-radius: $radius-100;
-}
-
-// Une canette en cours d'effet se signale, sinon on en rachète sans le savoir.
-.good.running {
-  border-color: $menu-accent;
-}
-
-.good.pending {
-  cursor: pointer;
-}
-
-.good.pending:hover,
-.good.pending:focus-visible {
-  border-color: $menu-accent;
-}
-
-.good-icon {
-  width: 5rem;
-  height: 5rem;
-  object-fit: contain;
-}
-
-.good-name {
-  font-weight: $menu-weight-strong;
-}
-
-.good-effect {
-  font-size: $menu-size-small;
-  color: $menu-accent;
-  font-variant-numeric: tabular-nums;
-}
-
-.good-note {
-  font-size: $menu-size-small;
-  color: $menu-text-dim;
-  font-variant-numeric: tabular-nums;
-}
-
-.odds {
-  margin: $spacing-50 0;
-  font-size: 0.78rem;
+  gap: $spacing-100;
   list-style: none;
+  margin: 0;
   padding: 0;
 }
 
-.odds .relic-odds {
-  margin-top: $spacing-50;
-  padding-top: $spacing-50;
-  border-top: 1px solid $menu-border;
-  color: $menu-accent;
+// Une ligne par article : icône, nom, ce qu'il fait, son prix. En grille de
+// vignettes, un rayon de six articles occupait deux écrans.
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(6rem, 12rem) 1fr auto;
+  align-items: center;
+  gap: $spacing-200;
+  padding: $spacing-100 $spacing-200;
+  background: $menu-surface;
+  border: 1px solid $menu-border;
+  border-radius: $radius-100;
 }
 
-.price {
-  margin-top: auto;
-  padding: $spacing-100 $spacing-200;
+.row.blocked {
+  opacity: 0.55;
+}
+
+.row.running {
+  border-color: color-mix(in srgb, #{$menu-accent} 60%, transparent);
+}
+
+// À-coup d'achat : sans réaction, cliquer « acheter » ne se distinguait pas
+// d'un clic raté.
+.row.bought {
+  animation: row-bought 0.46s ease-out;
+}
+
+@keyframes row-bought {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 color-mix(in srgb, #{$menu-accent} 70%, transparent); }
+  35% { transform: scale(1.015); box-shadow: 0 0 0 4px color-mix(in srgb, #{$menu-accent} 45%, transparent); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; }
+}
+
+.row-icon {
+  width: 3rem;
+  height: 3rem;
+  object-fit: contain;
+}
+
+.row-name {
+  font-weight: $menu-weight-strong;
+}
+
+.row-note {
+  font-size: $menu-size-small;
+  color: $menu-text-faint;
+}
+
+.odds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-100;
+}
+
+.row-price {
   font: inherit;
   font-weight: $menu-weight-strong;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.row-price.plain {
+  color: $menu-text-faint;
+}
+
+.buy {
+  padding: $spacing-100 $spacing-200;
   color: $menu-bg;
   background: $menu-accent;
   border: none;
   border-radius: $radius-100;
   cursor: pointer;
+  transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  &:hover:not(:disabled),
+  &:focus-visible:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    color: $menu-text-faint;
+    background: $menu-border;
+    cursor: not-allowed;
+  }
 }
 
-.price:disabled {
-  color: $menu-text-faint;
-  background: $menu-bg;
-  border: 1px solid $menu-border-strong;
-  cursor: not-allowed;
-}
-
-.price:not(:disabled):hover,
-.price:not(:disabled):focus-visible {
-  filter: brightness(1.1);
-}
-
-/* --- Effets en cours --------------------------------------------------- */
-.active-list {
-  margin-top: $spacing-150;
-  display: flex;
-  flex-wrap: wrap;
-  gap: $spacing-150;
-}
-
-.active-chip {
-  display: flex;
-  align-items: center;
-  gap: $spacing-100;
-  padding: $spacing-50 $spacing-150;
-  background: $menu-surface;
-  border: 1px solid $menu-accent;
-  border-radius: 999px;
-}
-
-.chip-icon {
-  width: 1.6rem;
-  height: 1.6rem;
-}
-
-.chip-name {
-  font-weight: $menu-weight-strong;
-  font-size: $menu-size-small;
-}
-
-.chip-time {
-  font-size: $menu-size-small;
-  color: $menu-accent;
-  font-variant-numeric: tabular-nums;
-}
-
-/* --- Passerelle vers la collection, symétrique de celle de l'autre écran --- */
 .to-collection {
-  display: flex;
-  justify-content: center;
+  text-align: center;
 }
 
-.to-collection .link {
-  padding: $spacing-150 $spacing-300;
-  font-weight: $menu-weight-strong;
-  letter-spacing: 0.08em;
-  color: $menu-accent;
-  border: 2px solid $menu-accent;
-  border-radius: $radius-100;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
+/* --- Étroit : le marchand repasse au-dessus de sa marchandise ----------- */
+@media (max-width: 52rem) {
+  .shop {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
 
-.to-collection .link:hover,
-.to-collection .link:focus-visible {
-  color: $menu-bg;
-  background-color: $menu-accent;
-}
-
-@media (max-width: 40rem) {
   .counter-scene {
-    height: 11rem;
+    border-right: none;
+    border-bottom: 1px solid $menu-border;
+    padding-bottom: $spacing-200;
   }
 
   .vendor {
-    width: 8rem;
-    height: 8rem;
+    width: 11rem;
+    margin-bottom: -1.8rem;
   }
-}
 
-// Rayon encore fermé : on dit où l'ouvrir plutôt que de laisser un trou.
-.shelf-empty {
-  margin-top: $spacing-150;
-  padding: $spacing-200;
-  font-size: $menu-size-small;
-  color: $menu-text-faint;
-  text-align: center;
-  border: 1px dashed $menu-border-strong;
-  border-radius: $radius-100;
-}
-
-/* --- Achat : la carte accuse le coup ----------------------------------- */
-// Sans réaction, cliquer « acheter » ne se distinguait pas d'un clic raté :
-// seule la ligne de gemmes changeait, tout en haut de l'écran.
-.good.bought {
-  animation: good-pop 0.45s cubic-bezier(0.2, 1.5, 0.4, 1);
-}
-
-.good.bought .good-icon {
-  animation: good-lift 0.45s cubic-bezier(0.2, 1.5, 0.4, 1);
-}
-
-@keyframes good-pop {
-  0% {
-    box-shadow: 0 0 0 0 rgba(232, 184, 75, 0.9);
-    border-color: $menu-accent;
+  .counter {
+    height: 3rem;
   }
-  100% {
-    box-shadow: 0 0 0 1.4rem rgba(232, 184, 75, 0);
-    border-color: $menu-border-strong;
-  }
-}
 
-@keyframes good-lift {
-  0% {
-    transform: translateY(0) scale(1);
+  .vendor-name {
+    display: none;
   }
-  45% {
-    transform: translateY(-0.6rem) scale(1.14);
-  }
-  100% {
-    transform: translateY(0) scale(1);
-  }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .good.bought,
-  .good.bought .good-icon {
-    animation: none;
+  .row {
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .row-note {
+    grid-column: 2 / -1;
   }
 }

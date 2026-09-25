@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { CollectionManager } from '../../services/collection-manager';
 import {
   CasinoManager,
@@ -23,9 +24,16 @@ import {
 } from '../../services/casino-manager';
 import { Sound, SoundManager } from '../../services/sound-manager';
 import { GameLoop } from '../../services/game-loop';
+import { StoreManager } from '../../services/store-manager';
+import { SettingsManager } from '../../services/settings-manager';
 
 type Game = 'roulette' | 'crash';
-type CrashPhase = 'idle' | 'running' | 'cashed' | 'busted';
+/**
+ * `reveal` : le joueur a encaissé, la courbe continue jusqu'au point de
+ * rupture pour lui montrer ce qu'il a laissé. Sans ce temps-là, encaisser tôt
+ * ou tard se ressemble et rien ne s'apprend d'une partie à l'autre.
+ */
+type CrashPhase = 'idle' | 'running' | 'reveal' | 'cashed' | 'busted';
 
 /** Tours de roue parcourus avant l'arrêt : la case gagnante est dans le dernier. */
 const STRIP_LAPS = 6;
@@ -36,6 +44,23 @@ const SPIN_MS = 4200;
 
 /** Cadre du graphique du crash, en unités SVG. */
 const CHART = { width: 400, height: 220, pad: 14 };
+
+/**
+ * Accélération de la révélation, et sa durée maximale. Une partie peut sauter
+ * à ×1000, soit trois quarts de minute de courbe : la vitesse s'ajuste pour
+ * que le dévoilement tienne toujours dans ces quelques secondes.
+ */
+const REVEAL_SPEED = 4;
+const REVEAL_MAX_SECONDS = 2.5;
+
+/**
+ * Crans entendus pendant que la roue tourne, et durée de la fête qui suit un
+ * gain. Les crans se resserrent au début et s'espacent à la fin, comme le
+ * bandeau qui ralentit : une cadence régulière sonnait comme un métronome et
+ * ne disait rien du freinage.
+ */
+const TICKS = 24;
+const CELEBRATION_MS = 1800;
 
 /**
  * Casino : la roulette et le crash, où l'on mise ses gemmes.
@@ -51,7 +76,7 @@ const CHART = { width: 400, height: 220, pad: 14 };
 @Component({
   selector: 'app-casino-page',
   standalone: true,
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, NgTemplateOutlet],
   templateUrl: './casino-page.html',
   styleUrl: './casino-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -63,6 +88,8 @@ export class CasinoPage implements OnInit, OnDestroy {
   private readonly soundManager = inject(SoundManager);
   private readonly router = inject(Router);
   private readonly gameLoop = inject(GameLoop);
+  private readonly store = inject(StoreManager);
+  private readonly settings = inject(SettingsManager);
   private readonly zone = inject(NgZone);
 
   readonly game = signal<Game>('roulette');
@@ -70,6 +97,8 @@ export class CasinoPage implements OnInit, OnDestroy {
   readonly betValid = computed(() => this.casino.canBet(this.bet()));
 
   readonly payouts = ROULETTE_PAYOUT;
+  /** Rang des ampoules du panneau, qui sert de retard à leur animation. */
+  readonly bulbs = Array.from({ length: 14 }, (_, index) => index);
   readonly chart = CHART;
 
   // --- Roulette -----------------------------------------------------------
@@ -86,38 +115,65 @@ export class CasinoPage implements OnInit, OnDestroy {
   /** Animation de défilement active ; coupée pour replacer le bandeau. */
   readonly animated = signal(false);
   readonly stripShift = computed(() => `translateX(calc(-${(this.stripIndex() + 0.5) * POCKET_REM}rem))`);
-  readonly spinMs = SPIN_MS;
+  /**
+   * Durée du tirage. En mode calme la transition du bandeau est coupée par la
+   * feuille de style : le laisser à quatre secondes ferait patienter devant un
+   * résultat déjà affiché. On abrège donc au lieu de faire semblant.
+   */
+  readonly spinMs = computed(() => (this.settings.calm() ? 350 : SPIN_MS));
 
   readonly colorOf = pocketColor;
   private spinTimer?: ReturnType<typeof setTimeout>;
 
   // --- Crash --------------------------------------------------------------
 
+  /**
+   * Gain qui vient de tomber, affiché en grand par-dessus le jeu et repris par
+   * les ampoules du panneau. Sans cet instant-là, gagner et perdre se
+   * ressemblaient : seule une ligne de texte changeait.
+   */
+  readonly celebration = signal<number | null>(null);
+  private celebrationTimer?: ReturnType<typeof setTimeout>;
+
   readonly crashPhase = signal<CrashPhase>('idle');
   /** Multiplicateur final affiché une fois la partie close. */
   readonly crashResult = signal(1);
   readonly crashPayout = signal(0);
+  /** Point de rupture, dévoilé à la fin même quand on a encaissé avant. */
+  readonly crashPeak = signal(0);
   /** Encaissement automatique, 0 pour le désactiver. */
   readonly autoCashOut = signal(0);
 
   private readonly curve = viewChild<ElementRef<SVGPolylineElement>>('curve');
   private readonly arrow = viewChild<ElementRef<SVGPolygonElement>>('arrow');
   private readonly readout = viewChild<ElementRef<HTMLElement>>('readout');
+  private readonly mark = viewChild<ElementRef<SVGCircleElement>>('mark');
 
   private frameId?: number;
   private crashStart = 0;
+  /** Point de rupture de la partie en cours, retenu pour la révélation. */
+  private roundCrashAt = 0;
+  /** Vitesse d'écoulement du temps : 1 en partie, plus vite en révélation. */
+  private timeScale = 1;
+  /** Multiplicateur encaissé, repéré sur la courbe pendant la révélation. */
+  private cashedMark = 0;
   /** Multiplicateur à l'image courante, lu par l'encaissement. */
   private liveMultiplier = 1;
 
   ngOnInit(): void {
     // Comme les autres écrans : arriver directement ici charge la partie.
     this.gameLoop.start();
+    // Le casino s'ouvre dans l'arbre : l'adresse ne doit pas court-circuiter
+    // l'achat, et la partie est chargée avant d'en juger.
+    if (!this.store.casino()) this.router.navigate(['/game']);
   }
 
   ngOnDestroy(): void {
     // Quitter pendant un tirage ne doit rien coûter : la roulette est réglée,
     // le crash encaissé à la valeur atteinte.
     clearTimeout(this.spinTimer);
+    clearTimeout(this.celebrationTimer);
+    this.tickTimers.forEach(clearTimeout);
     this.casino.settleRoulette();
     if (this.crashPhase() === 'running') this.casino.cashOut(this.liveMultiplier);
     if (this.frameId !== undefined) cancelAnimationFrame(this.frameId);
@@ -125,6 +181,9 @@ export class CasinoPage implements OnInit, OnDestroy {
 
   select(game: Game): void {
     if (this.busy()) return;
+    // Changer de jeu pendant la révélation la conclut : la laisser courir
+    // ferait tourner une boucle d'animation sur un graphique démonté.
+    if (this.crashPhase() === 'reveal') this.endCrash(this.roundCrashAt);
     this.soundManager.playFX(Sound.Plop);
     this.game.set(game);
   }
@@ -146,11 +205,41 @@ export class CasinoPage implements OnInit, OnDestroy {
 
   // --- Roulette -----------------------------------------------------------
 
+  /** Fête un gain : le montant s'affiche en grand et le panneau s'allume. */
+  private cheer(amount: number): void {
+    this.celebration.set(amount);
+    clearTimeout(this.celebrationTimer);
+    this.celebrationTimer = setTimeout(() => this.celebration.set(null), CELEBRATION_MS);
+  }
+
+  private tickTimers: ReturnType<typeof setTimeout>[] = [];
+
+  /**
+   * Les crans de la roue. Ils suivent l'inverse de la courbe d'accélération du
+   * bandeau : espacés en fin de course, serrés au début, donc on *entend* la
+   * roue freiner avant de voir où elle s'arrête.
+   */
+  private scheduleTicks(): void {
+    this.tickTimers.forEach(clearTimeout);
+    this.tickTimers = [];
+    this.zone.runOutsideAngular(() => {
+      for (let i = 1; i <= TICKS; i++) {
+        const progress = i / TICKS;
+        const at = (1 - Math.pow(1 - progress, 1 / 3)) * this.spinMs();
+        this.tickTimers.push(
+          setTimeout(() => this.soundManager.playPitched(Sound.Plop, 1.9 - progress * 0.5), at)
+        );
+      }
+    });
+  }
+
   spin(): void {
     if (this.busy()) return;
     const result = this.casino.spinRoulette(this.bet(), this.choice());
     if (!result) return;
     this.soundManager.playFX(Sound.Plop);
+    if (!this.settings.calm()) this.scheduleTicks();
+    this.celebration.set(null);
 
     // Le bandeau est d'abord ramené, sans animation, à la même case dans le
     // premier tour : il peut ainsi repartir pour plusieurs tours complets.
@@ -173,8 +262,11 @@ export class CasinoPage implements OnInit, OnDestroy {
       this.casino.settleRoulette();
       this.spinning.set(false);
       this.lastSpin.set(result);
-      if (result.won) this.soundManager.playFX(Sound.Buy);
-    }, SPIN_MS + 150);
+      if (result.won) {
+        this.soundManager.playFX(Sound.Buy);
+        this.cheer(result.payout);
+      }
+    }, this.spinMs() + 150);
   }
 
   // --- Crash --------------------------------------------------------------
@@ -185,53 +277,99 @@ export class CasinoPage implements OnInit, OnDestroy {
   }
 
   startCrash(): void {
+    // Relancer pendant la révélation la coupe : le joueur a vu ce qu'il
+    // voulait voir, rien ne justifie de lui faire attendre la fin.
     if (this.busy() || !this.casino.startCrash(this.bet())) return;
+    this.stopFrame();
     this.soundManager.playFX(Sound.Plop);
     this.crashPhase.set('running');
     this.crashPayout.set(0);
+    this.crashPeak.set(0);
+    this.celebration.set(null);
     this.liveMultiplier = 1;
+    this.timeScale = 1;
+    this.cashedMark = 0;
+    this.roundCrashAt = this.casino.crashPoint() ?? 1;
     this.crashStart = performance.now();
     this.zone.runOutsideAngular(() => this.crashFrame());
   }
 
   cashOut(): void {
     if (this.crashPhase() !== 'running') return;
-    this.endCrash(this.casino.cashOut(this.liveMultiplier) ?? 0, this.liveMultiplier);
+    const result = this.casino.cashOut(this.liveMultiplier);
+    if (!result) return;
+    // L'image en attente est annulée d'abord : sans cela, elle repartirait
+    // pour son propre compte et deux boucles peindraient la même courbe.
+    this.stopFrame();
+
+    const cashedAt = this.liveMultiplier;
+    this.crashResult.set(cashedAt);
+    this.crashPayout.set(result.payout);
+
+    // Encaissement refusé : la courbe avait déjà sauté, il n'y a rien à
+    // dévoiler. L'écran annonce le point de rupture, pas le geste manqué.
+    if (result.payout === 0) {
+      this.crashResult.set(result.crashAt);
+      this.endCrash(result.crashAt);
+      return;
+    }
+
+    this.soundManager.playFX(Sound.Buy);
+    this.cheer(result.payout);
+    this.cashedMark = cashedAt;
+
+    // La courbe repart d'où elle en était, mais le temps s'écoule plus vite :
+    // on remonte l'origine pour que l'instant courant reste le même.
+    const remaining = CasinoManager.timeFor(result.crashAt) - CasinoManager.timeFor(cashedAt);
+    this.timeScale = Math.max(REVEAL_SPEED, remaining / REVEAL_MAX_SECONDS);
+    this.crashStart = performance.now() - (CasinoManager.timeFor(cashedAt) / this.timeScale) * 1000;
+    this.crashPhase.set('reveal');
+    this.zone.runOutsideAngular(() => this.crashFrame());
   }
 
-  private endCrash(payout: number, multiplier: number): void {
-    if (this.frameId !== undefined) cancelAnimationFrame(this.frameId);
-    this.frameId = undefined;
-    this.crashResult.set(multiplier);
-    this.crashPayout.set(payout);
-    this.crashPhase.set(payout > 0 ? 'cashed' : 'busted');
-    if (payout > 0) this.soundManager.playFX(Sound.Buy);
+  private endCrash(multiplier: number): void {
+    this.stopFrame();
+    this.crashPeak.set(multiplier);
+    this.crashPhase.set(this.crashPayout() > 0 ? 'cashed' : 'busted');
     this.draw(CasinoManager.timeFor(multiplier), multiplier);
   }
 
+  private stopFrame(): void {
+    if (this.frameId !== undefined) cancelAnimationFrame(this.frameId);
+    this.frameId = undefined;
+  }
+
   private crashFrame = (): void => {
-    const crashAt = this.casino.crashPoint();
-    if (crashAt === null) return;
-
-    const elapsed = (performance.now() - this.crashStart) / 1000;
+    const elapsed = ((performance.now() - this.crashStart) / 1000) * this.timeScale;
     const multiplier = Math.floor(CasinoManager.multiplierAt(elapsed) * 100) / 100;
-    const auto = this.autoCashOut();
+    const crashAt = this.roundCrashAt;
+    const revealing = this.crashPhase() === 'reveal';
 
-    if (auto && auto <= crashAt && multiplier >= auto) {
-      this.liveMultiplier = auto;
-      this.zone.run(() => this.cashOut());
-      return;
-    }
     if (multiplier >= crashAt) {
-      this.liveMultiplier = crashAt;
-      this.zone.run(() => {
-        this.casino.bust();
-        this.endCrash(0, crashAt);
-      });
+      if (!revealing) {
+        this.liveMultiplier = crashAt;
+        this.crashResult.set(crashAt);
+        this.crashPayout.set(0);
+        this.zone.run(() => {
+          this.casino.bust();
+          this.endCrash(crashAt);
+        });
+      } else {
+        this.zone.run(() => this.endCrash(crashAt));
+      }
       return;
     }
 
-    this.liveMultiplier = multiplier;
+    if (!revealing) {
+      const auto = this.autoCashOut();
+      if (auto && auto <= crashAt && multiplier >= auto) {
+        this.liveMultiplier = auto;
+        this.zone.run(() => this.cashOut());
+        return;
+      }
+      this.liveMultiplier = multiplier;
+    }
+
     this.draw(elapsed, multiplier);
     this.frameId = requestAnimationFrame(this.crashFrame);
   };
@@ -269,6 +407,16 @@ export class CasinoPage implements OnInit, OnDestroy {
     const corner = (offset: number) =>
       `${(tipX - size * Math.cos(angle + offset)).toFixed(1)},${(tipY - size * Math.sin(angle + offset)).toFixed(1)}`;
     arrow.setAttribute('points', `${tipX.toFixed(1)},${tipY.toFixed(1)} ${corner(0.45)} ${corner(-0.45)}`);
+
+    const mark = this.mark()?.nativeElement;
+    if (mark) {
+      const shown = this.cashedMark > 0 && this.cashedMark <= multiplier;
+      mark.setAttribute('r', shown ? '5' : '0');
+      if (shown) {
+        mark.setAttribute('cx', x(CasinoManager.timeFor(this.cashedMark)).toFixed(1));
+        mark.setAttribute('cy', y(this.cashedMark).toFixed(1));
+      }
+    }
 
     if (readout) readout.textContent = `×${multiplier.toFixed(2)}`;
   }

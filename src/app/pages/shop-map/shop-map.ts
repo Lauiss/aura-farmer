@@ -41,7 +41,8 @@ type NodeKind =
   | 'chest-unlock'
   | 'drink-unlock'
   | 'companion'
-  | 'phones';
+  | 'phones'
+  | 'casino';
 
 /** Branche d'un nœud : elle en donne la couleur, comme dans Sludgeneer. */
 type Branch = 'root' | 'teachings' | 'outfit' | 'scenery' | 'utilities' | 'store';
@@ -328,6 +329,17 @@ export class ShopMap {
       if (!this.store.isChestUnlocked(chest.tier)) break;
     }
 
+    // Le casino, sous la boutique : il se paie en aura comme les rayons, et
+    // l'entrée de menu n'apparaît qu'une fois la case prise.
+    nodes.push({
+      key: 'store-casino',
+      kind: 'casino',
+      branch: 'store',
+      x: store.x,
+      y: store.y + SIDE_BRANCH * 0.7,
+      parent: store
+    });
+
     previous = store;
     for (const [index, drink] of DRINKS.entries()) {
       const spot = { x: store.x + (index + 1) * STEP, y: store.y + STEP * 1.05 };
@@ -417,7 +429,9 @@ export class ShopMap {
     for (const node of this.nodes()) {
       const level = this.levelOf(node);
       if (!level) continue;
-      owned += level.current;
+      // Borné tuile par tuile : un nœud ne peut pas compter plus que son
+      // maximum, sinon une seule donnée aberrante fait mentir tout le total.
+      owned += Math.min(level.current, level.max);
       total += level.max;
     }
     return { owned, total };
@@ -430,7 +444,7 @@ export class ShopMap {
    */
   readonly progressPercent = computed(() => {
     const { owned, total } = this.progress();
-    return total > 0 ? Math.floor((owned / total) * 100) : 0;
+    return total > 0 ? Math.min(100, Math.floor((owned / total) * 100)) : 0;
   });
 
   /** Nœud qui vient d'être acheté, pour lui donner son à-coup. */
@@ -530,6 +544,8 @@ export class ShopMap {
         return { current: this.store.hasCompanion(node.companion!.id) ? 1 : 0, max: 1 };
       case 'phones':
         return { current: this.store.phones() ? 1 : 0, max: 1 };
+      case 'casino':
+        return { current: this.store.casino() ? 1 : 0, max: 1 };
       default:
         return null;
     }
@@ -561,6 +577,8 @@ export class ShopMap {
         return this.storeName(node);
       case 'phones':
         return this.translate.instant('SHOP_COMPANION_PHONES');
+      case 'casino':
+        return this.translate.instant('CASINO');
       case 'utility-upgrade':
         return this.translate.instant(node.utilityUpgrade!.name);
       case 'background-upgrade':
@@ -593,7 +611,8 @@ export class ShopMap {
       'chest-unlock': 'SHOP_KIND_SHELF',
       'drink-unlock': 'SHOP_KIND_SHELF',
       companion: 'SHOP_KIND_COMPANION',
-      phones: 'SHOP_KIND_UPGRADE'
+      phones: 'SHOP_KIND_UPGRADE',
+      casino: 'SHOP_KIND_SHELF'
     };
     return keys[node.kind];
   }
@@ -618,6 +637,8 @@ export class ShopMap {
         return this.modelIcons.companion(node.companion!.id);
       case 'phones':
         return this.icons.phone;
+      case 'casino':
+        return this.icons.die;
       case 'utility':
         switch (node.utility!.id) {
           case 'doomscroll':
@@ -682,6 +703,8 @@ export class ShopMap {
         return this.store.companionPrice(node.companion!);
       case 'phones':
         return this.store.phonesPrice();
+      case 'casino':
+        return this.store.casinoPrice();
       // Les améliorations suivent le réglage d'achat multiple comme les
       // articles : le prix affiché est celui du lot, pas d'un exemplaire.
       case 'utility-upgrade':
@@ -703,7 +726,7 @@ export class ShopMap {
   }
 
   affordable(node: MapNode): boolean {
-    return this.auraManager.auraCount() >= this.price(node);
+    return this.auraManager.canAfford(this.price(node));
   }
 
   amountFor(item: Item): number {
@@ -798,6 +821,8 @@ export class ShopMap {
         return [
           { key: 'SHOP_COMPANION_DESC', params: { value: `${Math.round(node.companion!.bonus * 100)}` } }
         ];
+      case 'casino':
+        return [{ key: 'SHOP_CASINO_DESC', params: {} }];
       case 'phones':
         return [
           {
@@ -1006,6 +1031,9 @@ export class ShopMap {
         break;
       case 'phones':
         if (this.store.buyPhones()) this.hintManager.show('SHOP_COMPANION_PHONES_HINT');
+        break;
+      case 'casino':
+        if (this.store.buyCasino()) this.hintManager.show('SHOP_CASINO_HINT');
         break;
       default:
         // Toutes les familles d'améliorations passent par le même chemin, et

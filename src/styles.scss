@@ -34,3 +34,21 @@ h1, h2, h3, h4, h5, h6, .title {
     padding: 0;
     font-weight: 600;
 }
+
+
+/**
+ * Mode calme : plus une seule animation ni transition dans toute
+ * l'application. C'est volontairement brutal — l'inventaire des effets change
+ * à chaque nouveauté, et une liste tenue à la main aurait toujours un train de
+ * retard. Ce qui porte une information (couleurs, montants, textes) ne
+ * dépendant d'aucune animation, rien d'utile ne disparaît.
+ *
+ * Les effets qui ne passent pas par CSS — éclats d'aura, traînées de vitesse,
+ * défilement du fil — sont coupés à la source, dans leurs composants.
+ */
+:root[data-calm] *,
+:root[data-calm] *::before,
+:root[data-calm] *::after {
+    animation: none !important;
+    transition: none !important;
+}

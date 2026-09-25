@@ -1,0 +1,107 @@
+@use '../../../menu-theme' as *;
+@use '../../../variables' as *;
+
+.quest-log {
+  display: grid;
+  gap: $spacing-300;
+}
+
+h2 {
+  font-size: $menu-size-title;
+  font-weight: $menu-weight-strong;
+}
+
+.block {
+  display: grid;
+  gap: $spacing-100;
+}
+
+.block-title {
+  font-size: $menu-size-lead;
+  font-weight: $menu-weight-strong;
+  color: $menu-accent;
+}
+
+.block-lead,
+.chapter-rank {
+  font-size: $menu-size-small;
+  color: $menu-text-faint;
+}
+
+.chapter-rank {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.dailies {
+  display: grid;
+  gap: $spacing-150;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.quest {
+  display: grid;
+  gap: $spacing-50;
+  padding: $spacing-200;
+  background: $menu-bg;
+  border: 1px solid $menu-border;
+  border-radius: $radius-100;
+}
+
+// Une quotidienne accomplie s'efface sans disparaître : elle dit ce qui a déjà
+// été fait aujourd'hui, ce qui est une information en soi.
+.quest.finished {
+  opacity: 0.6;
+  border-color: color-mix(in srgb, #{$menu-accent} 50%, transparent);
+}
+
+.quest-title {
+  font-size: $menu-size-body;
+  font-weight: $menu-weight-strong;
+}
+
+.quest-lore {
+  font-size: $menu-size-small;
+  font-style: italic;
+  color: $menu-text-dim;
+}
+
+.quest-aim {
+  font-size: $menu-size-small;
+  color: $menu-text-faint;
+}
+
+.gauge {
+  height: 6px;
+  margin-top: $spacing-50;
+  background: $menu-border;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.gauge-fill {
+  display: block;
+  height: 100%;
+  background: $menu-accent;
+  transition: width 0.3s ease;
+}
+
+.quest-foot {
+  display: flex;
+  justify-content: space-between;
+  font-size: $menu-size-small;
+  font-variant-numeric: tabular-nums;
+  color: $menu-text-faint;
+}
+
+.reward {
+  font-weight: $menu-weight-strong;
+  color: $menu-text;
+}
+
+.done {
+  font-size: $menu-size-small;
+  color: $menu-accent;
+}

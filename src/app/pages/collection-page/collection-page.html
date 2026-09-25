@@ -57,21 +57,31 @@
         </h3>
         <div class="figures">
           @for (collectible of group.items; track collectible.id) {
-            <!-- Vitrine seulement : la matière se porte depuis la garde-robe. -->
-            <div
-              class="figure"
-              [class.owned]="collection.isOwned(collectible.id)"
-              [class.worn]="collection.skin() === collectible.id"
-              [style.--rarity]="rarityColors[collectible.rarity]"
-            >
-              <img [src]="figure(collectible)" alt="" class="figure-icon">
-              <span class="figure-name">
-                {{ collection.isOwned(collectible.id) ? (('COLLECTIBLE_' + collectible.id.toUpperCase()) | translate) : '?????' }}
-              </span>
-              @if (collection.skin() === collectible.id) {
-                <span class="figure-action">{{ 'COLLECTION_WORN' | translate }}</span>
-              }
-            </div>
+            <!-- Une statuette obtenue se porte d'ici comme depuis la garde-robe :
+                 c'est en la regardant qu'on a envie de l'essayer, et l'aller-
+                 retour par un autre écran n'apprenait rien à personne. Ce qui
+                 n'est pas trouvé reste une vignette morte. -->
+            @if (collection.isOwned(collectible.id)) {
+              <button
+                type="button"
+                class="figure owned"
+                [class.worn]="collection.skin() === collectible.id"
+                [attr.aria-pressed]="collection.skin() === collectible.id"
+                [style.--rarity]="rarityColors[collectible.rarity]"
+                (click)="wear(collectible)"
+              >
+                <img [src]="figure(collectible)" alt="" class="figure-icon">
+                <span class="figure-name">{{ ('COLLECTIBLE_' + collectible.id.toUpperCase()) | translate }}</span>
+                <span class="figure-action">
+                  {{ (collection.skin() === collectible.id ? 'COLLECTION_WORN' : 'COLLECTION_WEAR') | translate }}
+                </span>
+              </button>
+            } @else {
+              <div class="figure" [style.--rarity]="rarityColors[collectible.rarity]">
+                <img [src]="figure(collectible)" alt="" class="figure-icon">
+                <span class="figure-name">?????</span>
+              </div>
+            }
           }
         </div>
       }

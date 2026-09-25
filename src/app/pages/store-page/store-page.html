@@ -7,146 +7,151 @@
     </p>
   </header>
 
-  <!-- Tout ce qui suit la barre défile dans son propre conteneur : sur itch.io,
-       l'iframe interdit souvent le défilement du document, et les coffres, en
-       bas de page, n'étaient plus atteignables. -->
-  <div class="scroll">
-  <!-- Le vendeur derrière son comptoir : c'est lui qui donne son identité à
-       l'écran, les étagères viennent en dessous. -->
-  <section class="counter-scene">
-    <app-moyai-viewer
-      class="vendor"
-      [interactive]="false"
-      [idleSpin]="0.35"
-      [maxFps]="24"
-      [distance]="5.2"
-      aria-hidden="true"
-    ></app-moyai-viewer>
-    <div class="counter" aria-hidden="true"></div>
-    <p class="pitch">{{ 'STORE_PITCH' | translate }}</p>
-  </section>
+  <!-- Deux colonnes : le marchand tient la sienne à gauche et ne bouge pas,
+       la marchandise défile à droite. Empilés, le vendeur prenait tout l'écran
+       d'entrée et il fallait le dépasser pour voir ce qu'il vendait. -->
+  <div class="shop">
+    <aside class="counter-scene">
+      <!-- Sa réplique est au-dessus de lui : c'est elle qui accuse réception
+           d'un achat, là où seule la ligne de gemmes changeait, tout en haut
+           de l'écran. -->
+      <p class="bubble" role="status">{{ line() | translate }}</p>
 
-  <main class="shelves">
-    @if (consumables.running().length) {
-      <section class="shelf">
-        <h2 class="shelf-title">{{ 'STORE_ACTIVE' | translate }}</h2>
-        <div class="active-list">
-          @for (effect of consumables.running(); track effect.definition.id) {
-            <p class="active-chip">
-              <img [src]="canIcon(effect.definition)" alt="" class="chip-icon">
-              <span class="chip-name">{{ ('DRINK_' + effect.definition.id.toUpperCase()) | translate }}</span>
-              <span class="chip-time">{{ countdown(effect.definition) }}</span>
-            </p>
-          }
-        </div>
-      </section>
-    }
-
-    @if (pendingTiers().length) {
-      <section class="shelf">
-        <h2 class="shelf-title">{{ 'COLLECTION_PENDING' | translate }}</h2>
-        <div class="goods">
-          @for (chest of pendingTiers(); track chest.tier) {
-            <button type="button" class="good pending" (click)="openChest(chest.tier)">
-              <img [src]="chestIcon(chest.tier)" alt="" class="good-icon">
-              <span class="good-name">{{ ('CHEST_' + chest.tier.toUpperCase()) | translate }}</span>
-              <span class="good-note">&times;{{ collection.chestCount(chest.tier) }}</span>
-              <span class="price">{{ 'CHEST_OPEN' | translate }}</span>
-            </button>
-          }
-        </div>
-      </section>
-    }
-
-    <section class="shelf">
-      <h2 class="shelf-title">{{ 'STORE_DRINKS' | translate }}</h2>
-      <p class="shelf-lead">{{ 'STORE_DRINKS_LEAD' | translate }}</p>
-      @if (!store.availableDrinks().length) {
-        <p class="shelf-empty">{{ 'STORE_LOCKED' | translate }}</p>
-      }
-      <div class="goods">
-        @for (drink of store.availableDrinks(); track drink.id) {
-          <ng-container *ngTemplateOutlet="good; context: { $implicit: drink }"></ng-container>
-        }
+      <img class="vendor" [src]="vendorPortrait" alt="" aria-hidden="true">
+      <div class="counter" aria-hidden="true">
+        <span class="counter-top"></span>
       </div>
-    </section>
+      <p class="vendor-name">{{ 'CALLER_JOHN' | translate }}</p>
+    </aside>
 
-    <section class="shelf">
-      <h2 class="shelf-title">{{ 'STORE_FOODS' | translate }}</h2>
-      <p class="shelf-lead">{{ 'STORE_FOODS_LEAD' | translate }}</p>
-      @if (!store.availableFoods().length) {
-        <p class="shelf-empty">{{ 'STORE_LOCKED' | translate }}</p>
+    <!-- Tout ce qui suit défile dans son propre conteneur : sur itch.io,
+         l'iframe interdit souvent le défilement du document. -->
+    <main class="scroll">
+      @if (consumables.running().length) {
+        <section class="shelf">
+          <h2 class="shelf-title">{{ 'STORE_ACTIVE' | translate }}</h2>
+          <ul class="rows">
+            @for (effect of consumables.running(); track effect.definition.id) {
+              <li class="row active">
+                <img [src]="canIcon(effect.definition)" alt="" class="row-icon">
+                <span class="row-name">{{ ('DRINK_' + effect.definition.id.toUpperCase()) | translate }}</span>
+                <span class="row-note">{{ 'STORE_RUNNING' | translate }}</span>
+                <span class="row-price plain">{{ countdown(effect.definition) }}</span>
+              </li>
+            }
+          </ul>
+        </section>
       }
-      <div class="goods">
-        @for (food of store.availableFoods(); track food.id) {
-          <ng-container *ngTemplateOutlet="good; context: { $implicit: food }"></ng-container>
-        }
-      </div>
-    </section>
 
-    <!-- Une case de rayon, canette ou plat. Le bouton reste actif quand un
-         autre article tourne : c'est au clic que le marchand refuse, avec sa
-         réplique. -->
-    <ng-template #good let-item>
-      <div
-        class="good"
-        [class.running]="consumables.isActive(item.id)"
-        [class.blocked]="blocked(item)"
-        [class.bought]="bought() === 'drink-' + item.id"
-      >
-        <img [src]="canIcon(item)" alt="" class="good-icon">
-        <span class="good-name">{{ ('DRINK_' + item.id.toUpperCase()) | translate }}</span>
-        <span class="good-effect">&times;{{ item.multiplier }} {{ 'STORE_FOR' | translate }} {{ minutes(item) }} min</span>
-        @if (consumables.isActive(item.id)) {
-          <span class="good-note">{{ 'STORE_RUNNING' | translate }} {{ countdown(item) }}</span>
+      @if (pendingTiers().length) {
+        <section class="shelf">
+          <h2 class="shelf-title">{{ 'COLLECTION_PENDING' | translate }}</h2>
+          <ul class="rows">
+            @for (chest of pendingTiers(); track chest.tier) {
+              <li class="row">
+                <img [src]="chestIcon(chest.tier)" alt="" class="row-icon">
+                <span class="row-name">{{ ('CHEST_' + chest.tier.toUpperCase()) | translate }}</span>
+                <span class="row-note">&times;{{ collection.chestCount(chest.tier) }}</span>
+                <button type="button" class="row-price buy" (click)="openChest(chest.tier)">
+                  {{ 'CHEST_OPEN' | translate }}
+                </button>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
+      <section class="shelf">
+        <h2 class="shelf-title">{{ 'STORE_DRINKS' | translate }}</h2>
+        <p class="shelf-lead">{{ 'STORE_DRINKS_LEAD' | translate }}</p>
+        @if (!store.availableDrinks().length) {
+          <p class="shelf-empty">{{ 'STORE_LOCKED' | translate }}</p>
         }
-        <button
-          type="button"
-          class="price buy"
-          [disabled]="collection.gems() < item.price && !consumables.isActive(item.id)"
-          (click)="buyConsumable(item)"
+        <ul class="rows">
+          @for (drink of store.availableDrinks(); track drink.id) {
+            <ng-container *ngTemplateOutlet="good; context: { $implicit: drink }"></ng-container>
+          }
+        </ul>
+      </section>
+
+      <section class="shelf">
+        <h2 class="shelf-title">{{ 'STORE_FOODS' | translate }}</h2>
+        <p class="shelf-lead">{{ 'STORE_FOODS_LEAD' | translate }}</p>
+        @if (!store.availableFoods().length) {
+          <p class="shelf-empty">{{ 'STORE_LOCKED' | translate }}</p>
+        }
+        <ul class="rows">
+          @for (food of store.availableFoods(); track food.id) {
+            <ng-container *ngTemplateOutlet="good; context: { $implicit: food }"></ng-container>
+          }
+        </ul>
+      </section>
+
+      <!-- Une ligne de rayon, canette ou plat. Le bouton reste actif quand un
+           autre article tourne : c'est au clic que le marchand refuse, avec sa
+           réplique. -->
+      <ng-template #good let-item>
+        <li
+          class="row"
+          [class.running]="consumables.isActive(item.id)"
+          [class.blocked]="blocked(item)"
+          [class.bought]="bought() === 'drink-' + item.id"
         >
-          {{ item.price }} 💎
-        </button>
-      </div>
-    </ng-template>
+          <img [src]="canIcon(item)" alt="" class="row-icon">
+          <span class="row-name">{{ ('DRINK_' + item.id.toUpperCase()) | translate }}</span>
+          <span class="row-note">
+            &times;{{ item.multiplier }} {{ 'STORE_FOR' | translate }} {{ minutes(item) }} min
+            @if (consumables.isActive(item.id)) {
+              · {{ countdown(item) }}
+            }
+          </span>
+          <button
+            type="button"
+            class="row-price buy"
+            [disabled]="collection.gems() < item.price && !consumables.isActive(item.id)"
+            (click)="buyConsumable(item)"
+          >
+            {{ item.price }} 💎
+          </button>
+        </li>
+      </ng-template>
 
-    <section class="shelf">
-      <h2 class="shelf-title">{{ 'COLLECTION_SHOP' | translate }}</h2>
-      <p class="shelf-lead">{{ 'COLLECTION_SHOP_LEAD' | translate }}</p>
-      @if (!shopChests().length) {
-        <p class="shelf-empty">{{ 'STORE_LOCKED' | translate }}</p>
-      }
-      <div class="goods">
-        @for (chest of shopChests(); track chest.tier) {
-          <div class="good" [class.bought]="bought() === 'chest-' + chest.tier">
-            <img [src]="chestIcon(chest.tier)" alt="" class="good-icon">
-            <span class="good-name">{{ ('CHEST_' + chest.tier.toUpperCase()) | translate }}</span>
-            <ul class="odds">
-              @for (line of odds(chest); track line.rarity) {
-                <li [style.color]="rarityColors[line.rarity]">
-                  {{ ('RARITY_' + line.rarity.toUpperCase()) | translate }} {{ line.percent }} %
-                </li>
-              }
-            </ul>
-            <button
-              type="button"
-              class="price buy"
-              [disabled]="collection.gems() < chest.price!"
-              (click)="buyChest(chest)"
-            >
-              {{ chest.price }} 💎
-            </button>
-          </div>
+      <section class="shelf">
+        <h2 class="shelf-title">{{ 'COLLECTION_SHOP' | translate }}</h2>
+        <p class="shelf-lead">{{ 'COLLECTION_SHOP_LEAD' | translate }}</p>
+        @if (!shopChests().length) {
+          <p class="shelf-empty">{{ 'STORE_LOCKED' | translate }}</p>
         }
-      </div>
-    </section>
+        <ul class="rows">
+          @for (chest of shopChests(); track chest.tier) {
+            <li class="row" [class.bought]="bought() === 'chest-' + chest.tier">
+              <img [src]="chestIcon(chest.tier)" alt="" class="row-icon">
+              <span class="row-name">{{ ('CHEST_' + chest.tier.toUpperCase()) | translate }}</span>
+              <span class="row-note odds">
+                @for (line of odds(chest); track line.rarity) {
+                  <span [style.color]="rarityColors[line.rarity]">
+                    {{ ('RARITY_' + line.rarity.toUpperCase()) | translate }} {{ line.percent }} %
+                  </span>
+                }
+              </span>
+              <button
+                type="button"
+                class="row-price buy"
+                [disabled]="collection.gems() < chest.price!"
+                (click)="buyChest(chest)"
+              >
+                {{ chest.price }} 💎
+              </button>
+            </li>
+          }
+        </ul>
+      </section>
 
-    <p class="to-collection">
-      <button type="button" class="link" (click)="openCollection()">
-        {{ 'STORE_TO_COLLECTION' | translate }} &rarr;
-      </button>
-    </p>
-  </main>
+      <p class="to-collection">
+        <button type="button" class="link" (click)="openCollection()">
+          {{ 'STORE_TO_COLLECTION' | translate }} &rarr;
+        </button>
+      </p>
+    </main>
   </div>
 </div>

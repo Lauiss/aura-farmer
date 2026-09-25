@@ -6,7 +6,9 @@ import { UtilityManager } from './utility-manager';
 import { CollectionManager } from './collection-manager';
 import { ModalManager } from './modal-manager';
 import { ChestOpening } from '../components/chest-opening/chest-opening';
+import { IncomingCall } from '../components/incoming-call/incoming-call';
 import { StoreManager } from './store-manager';
+import { CallManager } from './call-manager';
 
 /** Nature d'une publication, connue dès qu'elle entre à l'écran. */
 export type PostKind = 'good' | 'bad' | 'chest';
@@ -39,6 +41,7 @@ export class Doomscroll {
   private readonly collection = inject(CollectionManager);
   private readonly modalManager = inject(ModalManager);
   private readonly store = inject(StoreManager);
+  private readonly calls = inject(CallManager);
 
   /** Une perte pèse un peu moins qu'un gain : l'espérance reste positive. */
   private static readonly LOSS_SHARE = 0.6;
@@ -63,6 +66,7 @@ export class Doomscroll {
    */
   resolve(kind: PostKind): DoomscrollOutcome {
     this.spinCombo.boost(this.utilityManager.doomscrollCombo());
+    this.maybeCall();
 
     if (kind === 'chest') {
       const waiting = this.collection.chestCount('doomscroll');
@@ -89,9 +93,23 @@ export class Doomscroll {
     const amount =
       kind === 'good'
         ? stake * this.spinCombo.current()
-        : -Math.min(stake * Doomscroll.LOSS_SHARE, Math.max(0, this.auraManager.auraCount()));
+        // `toNumber()` rend `Infinity` pour une aura hors de portée d'un
+        // flottant, ce qui est exactement le comportement voulu ici : la perte
+        // reste alors plafonnée par la mise.
+        : -Math.min(stake * Doomscroll.LOSS_SHARE, Math.max(0, this.auraManager.auraCount().toNumber()));
 
     this.auraManager.gain(amount);
     return { kind, amount };
+  }
+
+  /**
+   * De loin en loin, quelqu'un appelle. C'est le fil qui ouvre la modale et non
+   * [`CallManager`](./call-manager.ts) : le service est injecté par la modale,
+   * l'ouvrir de là-bas refermerait un cycle d'imports.
+   */
+  private maybeCall(): void {
+    if (!this.calls.maybeRing()) return;
+    const alreadyOpen = this.modalManager.entries().some(entry => entry.component === IncomingCall);
+    if (!alreadyOpen) this.modalManager.open(IncomingCall, undefined, 'sm');
   }
 }

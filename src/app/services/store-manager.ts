@@ -12,7 +12,7 @@ import {
   companionDefinition
 } from '../../assets/static/companions';
 import { DRINKS, FOODS, ConsumableDefinition, ConsumableId } from '../../assets/static/consumables';
-import { CHEST_UNLOCK_PRICES } from '../../assets/static/store-unlocks';
+import { CASINO_PRICE, CHEST_UNLOCK_PRICES } from '../../assets/static/store-unlocks';
 
 interface StoreSave {
   chests: ChestTier[];
@@ -20,6 +20,8 @@ interface StoreSave {
   companions: CompanionId[];
   /** Téléphones offerts aux compagnons. */
   phones?: boolean;
+  /** Casino ouvert. */
+  casino?: boolean;
   /** Restant d'une version où l'on pouvait ranger un compagnon. Ignoré. */
   stowed?: CompanionId[];
 }
@@ -47,6 +49,8 @@ export class StoreManager {
   private readonly drinks = signal<Set<ConsumableId>>(new Set());
   private readonly companionIds = signal<Set<CompanionId>>(new Set());
   readonly phones = signal(false);
+  /** Le casino n'existe qu'une fois ouvert dans l'arbre. */
+  readonly casino = signal(false);
 
   constructor() {
     const saved: StoreSave | null = this.saveManager.loadProgress(SaveLocation.Store);
@@ -55,6 +59,7 @@ export class StoreManager {
       this.drinks.set(new Set(saved.drinks ?? []));
       this.companionIds.set(new Set(saved.companions ?? []));
       this.phones.set(saved.phones ?? false);
+      this.casino.set(saved.casino ?? false);
     }
   }
 
@@ -95,9 +100,9 @@ export class StoreManager {
 
   unlockChest(tier: ChestTier): boolean {
     const price = this.chestPrice(tier);
-    if (this.isChestUnlocked(tier) || this.auraManager.auraCount() < price) return false;
+    if (this.isChestUnlocked(tier) || !this.auraManager.canAfford(price)) return false;
 
-    this.auraManager.auraCount.update(aura => aura - price);
+    this.auraManager.spend(price);
     this.chests.update(unlocked => new Set(unlocked).add(tier));
     this.persist();
     return true;
@@ -105,9 +110,9 @@ export class StoreManager {
 
   unlockDrink(drink: ConsumableDefinition): boolean {
     const price = this.drinkPrice(drink);
-    if (this.isDrinkUnlocked(drink.id) || this.auraManager.auraCount() < price) return false;
+    if (this.isDrinkUnlocked(drink.id) || !this.auraManager.canAfford(price)) return false;
 
-    this.auraManager.auraCount.update(aura => aura - price);
+    this.auraManager.spend(price);
     this.drinks.update(unlocked => new Set(unlocked).add(drink.id));
     this.persist();
     return true;
@@ -147,9 +152,9 @@ export class StoreManager {
 
   buyCompanion(definition: CompanionDefinition): boolean {
     const price = this.companionPrice(definition);
-    if (this.hasCompanion(definition.id) || this.auraManager.auraCount() < price) return false;
+    if (this.hasCompanion(definition.id) || !this.auraManager.canAfford(price)) return false;
 
-    this.auraManager.auraCount.update(aura => aura - price);
+    this.auraManager.spend(price);
     this.companionIds.update(owned => new Set(owned).add(definition.id));
     this.persist();
     return true;
@@ -171,10 +176,26 @@ export class StoreManager {
 
   buyPhones(): boolean {
     const price = this.phonesPrice();
-    if (this.phones() || this.auraManager.auraCount() < price) return false;
+    if (this.phones() || !this.auraManager.canAfford(price)) return false;
 
-    this.auraManager.auraCount.update(aura => aura - price);
+    this.auraManager.spend(price);
     this.phones.set(true);
+    this.persist();
+    return true;
+  }
+
+  // --- Casino ------------------------------------------------------------
+
+  casinoPrice(): number {
+    return this.shopManager.scaled(CASINO_PRICE);
+  }
+
+  buyCasino(): boolean {
+    const price = this.casinoPrice();
+    if (this.casino() || !this.auraManager.canAfford(price)) return false;
+
+    this.auraManager.spend(price);
+    this.casino.set(true);
     this.persist();
     return true;
   }
@@ -184,7 +205,8 @@ export class StoreManager {
       chests: [...this.chests()],
       drinks: [...this.drinks()],
       companions: [...this.companionIds()],
-      phones: this.phones()
+      phones: this.phones(),
+      casino: this.casino()
     } satisfies StoreSave);
   }
 }

@@ -37,9 +37,11 @@
   pointer-events: none;
 }
 
-.counters,
+// Seuls les boutons et le téléphone interceptent les clics. Les compteurs et
+// le combo sont du texte posé par-dessus la scène : les rendre cliquables
+// perdait le clic, et avec lui le point faible qui s'affichait dessous — au
+// centre de l'écran, précisément là où le chiffre du combo s'étale.
 .actions,
-.combo,
 .phone {
   pointer-events: auto;
 }
@@ -168,7 +170,7 @@
   align-self: start;
 }
 
-/* --- Pastille des coffres à ouvrir, sur l'accès à la collection --- */
+/* --- Pastille des coffres à ouvrir, sur l'accès au marchand --- */
 .with-badge {
   position: relative;
   display: inline-flex;
@@ -403,13 +405,12 @@
   pointer-events: none;
 }
 
-.companions {
-  pointer-events: auto;
-}
-
+// L'infobulle a besoin du survol, donc chaque compagnon intercepte ; la
+// rangée, elle, laisse passer, sinon toute la bande du bas avalait les clics.
 .companion {
   position: relative;
   display: block;
+  pointer-events: auto;
 }
 
 .companion img {
@@ -424,6 +425,34 @@
 .companion:hover img,
 .companion:focus-within img {
   transform: translateY(-4px) scale(1.06);
+}
+
+/* --- Le téléphone de chacun, posé à ses pieds à droite --- */
+// Petit : c'est un accessoire posé au pied du compagnon, pas un second
+// compagnon. À deux centimètres, il rivalisait avec lui.
+.companion-phone {
+  position: absolute;
+  right: -0.15rem;
+  bottom: 0;
+  width: 1.15rem;
+  height: 1.15rem;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.7));
+  // Une lueur ambrée, comme l'aura de la statue : le clignotement et les
+  // sautillements d'une première version étaient trop bavards pour un objet
+  // de deux centimètres.
+  animation: phone-glow 2.6s ease-in-out infinite;
+}
+
+@keyframes phone-glow {
+  0%, 100% { filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.7)); }
+  50% { filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 6px rgba(232, 184, 75, 0.55)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .companion-phone {
+    animation: none;
+  }
 }
 
 /* --- Infobulle : le nom et ce que le compagnon rapporte --- */
@@ -454,5 +483,10 @@
   .companion img {
     width: 3.2rem;
     height: 3.2rem;
+  }
+
+  .companion-phone {
+    width: 0.85rem;
+    height: 0.85rem;
   }
 }

@@ -1,0 +1,31 @@
+@if (caller; as caller) {
+  <div class="incoming-call">
+    <p class="lead">{{ 'CALL_INCOMING' | translate }}</p>
+
+    <div class="portrait">
+      <img [src]="portrait" alt="" aria-hidden="true">
+      <span class="ring" aria-hidden="true"></span>
+    </div>
+
+    <h2 class="name">{{ ('CALLER_' + caller.id.toUpperCase()) | translate }}</h2>
+    <p class="tag">{{ ('CALLER_' + caller.id.toUpperCase() + '_TAG') | translate }}</p>
+
+    <!-- Le décompte est montré : sans lui, l'appel s'évanouirait sans qu'on
+         comprenne qu'on a trop hésité. -->
+    <p class="countdown" role="timer">{{ remaining() }}</p>
+    <div class="gauge" aria-hidden="true">
+      <span class="gauge-fill" [style.width.%]="(remaining() / total) * 100"></span>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="call hang-up" (click)="hangUp()">
+        <span class="glyph" aria-hidden="true">&#9742;</span>
+        {{ 'CALL_HANG_UP' | translate }}
+      </button>
+      <button type="button" class="call answer" (click)="answer()">
+        <span class="glyph" aria-hidden="true">&#9742;</span>
+        {{ 'CALL_ANSWER' | translate }}
+      </button>
+    </div>
+  </div>
+}

@@ -13,3 +13,10 @@ export const CHEST_UNLOCK_PRICES: Partial<Record<ChestTier, number>> = {
   premium: 5e6,
   mythic: 5e8
 };
+
+/**
+ * Le casino, ouvert dans la même branche. Il se paie en aura comme les rayons,
+ * et cher : on y joue des gemmes, et pouvoir les rejouer tôt viderait de son
+ * sens la collection qu'elles servent à remplir.
+ */
+export const CASINO_PRICE = 1e15;

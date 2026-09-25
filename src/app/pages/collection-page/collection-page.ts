@@ -16,7 +16,8 @@ import {
 
 /**
  * Collection : ce que l'on possède, et rien d'autre. Les statuettes, dont on
- * peut porter la matière sur la statue du jeu, et les reliques sacrées.
+ * peut porter la matière sur la statue du jeu **d'ici même** comme depuis la
+ * garde-robe, et les reliques sacrées.
  *
  * L'achat a son propre écran ([`StorePage`](../store-page/store-page.ts)) :
  * acheter et contempler sont deux gestes différents, et les mélanger obligeait
@@ -60,6 +61,15 @@ export class CollectionPage {
 
   figure(collectible: CollectibleDefinition): string {
     return this.collection.isOwned(collectible.id) ? this.modelIcons.moyaiSkin(collectible.id) : this.questionIcon;
+  }
+
+  /**
+   * Porte la matière d'une statuette, ou revient à la pierre en touchant
+   * celle qui est déjà portée — le même geste que dans la garde-robe.
+   */
+  wear(collectible: CollectibleDefinition): void {
+    this.collection.applySkin(this.collection.skin() === collectible.id ? null : collectible.id);
+    this.soundManager.playFX(Sound.Plop);
   }
 
   openStore(): void {

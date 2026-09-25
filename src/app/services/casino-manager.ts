@@ -55,6 +55,20 @@ export interface RouletteSpin {
   payout: number;
 }
 
+/**
+ * Une partie de crash close, telle qu'elle entre dans l'historique. On retient
+ * le point de rupture **même quand le joueur a encaissé avant** : c'est ce
+ * qu'il aurait pu faire, et c'est la seule information qui rende une décision
+ * d'encaissement lisible après coup.
+ */
+export interface CrashRound {
+  crashAt: number;
+  /** Multiplicateur encaissé, `null` si la partie a sauté avant. */
+  cashedAt: number | null;
+  payout: number;
+  bet: number;
+}
+
 interface CasinoSave {
   wagered: number;
   won: number;
@@ -74,8 +88,11 @@ export class CasinoManager {
   readonly won = signal(0);
   readonly bestCrash = signal(0);
 
-  /** Dernières cases sorties, la plus récente en tête. */
-  readonly history = signal<number[]>([]);
+  /** Derniers tirages, le plus récent en tête : case, couleur et gain. */
+  readonly history = signal<RouletteSpin[]>([]);
+
+  /** Dernières parties de crash, la plus récente en tête. */
+  readonly crashHistory = signal<CrashRound[]>([]);
 
   private pendingRoulette: RouletteSpin | null = null;
 
@@ -115,7 +132,7 @@ export class CasinoManager {
     const spin = this.pendingRoulette;
     if (!spin) return;
     this.pendingRoulette = null;
-    this.history.update(list => [spin.pocket, ...list].slice(0, 12));
+    this.history.update(list => [spin, ...list].slice(0, 12));
     this.pay(spin.payout);
   }
 
@@ -153,23 +170,38 @@ export class CasinoManager {
   /**
    * Encaisse à `multiplier`. Refusé si la partie a déjà sauté à ce stade :
    * l'animation peut avoir une image de retard sur le point de rupture.
-   * Renvoie le gain, ou `null` s'il n'y a rien à encaisser.
+   *
+   * Renvoie le gain **et le point de rupture**, que l'écran dévoile ensuite :
+   * encaisser sans jamais savoir où la courbe se serait arrêtée ne laisse rien
+   * à apprendre d'une partie à l'autre.
    */
-  cashOut(multiplier: number): number | null {
+  cashOut(multiplier: number): { payout: number; crashAt: number } | null {
     const round = this.crashRound;
     if (!round) return null;
     this.crashRound = null;
 
-    if (multiplier > round.crashAt) return 0;
+    if (multiplier > round.crashAt) {
+      this.record({ crashAt: round.crashAt, cashedAt: null, payout: 0, bet: round.bet });
+      return { payout: 0, crashAt: round.crashAt };
+    }
+
     const payout = Math.floor(round.bet * multiplier);
     this.bestCrash.update(best => Math.max(best, multiplier));
     this.pay(payout);
-    return payout;
+    this.record({ crashAt: round.crashAt, cashedAt: multiplier, payout, bet: round.bet });
+    return { payout, crashAt: round.crashAt };
   }
 
   /** Clôt une partie perdue. */
   bust(): void {
+    const round = this.crashRound;
+    if (!round) return;
     this.crashRound = null;
+    this.record({ crashAt: round.crashAt, cashedAt: null, payout: 0, bet: round.bet });
+  }
+
+  private record(round: CrashRound): void {
+    this.crashHistory.update(list => [round, ...list].slice(0, 12));
   }
 
   // --- Commun -------------------------------------------------------------

@@ -5,8 +5,10 @@ import { SettingsConfig } from './settings-manager';
 import { AchievementSave } from './achievements-manager';
 
 export interface SaveData {
-  auraCount: number;
-  allTimeAura: number;
+  /** Écrite en chaîne (« 1.23e+420 ») : au-delà d'un flottant, un nombre ne
+   *  suffit plus. Les anciennes parties en portent un, que `Decimal` relit. */
+  auraCount: number | string;
+  allTimeAura: number | string;
   shopItems: ItemSave[];
   moyaiUpgrades: MoyaiUpgradeSave[];
   counters: {};
@@ -26,7 +28,9 @@ export enum SaveLocation {
   Onboarding = "AURA_FARMER_ONBOARDING",
   Consumables = "AURA_FARMER_CONSUMABLES",
   Store = "AURA_FARMER_STORE",
-  Casino = "AURA_FARMER_CASINO"
+  Casino = "AURA_FARMER_CASINO",
+  Calls = "AURA_FARMER_CALLS",
+  Quests = "AURA_FARMER_QUESTS"
 }
 
 @Injectable({

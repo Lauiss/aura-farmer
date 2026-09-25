@@ -79,8 +79,8 @@ export class DoomPhone implements AfterViewInit, OnDestroy {
   readonly utilityManager = inject(UtilityManager);
   private readonly translate = inject(TranslateService);
   private readonly settings = inject(SettingsManager);
-  /** Temps écoulé depuis la dernière image peinte, pour le plafond d'images. */
-  private sinceRender = 0;
+  /** Portillon d'images : le fil avance à chaque image, seule la peinture est plafonnée. */
+  private readonly frames = this.settings.gate();
 
   readonly label = this.translate.instant('DOOMSCROLL_LABEL');
   readonly autoLabel = this.translate.instant('DOOMSCROLL_AUTO_TOGGLE');
@@ -242,7 +242,7 @@ export class DoomPhone implements AfterViewInit, OnDestroy {
     }
     this.resolvePosts();
 
-    if (this.phone) {
+    if (this.phone && !this.settings.calm()) {
       // Léger flottement, et un sursaut d'inclinaison quand on scrolle vite.
       this.phone.position.y = Math.sin(this.elapsed * 1.4) * 0.03;
       this.phone.rotation.x = -0.06 - (step / (MAX_SPEED * Math.max(delta, 1e-3))) * 0.05;
@@ -250,12 +250,7 @@ export class DoomPhone implements AfterViewInit, OnDestroy {
 
     // Plafond d'images des options : le fil continue d'avancer et de se
     // résoudre à chaque image, seule la peinture est sautée.
-    const fps = this.settings.frameCap();
-    if (fps > 0) {
-      this.sinceRender += delta;
-      if (this.sinceRender < 1 / fps) return;
-      this.sinceRender = 0;
-    }
+    if (!this.frames.allows(delta)) return;
 
     if (this.dirty) {
       this.drawFeed();
@@ -297,9 +292,13 @@ export class DoomPhone implements AfterViewInit, OnDestroy {
     if (!ctx || !this.texture) return;
     const { width } = TEXTURE;
 
+    // Mode calme : l'écran **saute** d'une publication à l'autre au lieu de
+    // glisser. Le fil avance exactement pareil — seule l'image cesse de bouger
+    // en continu, et les montants continuent de s'afficher au-dessus.
     const first = Math.floor(this.position / POST_HEIGHT);
+    const offset = this.settings.calm() ? first * POST_HEIGHT : this.position;
     for (let index = first; index <= first + 1; index++) {
-      this.drawPost(ctx, index, HEADER_HEIGHT + index * POST_HEIGHT - this.position);
+      this.drawPost(ctx, index, HEADER_HEIGHT + index * POST_HEIGHT - offset);
     }
 
     // Barre de l'application, par-dessus le fil qui glisse dessous.
@@ -394,6 +393,7 @@ export class DoomPhone implements AfterViewInit, OnDestroy {
    * publications de même nature à la suite ne rejoueraient pas l'animation.
    */
   private pulse(kind: DoomscrollOutcome['kind']): void {
+    if (this.settings.calm()) return;
     const element = this.host.nativeElement as HTMLElement;
     const classes = ['pulse-good', 'pulse-bad', 'pulse-chest'];
     element.classList.remove(...classes);

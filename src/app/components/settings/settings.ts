@@ -74,6 +74,11 @@ export class Settings {
   get musicVolume() { return this.soundManager.ambianceVolume(); }
   get graphics() { return this.settingsManager.graphics(); }
   get fpsCap() { return this.settingsManager.fpsCap(); }
+  get calm() { return this.settingsManager.calm(); }
+
+  onCalmChange(event: Event) {
+    this.saveOptionsConfiguration({ calm: (event.target as HTMLInputElement).checked });
+  }
 
   onFxVolumeChange(event: Event) {
     const value = (event.target as HTMLInputElement).valueAsNumber;
@@ -201,6 +206,7 @@ export class Settings {
       language: this.language,
       graphics: this.graphics,
       fpsCap: this.fpsCap,
+      calm: this.calm,
       ...changes
     };
 

@@ -123,6 +123,11 @@
       @for (id of store.shownCompanions(); track id) {
         <span class="companion" [attr.data-label]="companionLabel(id)">
           <img [src]="companionIcon(id)" alt="" aria-hidden="true">
+          <!-- Chacun son téléphone une fois l'amélioration prise : le bonus de
+               doomscrolling existait sans que rien ne le montre à l'écran. -->
+          @if (store.phones()) {
+            <img class="companion-phone" [src]="companionPhoneIcon" alt="" aria-hidden="true">
+          }
           <span class="companion-tip">{{ companionLabel(id) }}</span>
         </span>
       }
@@ -140,15 +145,21 @@
       </span>
     }
     @if (showCollection()) {
-      <app-icon-btn [icon]="storeIcon" label="STORE" (activate)="openStore()"></app-icon-btn>
-      <app-icon-btn [icon]="casinoIcon" label="CASINO" (activate)="openCasino()"></app-icon-btn>
+      <!-- La pastille des coffres en attente est sur le **marchand** : c'est
+           chez lui qu'on les ouvre. Sur la collection, elle envoyait vers un
+           écran où il n'y avait rien à en faire. -->
       <span class="with-badge">
-        <app-icon-btn [icon]="chestIcon" label="COLLECTION" (activate)="openCollection()"></app-icon-btn>
+        <app-icon-btn [icon]="storeIcon" label="STORE" (activate)="openStore()"></app-icon-btn>
         @if (collection.pendingChests() > 0) {
           <span class="badge" aria-hidden="true">{{ collection.pendingChests() }}</span>
         }
       </span>
+      @if (store.casino()) {
+        <app-icon-btn [icon]="casinoIcon" label="CASINO" (activate)="openCasino()"></app-icon-btn>
+      }
+      <app-icon-btn [icon]="chestIcon" label="COLLECTION" (activate)="openCollection()"></app-icon-btn>
     }
+    <app-icon-btn [icon]="questIcon" label="QUESTS" (activate)="openQuests()"></app-icon-btn>
     <app-icon-btn [icon]="trophyIcon" label="ACHIEVEMENTS" (activate)="openAchievements()"></app-icon-btn>
     <app-icon-btn [icon]="gearIcon" label="SETTINGS" (activate)="openSettings()"></app-icon-btn>
   </nav>

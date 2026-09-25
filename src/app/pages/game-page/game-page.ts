@@ -20,6 +20,7 @@ import { BackgroundManager } from '../../services/background-manager';
 import { UtilityManager } from '../../services/utility-manager';
 import { SecretTracker } from '../../services/secret-tracker';
 import { Wardrobe } from '../../components/wardrobe/wardrobe';
+import { QuestLog } from '../../components/quest-log/quest-log';
 import { ComboMeter } from '../../components/combo-meter/combo-meter';
 import { DoomPhone } from '../../components/doom-phone/doom-phone';
 import { CollectionManager } from '../../services/collection-manager';
@@ -28,7 +29,7 @@ import { Onboarding } from '../../services/onboarding';
 import { StoreManager } from '../../services/store-manager';
 import { ConsumableManager } from '../../services/consumable-manager';
 import { ConsumableId } from '../../../assets/static/consumables';
-import { CompanionId, companionDefinition } from '../../../assets/static/companions';
+import { COMPANION_PHONE_PAYOUT, CompanionId, companionDefinition } from '../../../assets/static/companions';
 import { Router } from '@angular/router';
 
 @Component({
@@ -116,7 +117,9 @@ export class GamePage {
    * Au-delà de ce multiplicateur, l'écran passe en « go fast » : des traînées
    * filent sur les bords pour dire que la partie s'emballe.
    */
-  readonly goFast = computed(() => this.spinCombo.multiplier() >= 10);
+  // Les traînées de vitesse filent le long des bords de l'écran : c'est le
+  // premier effet que coupe le mode calme.
+  readonly goFast = computed(() => this.spinCombo.multiplier() >= 10 && !this.settingsManager.calm());
 
   /**
    * Palier d'aura, qui commande le halo autour de la statue. Le premier seuil
@@ -125,9 +128,9 @@ export class GamePage {
    */
   readonly auraLevel = computed(() => {
     const aura = this.auraManager.auraCount();
-    if (aura >= 1e12) return 3;
-    if (aura >= 1e9) return 2;
-    if (aura >= 1e6) return 1;
+    if (aura.gte(1e12)) return 3;
+    if (aura.gte(1e9)) return 2;
+    if (aura.gte(1e6)) return 1;
     return 0;
   });
 
@@ -147,6 +150,12 @@ export class GamePage {
   readonly gearIcon = this.modelIcons.gear();
   readonly moyaiIcon = this.modelIcons.moyai();
   readonly casinoIcon = this.modelIcons.die();
+  readonly companionPhoneIcon = this.modelIcons.companionPhone();
+  readonly questIcon = this.modelIcons.exclamation();
+
+  openQuests() {
+    this.modalManager.open(QuestLog);
+  }
 
   openShop() {
     this.router.navigate(['/shop']);
@@ -177,11 +186,20 @@ export class GamePage {
     return this.modelIcons.companion(id);
   }
 
-  /** Nom et bonus d'un compagnon, pour son infobulle. */
+  /**
+   * Nom et bonus d'un compagnon, pour son infobulle. Une fois les téléphones
+   * offerts, chacun en tient un : l'infobulle dit ce qu'il rapporte au
+   * doomscrolling, sans quoi le petit écran allumé resterait un ornement.
+   */
   companionLabel(id: CompanionId): string {
     const definition = companionDefinition(id);
     const name = this.translate.instant(`COMPANION_${id.toUpperCase()}`);
-    return `${name} · +${Math.round(definition.bonus * 100)} %`;
+    const label = `${name} · +${Math.round(definition.bonus * 100)} %`;
+    if (!this.store.phones()) return label;
+    const phone = this.translate.instant('COMPANION_PHONE_TIP', {
+      value: Math.round(COMPANION_PHONE_PAYOUT * 100)
+    });
+    return `${label} · ${phone}`;
   }
 
   openStore() {

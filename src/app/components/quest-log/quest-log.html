@@ -1,0 +1,51 @@
+<div class="quest-log">
+  <h2>{{ 'QUESTS' | translate }}</h2>
+
+  <section class="block">
+    <h3 class="block-title">{{ 'QUEST_STORY' | translate }}</h3>
+
+    @if (quests.currentChapter(); as chapter) {
+      <p class="chapter-rank">
+        {{ 'QUEST_CHAPTER' | translate: { rank: chapterNumber(), total: total } }}
+      </p>
+      <article class="quest">
+        <h4 class="quest-title">{{ key(chapter) | translate }}</h4>
+        <!-- Le texte du chapitre porte l'histoire : c'est la seule chose du jeu
+             qui raconte pourquoi le moyai farme. -->
+        <p class="quest-lore">{{ key(chapter, '_LORE') | translate }}</p>
+        <p class="quest-aim">{{ key(chapter, '_AIM') | translate }}</p>
+        <div class="gauge" aria-hidden="true">
+          <span class="gauge-fill" [style.width.%]="percent(chapter)"></span>
+        </div>
+        <p class="quest-foot">
+          <span class="count">{{ count(chapter) }}</span>
+          <span class="reward">+{{ chapter.definition.gems }} 💎</span>
+        </p>
+      </article>
+    } @else {
+      <p class="done">{{ 'QUEST_STORY_DONE' | translate }}</p>
+    }
+  </section>
+
+  <section class="block">
+    <h3 class="block-title">{{ 'QUEST_DAILY' | translate }}</h3>
+    <p class="block-lead">{{ 'QUEST_DAILY_LEAD' | translate }}</p>
+
+    <ul class="dailies">
+      @for (quest of quests.dailyQuests(); track quest.definition.id) {
+        <li class="quest" [class.finished]="quest.done">
+          <h4 class="quest-title">{{ key(quest) | translate }}</h4>
+          <div class="gauge" aria-hidden="true">
+            <span class="gauge-fill" [style.width.%]="percent(quest)"></span>
+          </div>
+          <p class="quest-foot">
+            <span class="count">{{ count(quest) }}</span>
+            <span class="reward">
+              {{ quest.done ? ('QUEST_CLAIMED' | translate) : '+' + quest.definition.gems + ' 💎' }}
+            </span>
+          </p>
+        </li>
+      }
+    </ul>
+  </section>
+</div>

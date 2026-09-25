@@ -71,9 +71,9 @@ export class UtilityManager {
     if (this.isOwned(id)) return false;
 
     const price = this.shopManager.scaled(this.definition(id).price);
-    if (this.auraManager.auraCount() < price) return false;
+    if (!this.auraManager.canAfford(price)) return false;
 
-    this.auraManager.auraCount.update(aura => aura - price);
+    this.auraManager.spend(price);
     this.ownedIds.update(owned => new Set(owned).add(id));
     this.persist();
     return true;
@@ -262,7 +262,9 @@ export class UtilityManager {
     for (const utility of UTILITIES) {
       const purchases = data.upgrades?.[utility.id] ?? {};
       for (const upgrade of utility.upgrades) {
-        upgrade.purchases = purchases[upgrade.id] ?? 0;
+        // Borné : une sauvegarde d'avant un rééquilibrage peut en porter plus
+        // que le plafond actuel, ce qui poussait l'avancement au-delà de 100 %.
+        upgrade.purchases = Math.min(purchases[upgrade.id] ?? 0, upgrade.maxPurchases ?? Infinity);
         upgrade.unlocked = upgrade.purchases > 0;
       }
     }

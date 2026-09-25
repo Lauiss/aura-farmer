@@ -15,6 +15,8 @@ import { UtilityManager } from './utility-manager';
 import { BattleManager } from './battle-manager';
 import { ConsumableManager } from './consumable-manager';
 import { StoreManager } from './store-manager';
+import { CallManager } from './call-manager';
+import { QuestManager } from './quest-manager';
 
 /**
  * Boucle de jeu : production d'aura passive, vérification des succès et
@@ -45,6 +47,8 @@ export class GameLoop {
   private readonly battles = inject(BattleManager);
   private readonly consumables = inject(ConsumableManager);
   private readonly store = inject(StoreManager);
+  private readonly calls = inject(CallManager);
+  private readonly quests = inject(QuestManager);
 
   private started = false;
 
@@ -64,7 +68,9 @@ export class GameLoop {
       createAchievements(
         () => this.shopManager.getAllItems(),
         () => this.achievementsManager.totalClicks(),
-        () => this.auraManager.allTimeAura(),
+        // Les seuils des succès vont au million de milliards au plus : un
+        // nombre ordinaire suffit, et `Infinity` au-delà les valide tous.
+        () => this.auraManager.allTimeAura().toNumber(),
         () => this.shopManager.moyaiUpgrades(),
         () => this.shopManager.maxedSkillCount(),
         () => this.secretTracker.backFacingReached(),
@@ -75,7 +81,8 @@ export class GameLoop {
         () => this.battles.defeatedCount(),
         id => this.store.hasCompanion(id),
         () => this.store.companionCount(),
-        () => this.spinCombo.peak()
+        () => this.spinCombo.peak(),
+        () => this.calls.stats()
       )
     );
 
@@ -84,8 +91,10 @@ export class GameLoop {
     this.styleBonus.start();
 
     this.loadSave();
-    // Rattrape les succès déjà remplis, sans notification.
+    // Rattrape les succès déjà remplis, sans notification. Les chapitres de
+    // quête déjà franchis se rattrapent de la même façon.
     this.achievementsManager.checkAchievementsSilently();
+    this.quests.catchUp();
     this.startAuraGain();
   }
 
@@ -99,13 +108,11 @@ export class GameLoop {
         // fait aussi monter la production passive, sans quoi le multiplicateur
         // ne servait à rien dès qu'on cessait de cliquer.
         const gain = this.shopManager.getTotalValue() * this.spinCombo.current();
-        if (gain > 0) {
-          this.auraManager.auraCount.update(current => current + gain);
-          this.auraManager.allTimeAura.update(total => total + gain);
-        }
+        if (gain > 0) this.auraManager.gain(gain);
       });
       this.guard('succès', () => this.achievementsManager.checkAchievements());
       this.guard('consommables', () => this.consumables.tick());
+      this.guard('quêtes', () => this.quests.tick());
     });
 
     interval(10000).subscribe(() => this.guard('sauvegarde', () => this.createSave()));
@@ -154,11 +161,11 @@ export class GameLoop {
     }));
 
     const saveData: SaveData = {
-      // `parseInt(x.toFixed(2))` ramenait 4e22 à 4 : au-delà de 1e21,
-      // `toFixed` passe en notation exponentielle et `parseInt` s'arrête au
-      // point.
-      auraCount: Math.floor(this.auraManager.auraCount()),
-      allTimeAura: Math.floor(this.auraManager.totalAllTime),
+      // Écrite en chaîne : au-delà d'un flottant, un nombre ne suffit plus, et
+      // `parseInt(x.toFixed(2))` ramenait déjà 4e22 à 4 — `toFixed` passe en
+      // notation exponentielle et `parseInt` s'arrête au point.
+      auraCount: this.auraManager.auraCount().floor().toString(),
+      allTimeAura: this.auraManager.totalAllTime.floor().toString(),
       shopItems: plainItems,
       moyaiUpgrades: moyaiUpgrades,
       counters: this.shopManager.getCountersValue(),
@@ -179,11 +186,13 @@ export class GameLoop {
     const saveData = this.saveManager.loadProgress(this.saveLocation);
     if(!saveData){ return}
 
-    if (saveData.auraCount) {
-      this.auraManager.auraCount.set(saveData.auraCount);
+    // `!= null` et non un test de vérité : « 0 » en chaîne est vrai, 0 en
+    // nombre est faux, et une partie remise à zéro doit se recharger à zéro.
+    if (saveData.auraCount != null) {
+      this.auraManager.setAura(saveData.auraCount);
     }
 
-    if (saveData.allTimeAura) {
+    if (saveData.allTimeAura != null) {
       this.auraManager.defineAllTimeAura(saveData.allTimeAura);
     }
 
@@ -222,8 +231,7 @@ export class GameLoop {
       const totalValue = this.shopManager.getTotalValue();
       if (totalValue > 0 && offlineSeconds > 0) {
         const offlineGain = totalValue * offlineSeconds * this.utilityManager.offlineRate();
-        this.auraManager.auraCount.update(current => current + offlineGain);
-        this.auraManager.allTimeAura.update(total => total + offlineGain);
+        this.auraManager.gain(offlineGain);
         this.modalManager.open(OfflineProgressAnnouncer, {
           data: {
             offlineProgression: offlineGain,

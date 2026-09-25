@@ -5,7 +5,7 @@ import { createHanger } from '../three/models/hanger';
 import { createMoyai } from '../three/models/moyai';
 import { createChest } from '../three/models/chest';
 import { ChestTier, collectibleDefinition, relicDefinition } from '../../assets/static/collectibles';
-import { createQuestionMark } from '../three/models/question-mark';
+import { createExclamation, createQuestionMark } from '../three/models/question-mark';
 import { createBuilding } from '../three/models/building';
 import { createTrophy } from '../three/models/trophy';
 import { createPhone } from '../three/models/phone';
@@ -23,6 +23,8 @@ import { CompanionId, companionDefinition } from '../../assets/static/companions
 import { ConsumableId, consumableDefinition } from '../../assets/static/consumables';
 import { createRelic } from '../three/models/relic';
 import { createBrainrot } from '../three/models/brainrot';
+import { createCaller } from '../three/models/caller';
+import { CallerId, callerDefinition } from '../../assets/static/callers';
 import { BossId, bossDefinition } from '../../assets/static/bosses';
 import { renderToDataUrl } from '../three/snapshot';
 import * as THREE from 'three';
@@ -94,6 +96,13 @@ export class ModelIcons {
     );
   }
 
+  /** Point d'exclamation, enseigne des quêtes. */
+  exclamation(): string {
+    return this.render('exclamation', () =>
+      renderToDataUrl(createExclamation(), { size: 192, distance: 4.6, rotation: [0.1, 0.35, 0] })
+    );
+  }
+
   /** Flèche verte, pour les améliorations. */
   arrow(): string {
     return this.render('arrow', () =>
@@ -135,6 +144,38 @@ export class ModelIcons {
       screen.dispose();
       return icon;
     });
+  }
+
+  /**
+   * Téléphone des compagnons, écran allumé. Le modèle est celui du
+   * doomscrolling, mais dans la rangée des compagnons il ne fait guère plus
+   * d'un centimètre : écran éteint, il s'y lisait comme une plaque noire.
+   */
+  companionPhone(): string {
+    return this.render('companion-phone', () => {
+      const screen = new THREE.DataTexture(new Uint8Array([232, 184, 75, 255]), 1, 1);
+      screen.needsUpdate = true;
+      // Tourné vers la **gauche**, donc vers le compagnon qu'il accompagne : le
+      // téléphone est posé à sa droite, et un écran face au spectateur donnait
+      // l'impression que c'était nous qu'il regardait.
+      const icon = renderToDataUrl(createPhone(screen), { size: 192, distance: 3.9, rotation: [0.06, -0.62, 0.05] });
+      screen.dispose();
+      return icon;
+    });
+  }
+
+  /**
+   * Buste de celui qui appelle. Rendu de trois quarts : de face, la casquette
+   * du colonel et le groin de John perdent leur relief.
+   */
+  caller(id: CallerId, size = 192): string {
+    return this.render(`caller-${id}-${size}`, () =>
+      renderToDataUrl(createCaller(callerDefinition(id)), {
+        size,
+        distance: 5.6,
+        rotation: [0.05, 0.42, 0]
+      })
+    );
   }
 
   /** Point faible, vu de face. */

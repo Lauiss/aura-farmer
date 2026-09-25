@@ -2,9 +2,9 @@
     <div class="header header-page">
     <h2>Shop</h2>
     <div class="header-actions">
-        @if (auraManager.allTimeAura() > unlockButtons){
+        @if (auraManager.allTimeAura().gt(unlockButtons)){
         <app-action-btn (click)="cycleBuyAmount()">{{ 'BUY' | translate }} {{buyAmount()}}</app-action-btn>
-        <app-action-btn (click)="openMoyaiUpgradesModal()" [disabled]="auraManager.allTimeAura() < unlockUpgrades"> {{ 'MOYAI_UPGRADES' | translate }}</app-action-btn>
+        <app-action-btn (click)="openMoyaiUpgradesModal()" [disabled]="auraManager.allTimeAura().lt(unlockUpgrades)"> {{ 'MOYAI_UPGRADES' | translate }}</app-action-btn>
         }
         <app-icon-btn
             [icon]="trophyIcon"
@@ -18,7 +18,7 @@
         ></app-icon-btn>
     </div>
     </div>
-    @if (auraManager.allTimeAura() > unlockUpgrades){
+    @if (auraManager.allTimeAura().gt(unlockUpgrades)){
     <div class="infos-container">
         <span>{{ 'CLICK_VALUE' | translate }} : {{shopManager.clickMultiplier() | formatAura}}</span>
         <span>{{ 'FINAL_MULTIPLIER' | translate }} : x{{shopManager.finalMultiplier()}}</span>
@@ -47,7 +47,7 @@
             </div>
             <div class="action">
                     <app-action-btn (click)="buyItem(item.id)"
-                        [disabled]="auraManager.auraCount() < (item.price() * numberFromBuyAmount(item))">
+                        [disabled]="!auraManager.canAfford(item.price() * numberFromBuyAmount(item))">
                     {{ 'BUY' | translate }} {{numberFromBuyAmount(item)}}
                 </app-action-btn>
                 <app-action-btn (click)="openItemUpgradesModal(item)" [disabled]="item.level() < 20">{{'UPGRADES' | translate }}</app-action-btn>
