@@ -9,6 +9,8 @@ export interface SaveData {
    *  suffit plus. Les anciennes parties en portent un, que `Decimal` relit. */
   auraCount: number | string;
   allTimeAura: number | string;
+  /** Temps de jeu cumulé, en secondes. */
+  playedSeconds?: number;
   shopItems: ItemSave[];
   moyaiUpgrades: MoyaiUpgradeSave[];
   counters: {};

@@ -8,6 +8,7 @@ import { FPS_CAPS, GraphicsQuality, SettingsConfig, SettingsManager } from '../.
 import { ModalManager } from '../../services/modal-manager';
 import { GameLoop } from '../../services/game-loop';
 import { SaveTransfer } from '../../services/save-transfer';
+import { PlayTime } from '../../services/play-time';
 
 /** Où en est l'échange de sauvegarde, pour le message affiché sous les boutons. */
 type TransferState =
@@ -34,6 +35,7 @@ export class Settings {
   private readonly modalManager = inject(ModalManager);
   private readonly gameLoop = inject(GameLoop);
   private readonly saveTransfer = inject(SaveTransfer);
+  readonly playTime = inject(PlayTime);
 
   readonly fpsCaps = FPS_CAPS;
 

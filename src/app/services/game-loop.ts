@@ -17,6 +17,7 @@ import { ConsumableManager } from './consumable-manager';
 import { StoreManager } from './store-manager';
 import { CallManager } from './call-manager';
 import { QuestManager } from './quest-manager';
+import { PlayTime } from './play-time';
 
 /**
  * Boucle de jeu : production d'aura passive, vérification des succès et
@@ -49,6 +50,7 @@ export class GameLoop {
   private readonly store = inject(StoreManager);
   private readonly calls = inject(CallManager);
   private readonly quests = inject(QuestManager);
+  private readonly playTime = inject(PlayTime);
 
   private started = false;
 
@@ -113,6 +115,7 @@ export class GameLoop {
       this.guard('succès', () => this.achievementsManager.checkAchievements());
       this.guard('consommables', () => this.consumables.tick());
       this.guard('quêtes', () => this.quests.tick());
+      this.guard('temps de jeu', () => this.playTime.tick());
     });
 
     interval(10000).subscribe(() => this.guard('sauvegarde', () => this.createSave()));
@@ -164,6 +167,7 @@ export class GameLoop {
       // Écrite en chaîne : au-delà d'un flottant, un nombre ne suffit plus, et
       // `parseInt(x.toFixed(2))` ramenait déjà 4e22 à 4 — `toFixed` passe en
       // notation exponentielle et `parseInt` s'arrête au point.
+      playedSeconds: Math.round(this.playTime.seconds()),
       auraCount: this.auraManager.auraCount().floor().toString(),
       allTimeAura: this.auraManager.totalAllTime.floor().toString(),
       shopItems: plainItems,
@@ -194,6 +198,10 @@ export class GameLoop {
 
     if (saveData.allTimeAura != null) {
       this.auraManager.defineAllTimeAura(saveData.allTimeAura);
+    }
+
+    if (saveData.playedSeconds != null) {
+      this.playTime.restore(saveData.playedSeconds);
     }
 
     if (saveData.shopItems) {

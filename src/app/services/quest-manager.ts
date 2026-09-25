@@ -10,6 +10,7 @@ import { SpinCombo } from './spin-combo';
 import { CallManager } from './call-manager';
 import { HintManager } from './hint-manager';
 import { SaveLocation, SaveManager } from './save-manager';
+import { PlayTime, formatDuration } from './play-time';
 import {
   DAILY_AURA_SECONDS,
   DAILY_COUNT,
@@ -40,6 +41,8 @@ interface DailySave {
 interface QuestSave {
   /** Chapitre en cours. Égal à la longueur de l'histoire une fois finie. */
   chapter: number;
+  /** Temps de jeu au moment où le dernier chapitre est tombé, en secondes. */
+  finishedAt?: number;
   /** Jour des quotidiennes en cours, au format `AAAA-MM-JJ` local. */
   day: string;
   dailies: DailySave[];
@@ -72,9 +75,18 @@ export class QuestManager {
   private readonly calls = inject(CallManager);
   private readonly hintManager = inject(HintManager);
   private readonly saveManager = inject(SaveManager);
+  private readonly playTime = inject(PlayTime);
 
   /** Rang du chapitre en cours ; `STORY.length` une fois l'histoire finie. */
   readonly chapter = signal(0);
+  /**
+   * Temps mis pour venir à bout de l'histoire, `null` tant qu'elle court. Il
+   * n'est posé qu'à une vraie fin, jamais par le rattrapage silencieux : une
+   * partie qui franchit quatorze chapitres d'un coup au chargement n'a pas mis
+   * ce temps-là à les jouer, et afficher son compteur du moment serait un
+   * chiffre faux.
+   */
+  readonly finishedAt = signal<number | null>(null);
   private readonly day = signal('');
   private readonly dailies = signal<DailySave[]>([]);
 
@@ -86,6 +98,7 @@ export class QuestManager {
     if (saved) {
       this.chapter.set(Math.min(saved.chapter ?? 0, STORY.length));
       this.day.set(saved.day ?? '');
+      this.finishedAt.set(saved.finishedAt ?? null);
       this.dailies.set(saved.dailies ?? []);
     }
     // Surtout **pas** de tirage ici : le service est construit avant que la
@@ -241,6 +254,9 @@ export class QuestManager {
 
   private completeChapter(quest: QuestProgress): void {
     this.chapter.update(rank => rank + 1);
+    if (this.storyDone() && this.finishedAt() === null) {
+      this.finishedAt.set(Math.round(this.playTime.seconds()));
+    }
     this.reward(quest.definition.gems);
     this.hintManager.announce({
       titleKey: 'QUEST_CHAPTER_DONE',
@@ -270,6 +286,12 @@ export class QuestManager {
     this.collection.refundGems(gems);
   }
 
+  /** Temps mis pour finir l'histoire, déjà mis en forme. */
+  readonly finishedLabel = computed(() => {
+    const seconds = this.finishedAt();
+    return seconds === null ? '' : formatDuration(seconds);
+  });
+
   /** Aura offerte par une quête, en secondes de production — inutilisée à ce jour. */
   auraReward(seconds: number): Decimal {
     return new Decimal(this.shopManager.getTotalValue() * seconds);
@@ -278,6 +300,7 @@ export class QuestManager {
   private persist(): void {
     this.saveManager.saveProgress(SaveLocation.Quests, {
       chapter: this.chapter(),
+      finishedAt: this.finishedAt() ?? undefined,
       day: this.day(),
       dailies: this.dailies()
     } satisfies QuestSave);

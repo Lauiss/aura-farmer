@@ -46,6 +46,14 @@
   <p class="note">{{ 'GRAPHICS_NOTE' | translate }}</p>
 
   <h3>{{ 'SETTINGS_SAVE' | translate }}</h3>
+  <!-- Le temps de jeu se lit ici, avec la sauvegarde : c'est elle qui le
+       porte, et c'est la seule mesure qui dise en combien de temps on vient à
+       bout de la partie. -->
+  <div class="align">
+    <span>{{ 'PLAY_TIME' | translate }}</span>
+    <span></span>
+    <span>{{ playTime.label() }}</span>
+  </div>
   <div class="block">
     <div class="buttons">
       <button type="button" class="btn" [disabled]="busy()" (click)="exportSave()">{{ 'SAVE_EXPORT' | translate }}</button>

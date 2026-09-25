@@ -41,6 +41,24 @@
     }
 }
 
+/* --- Cases à cocher --- */
+// Elles se posent au **bout** de la colonne du milieu, là où s'arrête le bord
+// droit des listes déroulantes. Laissée au début de sa colonne, une case large
+// d'un centimètre flottait seule au milieu du panneau, décalée de tout le
+// reste.
+input[type='checkbox'] {
+    justify-self: end;
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: $menu-accent;
+    cursor: pointer;
+}
+
+input[type='checkbox']:focus-visible {
+    outline: 1px solid $menu-accent-border;
+    outline-offset: 3px;
+}
+
 /* --- Curseurs de volume --- */
 input[type='range'] {
     appearance: none;
