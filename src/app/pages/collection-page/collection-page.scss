@@ -60,6 +60,38 @@
   margin: 0 auto $spacing-600;
 }
 
+// Les titres sont des `summary` : ils ouvrent et ferment leur section. Le
+// chevron natif est remplacé par le nôtre, qui pivote.
+summary {
+  cursor: pointer;
+  list-style: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &::after {
+    content: '';
+    width: 0.55rem;
+    height: 0.55rem;
+    margin-left: auto;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg) translate(-25%, -25%);
+    transition: transform 0.15s ease;
+    opacity: 0.7;
+  }
+}
+
+details[open] > summary::after {
+  transform: rotate(-135deg) translate(-25%, -25%);
+}
+
+.rarity-count {
+  margin-left: $spacing-100;
+  font-variant-numeric: tabular-nums;
+}
+
 .section-head {
   display: flex;
   align-items: baseline;

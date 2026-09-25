@@ -4,28 +4,48 @@
     <p class="progress">{{ achievementsManager.getUnlockedCount() }} / {{ achievementsManager.getTotalCount() }}</p>
   </div>
 
+  <label class="search">
+    <span class="visually-hidden">{{ 'ACHIEVEMENT_SEARCH' | translate }}</span>
+    <input
+      type="search"
+      [value]="search()"
+      [attr.placeholder]="'ACHIEVEMENT_SEARCH' | translate"
+      (input)="onSearch($event)"
+    >
+  </label>
+
   <div class="achievements-grid">
-    @for (achievement of achievementsManager.achievements(); track achievement.id) {
+    @for (achievement of shown(); track achievement.id) {
       <button
         type="button"
         class="achievement-card"
         [class.unlocked]="achievement.unlocked"
+        [class.secret]="isHidden(achievement)"
         (click)="onAchievementClick(achievement)"
       >
         <div class="achievement-icon-wrapper">
           <img [src]="trophyIcon(achievement.unlocked)" alt="" class="achievement-icon">
         </div>
         <div class="achievement-info">
-          @if (achievement.unlocked) {
+          <!-- Un succès verrouillé mais **visible** montre son titre et ce
+               qu'il demande : c'est un objectif, et un objectif illisible n'en
+               est pas un. Seuls les secrets gardent leurs points
+               d'interrogation. -->
+          @if (isHidden(achievement)) {
+            <h3 class="achievement-title">?????</h3>
+            <p class="achievement-description">{{ 'ACHIEVEMENT_SECRET' | translate }}</p>
+          } @else {
             <h3 class="achievement-title">{{ achievement.title | translate }}</h3>
             <p class="achievement-description">{{ achievement.description | translate }}</p>
-          } @else {
-            <h3 class="achievement-title">???</h3>
-            <p class="achievement-description">?????</p>
+          }
+          @if (!achievement.unlocked) {
             <span class="locked-badge">{{ 'LOCKED' | translate }}</span>
           }
         </div>
       </button>
+    }
+    @if (!shown().length) {
+      <p class="empty">{{ 'ACHIEVEMENT_NONE' | translate }}</p>
     }
   </div>
 </div>

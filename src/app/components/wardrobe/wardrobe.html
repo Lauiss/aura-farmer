@@ -1,9 +1,17 @@
 <div class="wardrobe">
   <h2>{{ 'WARDROBE' | translate }}</h2>
 
+  <!-- Deux colonnes : les réglages à gauche, la statue à droite. On habille en
+       regardant le résultat, ce qui demandait jusqu'ici de fermer la modale
+       après chaque essai. -->
+  <div class="columns">
+  <div class="controls">
+
   @if (wardrobe.unlocked().length === 0) {
     <p class="empty">{{ 'WARDROBE_EMPTY' | translate }}</p>
   } @else {
+    <details class="scenery" [open]="isOpen('pieces')" (toggle)="onToggle('pieces', $event)">
+      <summary><h3>{{ 'WARDROBE_PIECES' | translate }}</h3></summary>
     <ul class="pieces">
       @for (id of wardrobe.unlocked(); track id) {
         <li>
@@ -22,11 +30,12 @@
         </li>
       }
     </ul>
+    </details>
   }
 
   @if (skins().length) {
-    <section class="scenery">
-      <h3>{{ 'WARDROBE_SKINS' | translate }}</h3>
+    <details class="scenery" [open]="isOpen('skins')" (toggle)="onToggle('skins', $event)">
+      <summary><h3>{{ 'WARDROBE_SKINS' | translate }}</h3></summary>
       <p class="section-note">{{ 'WARDROBE_SKINS_NOTE' | translate }}</p>
       <ul class="pieces">
         <li>
@@ -63,12 +72,12 @@
           </li>
         }
       </ul>
-    </section>
+    </details>
   }
 
   @if (defeated().length) {
-    <section class="scenery">
-      <h3>{{ 'WARDROBE_BRAINROTS' | translate }}</h3>
+    <details class="scenery" [open]="isOpen('brainrots')" (toggle)="onToggle('brainrots', $event)">
+      <summary><h3>{{ 'WARDROBE_BRAINROTS' | translate }}</h3></summary>
       <p class="section-note">{{ 'WARDROBE_BRAINROTS_NOTE' | translate }}</p>
       <ul class="pieces">
         <li>
@@ -102,12 +111,12 @@
           </li>
         }
       </ul>
-    </section>
+    </details>
   }
 
   @if (backgrounds.hasAny()) {
-    <section class="scenery">
-      <h3>{{ 'BACKGROUNDS' | translate }}</h3>
+    <details class="scenery" [open]="isOpen('backgrounds')" (toggle)="onToggle('backgrounds', $event)">
+      <summary><h3>{{ 'BACKGROUNDS' | translate }}</h3></summary>
       <ul class="pieces">
         @for (id of backgrounds.owned(); track id) {
           <li>
@@ -126,6 +135,25 @@
           </li>
         }
       </ul>
-    </section>
+    </details>
   }
+  </div>
+
+  <!-- L'aperçu : la même statue que dans le jeu, avec ce qu'on vient de
+       choisir. Elle tourne d'elle-même pour qu'on voie aussi le dos. -->
+  <div class="preview">
+    <app-moyai-viewer
+      class="preview-stage"
+      [interactive]="false"
+      [idleSpin]="0.45"
+      [maxFps]="24"
+      [distance]="5.6"
+      [cosmetics]="wardrobe.equipped()"
+      [background]="backgrounds.selected()"
+      [creature]="battles.worn()"
+      [palette]="collection.skinPalette()"
+      aria-hidden="true"
+    ></app-moyai-viewer>
+  </div>
+  </div>
 </div>

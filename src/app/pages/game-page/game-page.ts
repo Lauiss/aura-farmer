@@ -1,4 +1,4 @@
-import { Component, computed, forwardRef, ViewChild, ElementRef, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, effect, forwardRef, ViewChild, ElementRef, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormatAuraPipe } from '../../pipes/format-aura';
 import { AuraManager } from '../../services/aura-manager';
 import { ShopManager } from '../../services/shop-manager';
@@ -25,7 +25,7 @@ import { ComboMeter } from '../../components/combo-meter/combo-meter';
 import { DoomPhone } from '../../components/doom-phone/doom-phone';
 import { CollectionManager } from '../../services/collection-manager';
 import { BattleManager } from '../../services/battle-manager';
-import { Onboarding } from '../../services/onboarding';
+import { MenuEntry, Onboarding } from '../../services/onboarding';
 import { StoreManager } from '../../services/store-manager';
 import { ConsumableManager } from '../../services/consumable-manager';
 import { ConsumableId } from '../../../assets/static/consumables';
@@ -75,9 +75,21 @@ export class GamePage {
   readonly consumables = inject(ConsumableManager);
 
   /** L'accès à la collection apparaît avec le premier coffre ou la première gemme. */
+  /** La garde-robe n'a de sens qu'une fois qu'on a quelque chose à porter. */
+  readonly showWardrobe = computed(
+    () =>
+      this.wardrobeManager.hasAny() ||
+      this.backgroundManager.hasAny() ||
+      this.battles.defeatedCount() > 0 ||
+      this.collection.ownedCount() > 0
+  );
+
   readonly showCollection = computed(
     () =>
       this.utilityManager.isOwned('doomscroll') ||
+      // Un rayon ouvert dans l'arbre suffit : sans cette condition, acheter son
+      // premier coffre n'ouvrait aucun accès au marchand, faute de gemmes.
+      this.store.hasStock() ||
       this.collection.gems() > 0 ||
       this.collection.pendingChests() > 0 ||
       this.collection.ownedCount() > 0
@@ -154,7 +166,7 @@ export class GamePage {
   readonly questIcon = this.modelIcons.exclamation();
 
   openQuests() {
-    this.modalManager.open(QuestLog);
+    this.modalManager.open(QuestLog, undefined, 'lg');
   }
 
   openShop() {
@@ -162,7 +174,7 @@ export class GamePage {
   }
 
   openWardrobe() {
-    this.modalManager.open(Wardrobe);
+    this.modalManager.open(Wardrobe, undefined, 'lg');
   }
 
   openBattles() {
@@ -223,16 +235,47 @@ export class GamePage {
   }
 
 
+  /**
+   * Entrées de menu actuellement visibles, dans l'ordre où elles s'affichent.
+   * C'est cette liste que le mentor commente.
+   */
+  readonly visibleMenus = computed<MenuEntry[]>(() => {
+    const entries: MenuEntry[] = ['shop'];
+    if (this.showWardrobe()) entries.push('wardrobe');
+    if (this.showCollection()) {
+      entries.push('store');
+      if (this.store.casino()) entries.push('casino');
+      entries.push('collection');
+    }
+    entries.push('quests', 'achievements');
+    return entries;
+  });
+
   ngOnInit() {
     this.settingsManager.getSettingsConfig();
 
     // Idempotent : la partie se charge au premier écran de jeu atteint, que
     // ce soit celui-ci ou la carte de la boutique.
     this.gameLoop.start();
+
+    // Une partie déjà entamée ne se fait pas présenter ses sept onglets d'un
+    // coup : on les marque comme vus sans rien dire. Le repère est l'aura
+    // cumulée, qui part du négatif et ne redescend jamais.
+    if (this.auraManager.allTimeAura().gt(0)) {
+      this.onboarding.markPresented(this.visibleMenus());
+    }
+
     // Après le chargement de la partie : l'introduction ne se joue que si le
     // compteur est encore au point de départ.
     this.onboarding.playIntroIfFresh();
     this.soundManager.changeMusic(Sound.Game);
+  }
+
+  constructor() {
+    // John Pork présente chaque onglet à son apparition, en une ligne. L'effet
+    // couvre aussi bien le premier affichage que les déblocages en cours de
+    // partie — c'est le même geste.
+    effect(() => this.visibleMenus().forEach(entry => this.onboarding.presentMenu(entry)));
   }
 
   protected increment(e?: MouseEvent) {

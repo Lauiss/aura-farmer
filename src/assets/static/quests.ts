@@ -46,11 +46,24 @@ export interface QuestDefinition {
 }
 
 /**
+ * Aura rendue par une quête, en **secondes de production** : une récompense
+ * fixe serait décisive à la première heure et invisible à la dixième. Un
+ * plancher la rend sensible avant que la production ne décolle — c'est lui qui
+ * porte la récompense du tout premier chapitre, quand on ne produit rien.
+ */
+export const STORY_AURA_SECONDS = 150;
+export const DAILY_AURA_REWARD_SECONDS = 60;
+export const QUEST_AURA_FLOOR = 120;
+
+/**
  * Les chapitres, dans l'ordre. Leurs seuils suivent la progression naturelle
  * d'une partie : chacun tombe peu après qu'on a déverrouillé ce dont il parle,
  * de sorte que l'histoire avance en jouant normalement.
  */
 export const STORY: readonly QuestDefinition[] = [
+  // Le tout premier : sortir du négatif. Il tient en une dizaine de clics et
+  // sert de prétexte à la rencontre avec John Pork, qui ramasse le moyai.
+  { id: 'rock-bottom', goal: 'aura', target: 0, gems: 3 },
   { id: 'exile', goal: 'aura', target: 1_000, gems: 5 },
   { id: 'jawline', goal: 'clicks', target: 400, gems: 8 },
   { id: 'pigeon', goal: 'aura', target: 100_000, gems: 12 },

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CosmeticId } from '../../three/models/cosmetics';
 import { WardrobeManager } from '../../services/wardrobe-manager';
@@ -10,6 +10,8 @@ import { BossId } from '../../../assets/static/bosses';
 import { CollectionManager } from '../../services/collection-manager';
 import { ModelIcons } from '../../services/model-icons';
 import { RARITY_COLORS } from '../../../assets/static/collectibles';
+import { MoyaiViewer } from '../moyai-viewer/moyai-viewer';
+import { SaveLocation, SaveManager } from '../../services/save-manager';
 
 /**
  * Garde-robe : tout ce que le joueur peut arborer se règle ici — accessoires,
@@ -22,7 +24,7 @@ import { RARITY_COLORS } from '../../../assets/static/collectibles';
 @Component({
   selector: 'app-wardrobe',
   standalone: true,
-  imports: [TranslatePipe],
+  imports: [TranslatePipe, MoyaiViewer],
   templateUrl: './wardrobe.html',
   styleUrl: './wardrobe.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -35,6 +37,34 @@ export class Wardrobe {
   readonly collection = inject(CollectionManager);
   private readonly modelIcons = inject(ModelIcons);
   private readonly soundManager = inject(SoundManager);
+  private readonly saveManager = inject(SaveManager);
+
+  /**
+   * Sections repliées, retenues d'une ouverture à l'autre. Comme dans la
+   * collection, on mémorise les **fermées** : une catégorie ajoutée plus tard
+   * s'ouvre alors d'elle-même.
+   */
+  private readonly closed = signal<Set<string>>(
+    new Set(this.saveManager.loadProgress(SaveLocation.Ui)?.wardrobeClosed ?? [])
+  );
+
+  isOpen(section: string): boolean {
+    return !this.closed().has(section);
+  }
+
+  onToggle(section: string, event: Event): void {
+    const open = (event.target as HTMLDetailsElement).open;
+    this.closed.update(list => {
+      const next = new Set(list);
+      if (open) next.delete(section);
+      else next.add(section);
+      return next;
+    });
+    this.saveManager.saveProgress(SaveLocation.Ui, {
+      ...(this.saveManager.loadProgress(SaveLocation.Ui) ?? {}),
+      wardrobeClosed: [...this.closed()]
+    });
+  }
 
   readonly rarityColors = RARITY_COLORS;
 

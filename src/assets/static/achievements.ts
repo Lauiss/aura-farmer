@@ -32,6 +32,7 @@ export function createAchievements(
       icon: "assets/imgs/achievements/trophy_achievement.png",
       condition: () => getTotalAura() < 0,
       unlocked: false,
+      secret: true,
     },
         {
       id: 2,
@@ -395,7 +396,7 @@ export function createAchievements(
     },
     {
       id: 65,
-      title: "Aura Billionaire",
+      title: "Farming sans cape",
       description: `Générer ${new FormatAuraPipe().transform(1000000000)} d'aura au total.`,
       icon: "assets/imgs/achievements/trophy_achievement.png",
       condition: () => getTotalAura() >= 1000000000,
@@ -451,6 +452,7 @@ export function createAchievements(
       icon: "assets/imgs/achievements/trophy_achievement.png",
       condition: () => getBackFacingReached(),
       unlocked: false,
+      secret: true,
     },
     {
       id: 71,
@@ -715,6 +717,7 @@ export function createAchievements(
       icon: "assets/imgs/achievements/trophy_achievement.png",
       condition: () => getComboPeak() >= 6.7,
       unlocked: false,
+      secret: true,
     },
     {
       id: 207,
@@ -827,6 +830,7 @@ export function createAchievements(
       icon: "assets/imgs/achievements/trophy_achievement.png",
       condition: () => getCallStats().larry,
       unlocked: false,
+      secret: true,
     },
     {
       id: 235,
@@ -835,6 +839,7 @@ export function createAchievements(
       icon: "assets/imgs/achievements/trophy_achievement.png",
       condition: () => getCallStats().larryRefused,
       unlocked: false,
+      secret: true,
     },
     {
       id: 236,

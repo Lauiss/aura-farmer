@@ -6,6 +6,32 @@
   gap: $spacing-300;
 }
 
+// Deux colonnes séparées par un filet. Elles se replient l'une sous l'autre
+// sur un écran étroit, où deux colonnes de quêtes ne tiennent pas.
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1px 1.2fr;
+  gap: $spacing-300;
+  align-items: start;
+
+  &::before {
+    content: '';
+    grid-column: 2;
+    align-self: stretch;
+    background: $menu-border;
+  }
+}
+
+@media (max-width: 44rem) {
+  .columns {
+    grid-template-columns: 1fr;
+
+    &::before {
+      display: none;
+    }
+  }
+}
+
 h2 {
   font-size: $menu-size-title;
   font-weight: $menu-weight-strong;

@@ -89,6 +89,15 @@ export class StoreManager {
     return this.shopManager.scaled(definition.price);
   }
 
+  /**
+   * Vrai dès qu'un rayon a été ouvert dans l'arbre. Sans ça, acheter son
+   * premier rayon de coffres ne donnait accès à rien : l'entrée de menu du
+   * marchand dépendait des gemmes et des statuettes, qu'on n'a pas encore.
+   */
+  readonly hasStock = computed(
+    () => this.chests().size > 0 || this.drinks().size > 0
+  );
+
   /** Canettes réellement en rayon. Les plats partagent le même registre. */
   readonly availableDrinks = computed<readonly ConsumableDefinition[]>(() =>
     DRINKS.filter(drink => this.drinks().has(drink.id))

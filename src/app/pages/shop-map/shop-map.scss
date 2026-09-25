@@ -38,13 +38,43 @@
 }
 
 /* --- Barre supérieure --- */
+// Retour, aura, gemmes et quatre outils : sur un téléphone, tout cela ne tient
+// pas sur une ligne et les outils sortaient de l'écran.
 .bar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: $spacing-200;
+  gap: $spacing-150 $spacing-200;
   padding: $spacing-150 $spacing-300;
   border-bottom: 1px solid $menu-border;
+}
+
+@media (max-width: 40rem) {
+  .bar {
+    padding: $spacing-150;
+  }
+
+  .aura {
+    font-size: $menu-size-lead;
+  }
+
+  .tools {
+    flex: 1 0 100%;
+    justify-content: space-between;
+  }
+
+  // Posées dans les coins, les deux pastilles recouvraient les tuiles du bas.
+  .progress,
+  .help {
+    left: $spacing-150;
+    right: auto;
+    bottom: $spacing-150;
+  }
+
+  .help {
+    display: none;
+  }
 }
 
 // Même présentation que dans la collection : la valeur puis le losange.

@@ -50,7 +50,14 @@ export class SoundManager {
     audio.play();
   }
 
+  /**
+   * Change de musique. Redemander celle qui tourne déjà **ne fait rien** :
+   * l'écran de jeu se reconstruit à chaque retour de la boutique, du marchand
+   * ou d'un combat, et le morceau repartait de zéro à chaque aller-retour.
+   */
   public changeMusic(newSound: Sound): void {
+    if (this.currentMusic === this.sounds[newSound] && !this.currentMusic.paused) return;
+
     if (this.currentMusic) {
       this.currentMusic.pause();
       this.currentMusic.currentTime = 0;

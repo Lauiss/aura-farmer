@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { CollectionManager } from '../../services/collection-manager';
 import { ModelIcons } from '../../services/model-icons';
 import { Sound, SoundManager } from '../../services/sound-manager';
 import { GameLoop } from '../../services/game-loop';
+import { SaveLocation, SaveManager } from '../../services/save-manager';
 import {
   CollectibleDefinition,
   RARITIES,
@@ -38,6 +39,44 @@ export class CollectionPage {
   private readonly soundManager = inject(SoundManager);
   private readonly router = inject(Router);
   private readonly gameLoop = inject(GameLoop);
+  private readonly saveManager = inject(SaveManager);
+
+  /**
+   * Sections repliées. On retient les **fermées** et non les ouvertes : une
+   * rareté ajoutée plus tard s'ouvre alors d'elle-même, au lieu d'arriver
+   * fermée parce qu'elle ne figurait pas dans la liste.
+   *
+   * C'est une préférence d'affichage, pas de la progression : elle a sa propre
+   * clé, hors de la sauvegarde de partie.
+   */
+  private readonly closed = signal<Set<string>>(
+    new Set(this.saveManager.loadProgress(SaveLocation.Ui)?.collectionClosed ?? [])
+  );
+
+  isOpen(section: string): boolean {
+    return !this.closed().has(section);
+  }
+
+  onToggle(section: string, event: Event): void {
+    const open = (event.target as HTMLDetailsElement).open;
+    this.closed.update(list => {
+      const next = new Set(list);
+      if (open) next.delete(section);
+      else next.add(section);
+      return next;
+    });
+    this.saveManager.saveProgress(SaveLocation.Ui, {
+      ...(this.saveManager.loadProgress(SaveLocation.Ui) ?? {}),
+      collectionClosed: [...this.closed()]
+    });
+  }
+
+  /** Statuettes obtenues dans une rareté, pour le compte du titre replié. */
+  ownedIn(rarity: Rarity): number {
+    return this.collection.catalogue.filter(
+      collectible => collectible.rarity === rarity && this.collection.isOwned(collectible.id)
+    ).length;
+  }
 
   readonly rarityColors = RARITY_COLORS;
   readonly rarityBonus = RARITY_BONUS;

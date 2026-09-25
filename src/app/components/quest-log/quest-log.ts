@@ -43,6 +43,11 @@ export class QuestLog {
     return Math.min(100, Math.floor((quest.current / quest.target) * 100));
   }
 
+  /** Ce que la quête rapporte : des gemmes et de l'aura. */
+  reward(quest: QuestProgress): string {
+    return `+${quest.definition.gems} 💎 · ${formatAura(quest.auraReward)}`;
+  }
+
   /**
    * Avancement chiffré. Les grandeurs qui se comptent en aura passent par
    * l'abréviation : « 1.23 M / 100 M » se lit, pas quinze chiffres.

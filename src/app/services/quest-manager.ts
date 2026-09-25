@@ -1,6 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import Decimal from 'break_infinity.js';
+import { TranslateService } from '@ngx-translate/core';
 import { AuraManager } from './aura-manager';
+import { formatAura } from '../pipes/format-aura';
 import { ShopManager } from './shop-manager';
 import { AchievementsManager } from './achievements-manager';
 import { BattleManager } from './battle-manager';
@@ -12,18 +13,23 @@ import { HintManager } from './hint-manager';
 import { SaveLocation, SaveManager } from './save-manager';
 import { PlayTime, formatDuration } from './play-time';
 import {
+  DAILY_AURA_REWARD_SECONDS,
   DAILY_AURA_SECONDS,
   DAILY_COUNT,
   DAILY_POOL,
+  QUEST_AURA_FLOOR,
   QuestDefinition,
   QuestGoal,
   STORY,
+  STORY_AURA_SECONDS,
   dailyQuest
 } from '../../assets/static/quests';
 
 /** Une quête telle que l'écran la montre : sa définition et où elle en est. */
 export interface QuestProgress {
   definition: QuestDefinition;
+  /** Aura que rendrait l'accomplissement, au débit courant. */
+  auraReward: number;
   /** Cible réelle : celle de la définition, sauf pour les cibles recalculées. */
   target: number;
   current: number;
@@ -76,6 +82,7 @@ export class QuestManager {
   private readonly hintManager = inject(HintManager);
   private readonly saveManager = inject(SaveManager);
   private readonly playTime = inject(PlayTime);
+  private readonly translate = inject(TranslateService);
 
   /** Rang du chapitre en cours ; `STORY.length` une fois l'histoire finie. */
   readonly chapter = signal(0);
@@ -145,6 +152,11 @@ export class QuestManager {
     }
   }
 
+  /** Ce que rendrait une quête maintenant, pour l'annoncer avant de la finir. */
+  private previewReward(seconds: number): number {
+    return Math.max(QUEST_AURA_FLOOR, this.shopManager.getTotalValue() * seconds);
+  }
+
   // --- Histoire -----------------------------------------------------------
 
   readonly storyDone = computed(() => this.chapter() >= STORY.length);
@@ -154,7 +166,13 @@ export class QuestManager {
     const definition = STORY[this.chapter()];
     if (!definition) return null;
     const current = this.measure(definition.goal);
-    return { definition, target: definition.target, current, done: current >= definition.target };
+    return {
+      definition,
+      auraReward: this.previewReward(STORY_AURA_SECONDS),
+      target: definition.target,
+      current,
+      done: current >= definition.target
+    };
   });
 
   /** Chapitres déjà franchis, pour l'écran des quêtes. */
@@ -170,7 +188,13 @@ export class QuestManager {
       // L'avancement est l'**écart** avec le relevé du réveil : sur un total,
       // une quotidienne serait déjà remplie le jour où elle est tirée.
       const current = Math.max(0, this.measure(definition.goal) - entry.baseline);
-      return [{ definition, target: entry.target, current, done: entry.done || current >= entry.target }];
+      return [{
+        definition,
+        auraReward: this.previewReward(DAILY_AURA_REWARD_SECONDS),
+        target: entry.target,
+        current,
+        done: entry.done || current >= entry.target
+      }];
     });
   });
 
@@ -254,27 +278,35 @@ export class QuestManager {
 
   private completeChapter(quest: QuestProgress): void {
     this.chapter.update(rank => rank + 1);
+    const aura = this.reward(quest.definition.gems, STORY_AURA_SECONDS);
     if (this.storyDone() && this.finishedAt() === null) {
       this.finishedAt.set(Math.round(this.playTime.seconds()));
     }
-    this.reward(quest.definition.gems);
-    this.hintManager.announce({
-      titleKey: 'QUEST_CHAPTER_DONE',
-      bodyKey: `QUEST_${quest.definition.id.toUpperCase().replace(/-/g, '_')}_DONE`,
-      params: { gems: quest.definition.gems }
-    });
+    this.announceDone('QUEST_CHAPTER_DONE', quest, aura);
     this.persist();
   }
 
   private completeDaily(entry: DailySave, quest: QuestProgress): void {
     this.dailies.update(list => list.map(d => (d.id === entry.id ? { ...d, done: true } : d)));
-    this.reward(quest.definition.gems);
-    this.hintManager.announce({
-      titleKey: 'QUEST_DAILY_DONE',
-      bodyKey: `QUEST_${quest.definition.id.toUpperCase().replace(/-/g, '_')}`,
-      params: { gems: quest.definition.gems }
-    });
+    const aura = this.reward(quest.definition.gems, DAILY_AURA_REWARD_SECONDS);
+    this.announceDone('QUEST_DAILY_DONE', quest, aura);
     this.persist();
+  }
+
+  /**
+   * Annonce commune aux deux sortes de quêtes : son nom, puis ce qu'elle
+   * rapporte. Le corps est construit ici plutôt que tiré d'une clé par quête —
+   * il fallait sinon maintenir une seconde traduction par quête, identique à
+   * son titre à la récompense près.
+   */
+  private announceDone(titleKey: string, quest: QuestProgress, aura: number): void {
+    const name = this.translate.instant(
+      `QUEST_${quest.definition.id.toUpperCase().replace(/-/g, '_')}`
+    );
+    this.hintManager.announce({
+      titleKey,
+      body: `${name} — +${quest.definition.gems} 💎 · ${formatAura(aura)}`
+    });
   }
 
   /**
@@ -282,8 +314,11 @@ export class QuestManager {
    * nourrit des succès et des quêtes, et se récompenser d'une quête par de quoi
    * valider la suivante ferait boule de neige.
    */
-  private reward(gems: number): void {
+  private reward(gems: number, auraSeconds: number): number {
     this.collection.refundGems(gems);
+    const aura = Math.max(QUEST_AURA_FLOOR, this.shopManager.getTotalValue() * auraSeconds);
+    this.auraManager.gain(aura);
+    return aura;
   }
 
   /** Temps mis pour finir l'histoire, déjà mis en forme. */
@@ -291,11 +326,6 @@ export class QuestManager {
     const seconds = this.finishedAt();
     return seconds === null ? '' : formatDuration(seconds);
   });
-
-  /** Aura offerte par une quête, en secondes de production — inutilisée à ce jour. */
-  auraReward(seconds: number): Decimal {
-    return new Decimal(this.shopManager.getTotalValue() * seconds);
-  }
 
   private persist(): void {
     this.saveManager.saveProgress(SaveLocation.Quests, {

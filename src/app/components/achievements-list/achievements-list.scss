@@ -35,6 +35,35 @@
   gap: $spacing-150;
 }
 
+/* --- Recherche --- */
+.search input {
+  width: 100%;
+  padding: $spacing-150 $spacing-200;
+  font: inherit;
+  color: $menu-text;
+  background: $menu-bg;
+  border: 1px solid $menu-border;
+  border-radius: $radius-100;
+}
+
+.search input:focus-visible {
+  outline: 1px solid $menu-accent-border;
+  outline-offset: 2px;
+}
+
+.empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: $menu-text-faint;
+}
+
+// Un secret encore verrouillé ne montre rien : son texte est au même gris que
+// ses points d'interrogation.
+.achievement-card.secret .achievement-description {
+  color: $menu-text-faint;
+  font-style: italic;
+}
+
 .achievement-card {
   display: flex;
   align-items: center;

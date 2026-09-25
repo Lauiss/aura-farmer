@@ -37,6 +37,24 @@ h1, h2, h3, h4, h5, h6, .title {
 
 
 /**
+ * Masqué à l'œil, lu par les lecteurs d'écran. Utilitaire global : il servait
+ * déjà dans les options, et tout champ dont le libellé tient dans un
+ * `placeholder` en a besoin.
+ */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/**
  * Mode calme : plus une seule animation ni transition dans toute
  * l'application. C'est volontairement brutal — l'inventaire des effets change
  * à chaque nouveauté, et une liste tenue à la main aurait toujours un train de

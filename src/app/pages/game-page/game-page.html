@@ -136,7 +136,7 @@
 
   <nav class="actions">
     <app-icon-btn [icon]="shopIcon" label="SHOP" (activate)="openShop()"></app-icon-btn>
-    @if (wardrobeManager.hasAny() || backgroundManager.hasAny() || battles.defeatedCount() > 0 || collection.ownedCount() > 0) {
+    @if (showWardrobe()) {
       <app-icon-btn [icon]="hangerIcon" label="WARDROBE" (activate)="openWardrobe()"></app-icon-btn>
     }
     @if (showBattles()) {

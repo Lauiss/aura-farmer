@@ -31,6 +31,9 @@
   // superposés à lui.
   grid-template-rows: auto 1fr auto auto;
   padding: $spacing-400 $spacing-300;
+  // Les bandes du haut et du bas passent avant la scène : quand la hauteur
+  // manque, c'est le milieu qui se réduit, pas les commandes qui sortent.
+  min-height: 0;
   gap: $spacing-300;
   // La couche laisse passer les clics : c'est la statue, dessous, qui les
   // reçoit. Seuls les compteurs et les boutons les interceptent.
@@ -234,11 +237,48 @@
 }
 
 /* --- Accès boutique, garde-robe, succès et options --- */
+// La rangée **passe à la ligne**. Elle compte désormais huit entrées : sur un
+// téléphone elles débordaient de chaque côté de l'écran, et les dernières
+// devenaient tout simplement inatteignables.
 .actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: end;
   gap: $spacing-400;
+}
+
+@media (max-width: 40rem) {
+  .actions {
+    gap: $spacing-200;
+  }
+
+  // Sur un téléphone, la hauteur est la ressource rare : l'habillage rend ses
+  // marges et le gros compteur d'aura redescend d'un cran, pour que les
+  // commandes du bas tiennent dans l'écran.
+  .overlay {
+    padding: $spacing-200 $spacing-150;
+    gap: $spacing-150;
+  }
+
+  .counter.total {
+    font-size: 1.7rem;
+  }
+
+  .counter.rate {
+    font-size: 1rem;
+  }
+
+  .aura-mark {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+
+  // Les deux téléphones remontent au-dessus de la rangée de commandes, qui
+  // tient maintenant sur deux lignes.
+  .phone {
+    bottom: 9.5rem;
+  }
 }
 
 /* --- « Go fast » : au-delà de ×10, l'écran s'emballe ------------------- */
@@ -400,6 +440,9 @@
   align-self: end;
   margin-bottom: $spacing-150;
   display: flex;
+  // Neuf compagnons ne tiennent pas sur la largeur d'un téléphone.
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: flex-end;
   gap: $spacing-100;
   pointer-events: none;

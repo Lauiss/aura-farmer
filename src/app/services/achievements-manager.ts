@@ -10,6 +10,14 @@ export interface Achievement {
   icon?: string;
   condition: () => boolean;
   unlocked: boolean;
+  /**
+   * Succès **secret** : tant qu'il n'est pas obtenu, ni son titre ni sa
+   * description ne se montrent. Réservé à ce qui se découvre — un geste qu'on
+   * n'a aucune raison de tenter, une bêtise qu'on regrette. Le reste des
+   * succès verrouillés s'affiche en clair : ce sont des objectifs, et un
+   * objectif qu'on ne peut pas lire n'en est pas un.
+   */
+  secret?: boolean;
 }
 
 export interface AchievementSave {

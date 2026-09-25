@@ -15,15 +15,16 @@
     </p>
 
     <!-- Les reliques passent avant les statuettes : c'est la collection qui
-         compte, et elle ne s'achète nulle part. -->
-    <section class="section">
-      <div class="section-head">
+         compte, et elle ne s'achète nulle part. Chaque titre replie sa
+         section : à quatre-vingt-cinq pièces, la page ne se parcourait plus. -->
+    <details class="section" [open]="isOpen('relics')" (toggle)="onToggle('relics', $event)">
+      <summary class="section-head">
         <h2 class="section-title">{{ 'COLLECTION_RELICS' | translate }}</h2>
         <p class="progress">
           {{ collection.relicCount() }}/{{ collection.relicCatalogue.length }}
           · &times;{{ relicMultiplier() }} {{ 'RELIC_PRODUCTION' | translate }}
         </p>
-      </div>
+      </summary>
       <p class="section-lead">{{ 'COLLECTION_RELICS_LEAD' | translate }}</p>
 
       <div class="figures">
@@ -39,22 +40,24 @@
           </div>
         }
       </div>
-    </section>
+    </details>
 
-    <section class="section">
-      <div class="section-head">
+    <details class="section" [open]="isOpen('figures')" (toggle)="onToggle('figures', $event)">
+      <summary class="section-head">
         <h2 class="section-title">{{ 'COLLECTION_FIGURES' | translate }}</h2>
         <p class="progress">
           {{ collection.ownedCount() }}/{{ collection.catalogue.length }}
           · {{ 'COLLECTION_TOTAL_BONUS' | translate: { value: totalBonus() } }}
         </p>
-      </div>
+      </summary>
 
       @for (group of groups; track group.rarity) {
-        <h3 class="rarity-title" [style.color]="rarityColors[group.rarity]">
+        <details class="rarity" [open]="isOpen(group.rarity)" (toggle)="onToggle(group.rarity, $event)">
+        <summary class="rarity-title" [style.color]="rarityColors[group.rarity]">
           {{ ('RARITY_' + group.rarity.toUpperCase()) | translate }}
           <small>+{{ rarityBonus[group.rarity] * 100 }} % {{ 'COLLECTION_EACH' | translate }}</small>
-        </h3>
+          <small class="rarity-count">{{ ownedIn(group.rarity) }}/{{ group.items.length }}</small>
+        </summary>
         <div class="figures">
           @for (collectible of group.items; track collectible.id) {
             <!-- Une statuette obtenue se porte d'ici comme depuis la garde-robe :
@@ -84,7 +87,8 @@
             }
           }
         </div>
+        </details>
       }
-    </section>
+    </details>
   </main>
 </div>

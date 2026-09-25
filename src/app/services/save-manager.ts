@@ -32,7 +32,9 @@ export enum SaveLocation {
   Store = "AURA_FARMER_STORE",
   Casino = "AURA_FARMER_CASINO",
   Calls = "AURA_FARMER_CALLS",
-  Quests = "AURA_FARMER_QUESTS"
+  Quests = "AURA_FARMER_QUESTS",
+  /** Préférences d'affichage : replis d'accordéons et compagnie. Pas de la progression. */
+  Ui = "AURA_FARMER_UI"
 }
 
 @Injectable({
