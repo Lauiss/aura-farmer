@@ -40,7 +40,16 @@
 
       <!-- Le joueur à gauche, l'adversaire à droite : la convention de tout
            jeu de combat, et l'ordre dans lequel les deux dés sont déjà lus. -->
-      <img [src]="playerIcon()" alt="" class="portrait player-portrait">
+      <!-- La posture continue est sur l'enveloppe, le coup ponctuel sur
+           l'image : les deux animations se composent au lieu de s'écraser. Le
+           nœud intérieur est recréé à chaque tour, seul moyen de **rejouer**
+           une animation CSS. -->
+      <span class="stance anim-ready" style="--dir: 1">
+        @for (key of [motionKey()]; track key) {
+          <img [src]="playerIcon()" alt=""
+            [class]="'portrait player-portrait ' + motion().player" style="--dir: 1">
+        }
+      </span>
 
       <section class="middle">
         <!-- L'intention du boss, annoncée AVANT le choix : c'est là-dessus
@@ -139,8 +148,13 @@
         }
       </section>
 
-      <img [src]="bossIcon(current, bossPhase())" alt="" class="portrait boss-portrait"
-        [class.awakened]="bossPhase() === 2">
+      <span [class]="'stance ' + bossStance()" style="--dir: -1">
+        @for (key of [motionKey()]; track key) {
+          <img [src]="bossIcon(current, bossPhase())" alt=""
+            [class]="'portrait boss-portrait ' + motion().boss + (bossPhase() === 2 ? ' awakened' : '')"
+            style="--dir: -1">
+        }
+      </span>
     </main>
 
     @if (phase() === 'select') {

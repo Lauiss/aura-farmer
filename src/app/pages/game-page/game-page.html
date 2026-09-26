@@ -122,7 +122,11 @@
     <div class="companions">
       @for (id of store.shownCompanions(); track id) {
         <span class="companion" [attr.data-label]="companionLabel(id)">
-          <img [src]="companionIcon(id)" alt="" aria-hidden="true">
+          <!-- Chacun respire avec son propre décalage : au même rythme, la
+               rangée entière se lisait comme un seul objet qui monte et
+               descend. -->
+          <img [src]="companionIcon(id)" alt="" aria-hidden="true"
+            class="anim-idle" [style.--delay]="companionDelay($index)">
           <!-- Chacun son téléphone une fois l'amélioration prise : le bonus de
                doomscrolling existait sans que rien ne le montre à l'écran. -->
           @if (store.phones()) {

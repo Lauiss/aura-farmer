@@ -66,6 +66,116 @@ h1, h2, h3, h4, h5, h6, .title {
 }
 
 /**
+ * Vocabulaire d'animation des modèles.
+ *
+ * Les personnages du jeu sont des **vignettes rendues une fois** et non des
+ * scènes 3D vivantes : un navigateur ne tient qu'une poignée de contextes
+ * WebGL, et l'écran de combat en ouvrirait deux de plus à lui seul. Ils
+ * s'animent donc en CSS.
+ *
+ * Ces classes sont **globales** et non portées par un composant : combat,
+ * cinématiques et compagnons doivent parler la même langue, et l'encapsulation
+ * des styles empêche justement de partager une feuille entre composants. Le
+ * mode calme les éteint toutes d'un coup, par la règle plus bas.
+ *
+ * Deux variables pilotent chaque classe :
+ * - `--dir` : le sens vers l'adversaire, `1` à droite et `-1` à gauche, pour
+ *   qu'une même animation serve aux deux camps sans être écrite deux fois ;
+ * - `--delay` : un décalage propre à chaque modèle, sans quoi une rangée de
+ *   compagnons respire au même rythme et donne l'impression d'un seul objet.
+ */
+.anim-idle {
+    animation: model-idle 3.6s ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+}
+
+/** Le guet : plus court et plus tendu que le repos, pour un combattant. */
+.anim-ready {
+    animation: model-ready 1.8s ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+}
+
+/** Le coup porté : on part en avant, vers l'adversaire. */
+.anim-strike {
+    animation: model-strike 0.5s cubic-bezier(0.3, 0, 0.2, 1);
+}
+
+/** Le coup reçu : on recule et on blanchit une fraction de seconde. */
+.anim-hurt {
+    animation: model-hurt 0.45s ease-out;
+}
+
+/** Les deux dés tombent pareil : personne ne bouge vraiment, tout tremble. */
+.anim-clash {
+    animation: model-clash 0.4s ease-in-out;
+}
+
+/** La garde : on se ramasse au lieu de se projeter. */
+.anim-guard {
+    animation: model-guard 0.5s ease-out;
+}
+
+/** Le soin : une pulsation, pas un mouvement. */
+.anim-heal {
+    animation: model-heal 0.9s ease-in-out;
+}
+
+/** La charge annoncée : le corps se gonfle avant de partir. */
+.anim-windup {
+    animation: model-windup 1.1s ease-in-out infinite alternate;
+}
+
+@keyframes model-idle {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-0.35rem) scale(1.008); }
+}
+
+@keyframes model-ready {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-0.2rem) rotate(calc(var(--dir, 1) * 0.6deg)); }
+}
+
+@keyframes model-strike {
+    0% { transform: translateX(0) scale(1); }
+    30% { transform: translateX(calc(var(--dir, 1) * -1.2rem)) scale(0.97); }
+    55% { transform: translateX(calc(var(--dir, 1) * 3.2rem)) scale(1.06); }
+    100% { transform: translateX(0) scale(1); }
+}
+
+@keyframes model-hurt {
+    0% { transform: translateX(0); filter: none; }
+    25% {
+        transform: translateX(calc(var(--dir, 1) * -1.6rem)) rotate(calc(var(--dir, 1) * -4deg));
+        filter: brightness(2.4) saturate(0.4);
+    }
+    60% { transform: translateX(calc(var(--dir, 1) * 0.5rem)); filter: none; }
+    100% { transform: translateX(0); }
+}
+
+@keyframes model-clash {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-0.4rem); }
+    50% { transform: translateX(0.4rem); }
+    80% { transform: translateX(-0.2rem); }
+}
+
+@keyframes model-guard {
+    0% { transform: translateY(0) scaleY(1); }
+    35% { transform: translateY(0.4rem) scaleY(0.92) scaleX(1.05); }
+    100% { transform: translateY(0) scaleY(1); }
+}
+
+@keyframes model-heal {
+    0%, 100% { transform: scale(1); filter: none; }
+    45% { transform: scale(1.07); filter: brightness(1.5) drop-shadow(0 0 18px rgba(126, 210, 143, 0.9)); }
+}
+
+@keyframes model-windup {
+    from { transform: scale(1) translateX(0); }
+    to { transform: scale(1.06) translateX(calc(var(--dir, 1) * -0.5rem)); }
+}
+
+/**
  * Mode calme : plus une seule animation ni transition dans toute
  * l'application. C'est volontairement brutal — l'inventaire des effets change
  * à chaque nouveauté, et une liste tenue à la main aurait toujours un train de

@@ -241,6 +241,12 @@
 }
 
 /* --- Les combattants, en grand --- */
+// L'enveloppe porte la posture, l'image le coup. Elle ne prend aucune place
+// propre : c'est le portrait qui dicte sa taille.
+.stance {
+  display: block;
+}
+
 .player-portrait,
 .boss-portrait {
   width: min(22vw, 16rem);
@@ -305,8 +311,13 @@
 // Seconde phase : le portrait grandit un peu. Le changement de modèle suffit
 // à le dire, mais un adversaire qui se relève doit aussi occuper plus de
 // place.
+//
+// C'est la **boîte** qui grandit, pas un `transform` : les animations de
+// combat en utilisent un, et une mise à l'échelle statique aurait disparu dès
+// le premier coup porté.
 .boss-portrait.awakened {
-  transform: scale(1.12);
+  width: min(25vw, 18rem);
+  height: min(34vh, 18rem);
 }
 
 /* --- Les dés : le coeur du tour, donc le plus gros de l'écran --- */

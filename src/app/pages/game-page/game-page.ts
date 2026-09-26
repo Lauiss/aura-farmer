@@ -198,6 +198,11 @@ export class GamePage {
     return this.modelIcons.companion(id);
   }
 
+  /** Décalage de respiration d'un compagnon, d'après son rang dans la rangée. */
+  companionDelay(index: number): string {
+    return `${((index * 0.37) % 3.6).toFixed(2)}s`;
+  }
+
   /**
    * Nom et bonus d'un compagnon, pour son infobulle. Une fois les téléphones
    * offerts, chacun en tient un : l'infobulle dit ce qu'il rapporte au

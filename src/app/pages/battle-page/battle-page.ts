@@ -147,6 +147,46 @@ export class BattlePage {
     );
   });
 
+  /**
+   * Ce que joue chaque camp au tour qui vient de se résoudre.
+   *
+   * Les deux animations se déduisent du même relevé : ce qui blesse l'un
+   * projette l'autre, et il n'y a donc **qu'une** source de vérité. Les écrire
+   * séparément aurait laissé filer des tours où le boss frappe dans le vide
+   * pendant que le joueur encaisse.
+   */
+  readonly motion = computed<{ player: string; boss: string }>(() => {
+    const round = this.lastRound();
+    if (!round) return { player: '', boss: '' };
+
+    switch (round.outcome) {
+      case 'hit': return { player: 'anim-strike', boss: 'anim-hurt' };
+      case 'taken': return { player: 'anim-hurt', boss: 'anim-strike' };
+      case 'clash': return { player: 'anim-clash', boss: 'anim-clash' };
+      case 'guarded': return { player: 'anim-guard', boss: 'anim-strike' };
+      case 'healed':
+        // Le boss ne frappe que s'il a effectivement porté un coup ; sur une
+        // garde tenue, il n'y a rien à montrer de son côté.
+        return { player: 'anim-heal', boss: round.damage > 0 ? 'anim-strike' : '' };
+    }
+  });
+
+  /**
+   * La **posture** du boss, qui tient tant qu'il n'a pas joué : il se gonfle
+   * quand il annonce une charge. Elle vit sur un élément séparé du coup
+   * ponctuel — porter les deux sur la même image aurait fait gagner la
+   * dernière déclaration, et l'annonce de charge n'aurait été visible qu'au
+   * tout premier tour, c'est-à-dire jamais au moment où elle sert.
+   */
+  readonly bossStance = computed(() => (this.intent() === 'charge' ? 'anim-windup' : 'anim-ready'));
+
+  /**
+   * Change à chaque tour. Le gabarit s'en sert comme clé : recréer le nœud est
+   * le seul moyen de **rejouer** une animation CSS, changer sa classe ne la
+   * relance pas.
+   */
+  readonly motionKey = computed(() => `${this.turn()}-${this.lastRound()?.outcome ?? 'start'}`);
+
   /** Charge en pourcentage, pour l'affichage. */
   readonly chargePercent = computed(() => Math.round(this.charge() * 100));
 
