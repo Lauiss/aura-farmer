@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Ring, chisel, createRandom, loft, mesh } from '../geometry';
+import { createMoyai } from './moyai';
 import type { BossDefinition } from '../../../assets/static/bosses';
 
 /**
@@ -171,7 +172,7 @@ function folded(color: number, side: number, y: number): THREE.Mesh {
   ], [side * 0.5, 0, 0], [0, 0, side * 0.12]);
 }
 
-function shapeOf(definition: BossDefinition): THREE.Group {
+function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
   const group = new THREE.Group();
   const { color, accent } = definition;
 
@@ -792,46 +793,115 @@ function shapeOf(definition: BossDefinition): THREE.Group {
     }
 
     /** Piccolo : silhouette namek, antennes, turban et col de cape rigide. */
+    /**
+     * Piccolo, en **deux phases**. Sans cape il combat en gi mauve, ceinture
+     * rouge, turban blanc, oreilles pointues et deux antennes ; c'est sa tenue
+     * d'entraînement. Passé la moitié de sa vie il remet **la cape blanche et
+     * les épaulières**, et se retourne — on ne voit plus que son dos et le
+     * tissu qui tombe, ce qui est l'image du personnage.
+     */
     case 'namek': {
+      const skin = color;
+      const gi = 0x6b4fb0;
+      const cloth = 0xeeeae0;
+
+      // Torse en gi, épaules larges, taille prise dans la ceinture.
       group.add(
-        rough(color, [
-          { y: -1.6, halfWidth: 0.4, front: 0.35, back: -0.35, chamfer: 0.3 },
-          { y: -0.6, halfWidth: 0.56, front: 0.44, back: -0.44, chamfer: 0.28 },
-          { y: 0.1, halfWidth: 0.42, front: 0.36, back: -0.36, chamfer: 0.3 },
-          { y: 0.5, halfWidth: 0.52, front: 0.52, back: -0.5, chamfer: 0.26 },
-          { y: 1.15, halfWidth: 0.5, front: 0.56, back: -0.5, chamfer: 0.26 },
-          { y: 1.4, halfWidth: 0.34, front: 0.4, back: -0.4, chamfer: 0.32 }
-        ], 66)
-      );
-      group.add(
-        part(accent, [
-          { y: 0.3, halfWidth: 0.92, front: 0.28, back: -0.75, chamfer: 0.22 },
-          { y: 1.05, halfWidth: 0.8, front: 0.1, back: -0.7, chamfer: 0.22 }
+        part(gi, [
+          { y: -1.6, halfWidth: 0.38, front: 0.32, back: -0.32, chamfer: 0.3 },
+          { y: -0.85, halfWidth: 0.44, front: 0.34, back: -0.34, chamfer: 0.3 },
+          { y: -0.5, halfWidth: 0.4, front: 0.3, back: -0.3, chamfer: 0.32 },
+          { y: 0.15, halfWidth: 0.62, front: 0.42, back: -0.42, chamfer: 0.26 },
+          { y: 0.45, halfWidth: 0.56, front: 0.38, back: -0.38, chamfer: 0.28 }
         ])
       );
+      // Ceinture rouge, nouée à la taille.
       group.add(
-        part(accent, [
-          { y: 1.42, halfWidth: 0.42, front: 0.48, back: -0.48, chamfer: 0.3 },
-          { y: 1.62, halfWidth: 0.36, front: 0.42, back: -0.42, chamfer: 0.3 }
+        part(0xc4352f, [
+          { y: -0.58, halfWidth: 0.43, front: 0.33, back: -0.33, chamfer: 0.3 },
+          { y: -0.34, halfWidth: 0.43, front: 0.33, back: -0.33, chamfer: 0.3 }
+        ])
+      );
+      // Bras verts, sortant des manches.
+      for (const side of [-1, 1]) {
+        group.add(
+          part(skin, [
+            { y: -0.6, halfWidth: 0.11, front: 0.11, back: -0.11, chamfer: 0.34 },
+            { y: 0.2, halfWidth: 0.15, front: 0.15, back: -0.15, chamfer: 0.34 }
+          ], [side * 0.62, 0, 0], [0, 0, side * 0.12])
+        );
+      }
+
+      // Cou et tête : crâne allongé, mâchoire nette.
+      group.add(part(skin, [
+        { y: 0.42, halfWidth: 0.16, front: 0.15, back: -0.15, chamfer: 0.36 },
+        { y: 0.62, halfWidth: 0.18, front: 0.17, back: -0.17, chamfer: 0.36 }
+      ]));
+      group.add(
+        rough(skin, [
+          { y: 0.6, halfWidth: 0.3, front: 0.3, back: -0.28, chamfer: 0.34 },
+          { y: 0.95, halfWidth: 0.4, front: 0.4, back: -0.36, chamfer: 0.3 },
+          { y: 1.25, halfWidth: 0.38, front: 0.36, back: -0.36, chamfer: 0.3 }
+        ], 66, 0.025)
+      );
+      // Oreilles pointues, plantées horizontalement.
+      for (const side of [-1, 1]) {
+        group.add(
+          part(skin, [
+            { y: 0, halfWidth: 0.14, front: 0.06, back: -0.06, chamfer: 0.3 },
+            { y: 0.3, halfWidth: 0.02, front: 0.02, back: -0.02, chamfer: 0.3 }
+          ], [side * 0.38, 0.98, 0], [0, 0, side * 1.25])
+        );
+      }
+      // Turban blanc, et les deux antennes qui en sortent.
+      group.add(
+        part(cloth, [
+          { y: 1.22, halfWidth: 0.42, front: 0.4, back: -0.4, chamfer: 0.28 },
+          { y: 1.5, halfWidth: 0.44, front: 0.42, back: -0.42, chamfer: 0.28 },
+          { y: 1.62, halfWidth: 0.34, front: 0.32, back: -0.32, chamfer: 0.32 }
         ])
       );
       for (const side of [-1, 1]) {
         group.add(
-          part(color, [
-            { y: 0, halfWidth: 0.07, front: 0.07, back: -0.07, chamfer: 0.35 },
-            { y: 0.55, halfWidth: 0.03, front: 0.03, back: -0.03, chamfer: 0.35 }
-          ], [side * 0.2, 1.55, 0.14], [0.2, 0, side * 0.25])
+          part(skin, [
+            { y: 0, halfWidth: 0.05, front: 0.05, back: -0.05, chamfer: 0.35 },
+            { y: 0.45, halfWidth: 0.02, front: 0.02, back: -0.02, chamfer: 0.35 }
+          ], [side * 0.16, 1.55, 0.12], [0.3, 0, side * 0.3])
         );
       }
-      group.add(eyes([0, 1.05, 0.46], 0.24));
+      group.add(eyes([0, 1.0, 0.36], 0.18, 0.85));
+
+      if (phase >= 2) {
+        // Épaulières et cape : lourdes, tombant jusqu'aux mollets. Elles sont
+        // posées **derrière** le corps, et la créature est retournée plus bas :
+        // c'est la cape qu'on doit voir, pas le visage.
+        for (const side of [-1, 1]) {
+          group.add(
+            part(cloth, [
+              { y: 0.1, halfWidth: 0.3, front: 0.34, back: -0.34, chamfer: 0.28 },
+              { y: 0.42, halfWidth: 0.26, front: 0.3, back: -0.3, chamfer: 0.3 }
+            ], [side * 0.52, 0, 0], [0, 0, side * -0.18])
+          );
+        }
+        group.add(
+          part(cloth, [
+            { y: -1.5, halfWidth: 0.78, front: -0.24, back: -0.62, chamfer: 0.22 },
+            { y: -0.6, halfWidth: 0.72, front: -0.26, back: -0.58, chamfer: 0.22 },
+            { y: 0.2, halfWidth: 0.6, front: -0.3, back: -0.54, chamfer: 0.24 },
+            { y: 0.5, halfWidth: 0.44, front: -0.3, back: -0.5, chamfer: 0.26 }
+          ])
+        );
+        // La rotation est portée par un **enfant** et non par la racine : le
+        // cadrage (`renderToDataUrl`, et la scène du jeu) impose sa propre
+        // rotation à l'objet qu'on lui donne, et l'écrasait.
+        const turned = new THREE.Group();
+        for (const child of [...group.children]) turned.add(child);
+        turned.rotation.y = Math.PI;
+        group.add(turned);
+      }
       break;
     }
 
-    /**
-     * Chimpanzini Bananini : un chimpanzé qui sort d'une banane à moitié
-     * épluchée. Les pans de peau rabattus vers l'extérieur font toute la
-     * lecture — sans eux, ce n'est qu'un singe sur un pied jaune.
-     */
     case 'banana': {
       // Le bas de la banane, encore dans sa peau, et son bout sombre.
       group.add(
@@ -1485,6 +1555,67 @@ function shapeOf(definition: BossDefinition): THREE.Group {
       }
       break;
     }
+
+    /**
+     * Chad Moai, le frère. Il **n'avait aucun modèle** : sa forme `moai` ne
+     * figurait pas dans ce `switch`, si bien que le boss final du jeu
+     * s'affichait en vignette vide depuis qu'il existe.
+     *
+     * C'est la même tête que celle du joueur — ils sont frères — reprise de
+     * `createMoyai` plutôt que retaillée ici : deux statues à tenir en phase
+     * auraient divergé au premier ajustement. Ce qui le distingue : une pierre
+     * plus froide, une **couronne d'or**, celle de la succession qu'il a
+     * gagnée, et en seconde phase l'aura qu'il déploie.
+     */
+    case 'moai': {
+      group.add(
+        createMoyai({
+          seed: 4242,
+          palette: { stone: color, stoneDark: 0x8a8578, cavity: 0x1c1a17 }
+        })
+      );
+
+      // La couronne, posée sur le crâne : un bandeau et cinq pointes.
+      group.add(
+        part(accent, [
+          { y: 1.32, halfWidth: 0.78, front: 0.62, back: -0.62, chamfer: 0.3 },
+          { y: 1.56, halfWidth: 0.8, front: 0.64, back: -0.64, chamfer: 0.3 }
+        ])
+      );
+      for (let i = 0; i < 5; i++) {
+        const angle = (i / 5) * Math.PI * 2 + 0.3;
+        group.add(
+          part(accent, [
+            { y: 1.56, halfWidth: 0.12, front: 0.12, back: -0.12, chamfer: 0.32 },
+            { y: 1.86, halfWidth: 0.02, front: 0.02, back: -0.02, chamfer: 0.34 }
+          ], [Math.cos(angle) * 0.66, 0, Math.sin(angle) * 0.52])
+        );
+      }
+
+      if (phase >= 2) {
+        // Chad déploie son aura : deux coques dorées en mélange additif, la
+        // même idée que le halo du joueur. Sa silhouette ne change pas — c'est
+        // ce qui l'entoure qui dit qu'il ne joue plus.
+        for (const [index, radius] of [2.1, 2.4].entries()) {
+          const shell = new THREE.Mesh(
+            new THREE.IcosahedronGeometry(radius, 1),
+            new THREE.MeshBasicMaterial({
+              color: index === 0 ? 0xe8b84b : 0xff9f45,
+              transparent: true,
+              opacity: index === 0 ? 0.26 : 0.17,
+              side: THREE.BackSide,
+              blending: THREE.AdditiveBlending,
+              depthWrite: false
+            })
+          );
+          // Hors gabarit : comptée dans les cotes, l'aura faisait rétrécir la
+          // tête au moment même où le boss est censé grandir.
+          shell.userData['ignoreBounds'] = true;
+          group.add(shell);
+        }
+      }
+      break;
+    }
   }
 
   return group;
@@ -1496,8 +1627,13 @@ function shapeOf(definition: BossDefinition): THREE.Group {
  */
 const TARGET_SIZE = 2.8;
 
-export function createBrainrot(definition: BossDefinition): THREE.Group {
-  const group = shapeOf(definition);
+/**
+ * `phase` vaut 1 par défaut et 2 pour la seconde forme des boss qui en ont
+ * une. Deux modèles distincts auraient doublé les cotes à tenir à jour pour un
+ * personnage qui ne change que d'accessoires.
+ */
+export function createBrainrot(definition: BossDefinition, phase = 1): THREE.Group {
+  const group = shapeOf(definition, phase);
   group.name = `boss-${definition.id}`;
 
   // Recentré comme la tête de moyai : l'origine tombe au milieu du volume,

@@ -117,6 +117,21 @@ export class BattlePage {
   /** Vrai quand une garde NPC couvre encore le tour en cours. */
   readonly guarded = signal(false);
 
+  /**
+   * Charge accumulée par les gardes, dépensée par le MOG suivant. C'est elle
+   * qui fait de la défense de l'attaque différée : sans elle, encaisser ne
+   * faisait que retarder une défaite qu'on n'avait de toute façon pas à
+   * craindre, et marteler l'attaque restait la seule conduite sensée.
+   */
+  readonly charge = signal(0);
+
+  /**
+   * Malus au dé, accumulé par les MOG consécutifs et effacé par toute autre
+   * action. C'est le prix du martèlement, prélevé sur la seule chose qui
+   * compte dans ce combat : le jet.
+   */
+  readonly fatigue = signal(0);
+
   /** Dégâts du boss ce tour-ci, hargne et intention comprises. */
   readonly incoming = computed(() => {
     const boss = this.boss();
@@ -125,9 +140,13 @@ export class BattlePage {
       boss.recommended *
       boss.damageSeconds *
       INTENT_DAMAGE[this.intent()] *
-      Math.pow(1 + COMBAT.enragePerTurn, this.turn() - 1)
+      Math.pow(1 + COMBAT.enragePerTurn, this.turn() - 1) *
+      (this.bossPhase() === 2 ? COMBAT.phaseTwoDamage : 1)
     );
   });
+
+  /** Charge en pourcentage, pour l'affichage. */
+  readonly chargePercent = computed(() => Math.round(this.charge() * 100));
 
   /** Hargne accumulée, affichée dès qu'elle se met à compter. */
   readonly enrage = computed(
@@ -188,9 +207,20 @@ export class BattlePage {
     return worn ? this.modelIcons.boss(worn) : this.modelIcons.moyai();
   });
 
-  bossIcon(boss: BossDefinition): string {
-    return this.modelIcons.boss(boss.id);
+  bossIcon(boss: BossDefinition, phase = 1): string {
+    return this.modelIcons.boss(boss.id, phase);
   }
+
+  /**
+   * Phase du boss en cours. Elle se lit sur sa jauge de vie et non sur un
+   * compteur caché : le joueur voit la barre franchir la moitié, et la forme
+   * change au même instant.
+   */
+  readonly bossPhase = computed(() => {
+    const boss = this.boss();
+    if (!boss?.twoPhase) return 1;
+    return this.bossRatio() <= COMBAT.phaseThreshold ? 2 : 1;
+  });
 
   /** Le débit conseillé est-il atteint ? Sinon, le combat sera rude. */
   isReady(boss: BossDefinition): boolean {
@@ -221,6 +251,8 @@ export class BattlePage {
     this.cooldowns.set({});
     this.turn.set(1);
     this.guarded.set(false);
+    this.charge.set(0);
+    this.fatigue.set(0);
     this.intent.set(BattlePage.drawIntent());
     this.phase.set('select');
     this.soundManager.playFX(Sound.Plop);
@@ -250,6 +282,12 @@ export class BattlePage {
         // Pas de jet : encaisser est acquis. On paie en tempo, pas en hasard.
         this.playerHp.update(hp => Math.max(0, hp - incoming * COMBAT.guardCut));
         this.guarded.set(true);
+        // La garde prépare le coup suivant. Ce qui restait de charge se
+        // dissipe d'abord : empiler les gardes ne cumule pas indéfiniment.
+        this.charge.update(value =>
+          Math.min(COMBAT.chargeMax, value * COMBAT.chargeDecay + COMBAT.chargePerGuard)
+        );
+        this.fatigue.set(0);
         this.lastRound.set({
           role: 'npc',
           outcome: 'guarded',
@@ -267,6 +305,8 @@ export class BattlePage {
         const taken = incoming * (shielded ? COMBAT.guardCut : 1);
         this.playerHp.update(hp => Math.max(0, Math.min(this.playerMaxHp(), hp + healed) - taken));
         this.guarded.set(false);
+        this.fatigue.set(0);
+        this.charge.update(value => value * COMBAT.chargeDecay);
         this.lastRound.set({ role: 'looksmax', outcome: 'healed', damage: taken, healed, actionName: name });
         this.soundManager.playPitched(Sound.Plop, 1.3);
         break;
@@ -281,6 +321,11 @@ export class BattlePage {
   /** Le MOG est le seul coup qui passe par les dés : frapper, c'est parier. */
   private resolveMog(attack: Attack, incoming: number, shielded: boolean, name: string): void {
     const playerRoll = this.rollPlayer();
+    // La fatigue s'accumule sur le **geste**, pas sur sa réussite : enchaîner
+    // les MOG coûte, qu'ils portent ou non.
+    if (this.fatigueApplies()) {
+      this.fatigue.update(value => Math.min(COMBAT.fatigueMax, value + COMBAT.fatiguePerRepeat));
+    }
     const bossRoll = this.roll();
 
     if (playerRoll === bossRoll) {
@@ -290,9 +335,13 @@ export class BattlePage {
     }
 
     if (playerRoll > bossRoll) {
-      // Un boss en garde encaisse moitié moins : le frapper à ce moment-là est
-      // du gâchis, c'est le tour où l'on se refait.
-      const dealt = attack.damage * (this.intent() === 'guard' ? 0.5 : 1);
+      // Deux facteurs : la charge accumulée par les gardes, qui se dépense
+      // ici, et la garde du boss, qui ne laisse passer qu'un quart du coup.
+      const dealt =
+        attack.damage *
+        (1 + this.charge()) *
+        (this.intent() === 'guard' ? COMBAT.bossGuard : 1);
+      this.charge.set(0);
       this.bossHp.update(hp => Math.max(0, hp - dealt));
       this.lastRound.set({ role: 'mog', playerRoll, bossRoll, outcome: 'hit', damage: dealt, healed: 0, actionName: name });
       // Le son monte avec le dé : un vingt s'entend.
@@ -349,7 +398,19 @@ export class BattlePage {
    * sort d'office sur la face maximale. Le boss, lui, lance un dé honnête.
    */
   private rollPlayer(): number {
-    return Math.random() < this.utilityManager.dieLuck() ? DIE_FACES : this.roll();
+    if (Math.random() < this.utilityManager.dieLuck()) return DIE_FACES;
+    // La fatigue se retranche du jet, jamais en dessous de 1 : un dé pipé
+    // reste un dé, il ne devient pas une impossibilité.
+    return Math.max(1, this.roll() - this.fatigue());
+  }
+
+  /**
+   * La fatigue ne mord que si le joueur a **le choix**, c'est-à-dire s'il
+   * possède les trois rôles. Avec une ou deux cartes, répéter n'est pas un
+   * travers : c'est tout ce qu'il peut faire.
+   */
+  private fatigueApplies(): boolean {
+    return this.attacks().length >= 3;
   }
 
   /** Revient à la liste des boss. */

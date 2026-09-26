@@ -249,9 +249,9 @@ export class ModelIcons {
   }
 
   /** Brainrot d'un boss de battle. */
-  boss(id: BossId): string {
-    return this.render(`boss-${id}`, () =>
-      renderToDataUrl(createBrainrot(bossDefinition(id)), {
+  boss(id: BossId, phase = 1): string {
+    return this.render(`boss-${id}-${phase}`, () =>
+      renderToDataUrl(createBrainrot(bossDefinition(id), phase), {
         size: 192,
         distance: 7.6,
         rotation: [0.05, 0.45, 0]

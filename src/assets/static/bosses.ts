@@ -71,6 +71,12 @@ export interface BossDefinition {
   /** Teintes du modèle. */
   color: number;
   accent: number;
+  /**
+   * Vrai pour les boss qui changent de forme à mi-vie. Réservé aux deux
+   * derniers adversaires de l'histoire : une seconde phase sur chacun des
+   * vingt boss ferait d'un moment rare une formalité de plus.
+   */
+  twoPhase?: boolean;
 }
 
 /**
@@ -108,14 +114,14 @@ export const BOSSES: readonly BossDefinition[] = [
   { id: 'vacca', shape: 'cow', recommended: 4.5e+08, hpSeconds: 64, damageSeconds: 7.25, reward: 97, color: 0xf2efe6, accent: 0xd9b45a },
   { id: 'gusini', shape: 'goose', recommended: 1.2e+09, hpSeconds: 68, damageSeconds: 7.5, reward: 110, color: 0xeeeae0, accent: 0x7d8796 },
   { id: 'spioniro', shape: 'spy', recommended: 1e+10, hpSeconds: 75, damageSeconds: 8, reward: 145, color: 0x6b7686, accent: 0xb59a6d },
-  { id: 'piccolo', shape: 'namek', recommended: 8e+10, hpSeconds: 82, damageSeconds: 8.5, reward: 190, color: 0x7fb069, accent: 0xd6d0c0 },
+  { id: 'piccolo', shape: 'namek', recommended: 8e+10, hpSeconds: 82, damageSeconds: 8.5, reward: 190, color: 0x7fb069, accent: 0xd6d0c0, twoPhase: true },
   { id: 'chimpanzini', shape: 'banana', recommended: 3e+11, hpSeconds: 84, damageSeconds: 8.6, reward: 205, color: 0xe8c547, accent: 0x5b3b24 },
   { id: 'cappuccino', shape: 'cup', recommended: 1e+12, hpSeconds: 86, damageSeconds: 8.7, reward: 220, color: 0xefe6d8, accent: 0x1c1c1f },
   { id: 'ballerina', shape: 'ballerina', recommended: 3.3e+12, hpSeconds: 88, damageSeconds: 8.8, reward: 235, color: 0xf2a7c3, accent: 0xefe6d8 },
   { id: 'glorbo', shape: 'melon', recommended: 1e+13, hpSeconds: 89, damageSeconds: 8.45, reward: 238, color: 0x3f7a3a, accent: 0xd9453f },
   { id: 'burbaloni', shape: 'coconut', recommended: 2.6e+13, hpSeconds: 89, damageSeconds: 8.65, reward: 242, color: 0x7a5a38, accent: 0xf2efe6 },
   { id: 'bananita', shape: 'dolphin', recommended: 6.5e+13, hpSeconds: 89, damageSeconds: 8.85, reward: 246, color: 0x8fa3b8, accent: 0xe8c547 },
-  { id: 'chad', shape: 'moai', recommended: 1.6e+14, hpSeconds: 90, damageSeconds: 9, reward: 250, color: 0xb9b2a4, accent: 0xe8b84b }
+  { id: 'chad', shape: 'moai', recommended: 1.6e+14, hpSeconds: 90, damageSeconds: 9, reward: 250, color: 0xb9b2a4, accent: 0xe8b84b, twoPhase: true }
 ];
 
 /**
@@ -153,22 +159,39 @@ export const INTENT_POOL: readonly BossIntent[] = ['strike', 'strike', 'charge',
 /** Multiplicateur de dégâts du boss selon son intention. */
 export const INTENT_DAMAGE: Record<BossIntent, number> = {
   strike: 1,
-  charge: 3,
+  charge: 4,
   guard: 0.3
 };
 
 /**
- * Réglages du combat, calés par simulation (8 000 combats par configuration).
+ * Réglages du combat, calés par simulation (4 000 combats par case).
  *
- * Le but était qu'aucune ligne de conduite unique ne suffise. Résultat sur le
- * dernier boss, au débit conseillé : marteler MOG gagne 70 % des combats,
- * jouer les intentions 79 %, et temporiser sans frapper 0 %. Chacune des trois
- * valeurs ci-dessous tient ce résultat en équilibre — les modifier isolément
- * le casse.
+ * **Le problème qu'ils résolvent** : dans la version précédente, marteler MOG
+ * gagnait 72 % des combats du dernier boss contre 75 % en jouant les
+ * intentions. Trois points d'écart, c'est-à-dire aucune raison de réfléchir —
+ * et c'est exactement ce que faisaient les joueurs. La cause tenait en une
+ * phrase : **MOG était la seule action qui fasse avancer la victoire**, les
+ * deux autres ne faisant que retarder la défaite, dans une course que l'on
+ * gagnait de toute façon.
+ *
+ * Trois leviers y répondent, chacun reliant une action défensive à l'attaque :
+ *
+ * - **La charge** : une garde NPC prépare le coup suivant au lieu de le
+ *   retarder. Se défendre devient de l'attaque différée.
+ * - **La fatigue** : deux MOG d'affilée abaissent le dé. Marteler se paie sur
+ *   la seule chose qui compte, le jet.
+ * - **La garde du boss** : le frapper pendant qu'il se protège ne passe qu'au
+ *   quart. L'intention annoncée dit donc aussi *quand ne pas frapper*.
+ *
+ * Résultat mesuré sur le dernier boss, au débit conseillé : marteler 61 %,
+ * lire les intentions 69 %, y ajouter la gestion de la charge 76 %, se
+ * retrancher 13 %. L'écart entre le pire et le meilleur passe de trois points
+ * à quinze, et il **s'ouvre avec l'échelle** : nul sur les premiers boss, qui
+ * restent une mise en jambes.
  */
 export const COMBAT = {
   /** Dégâts d'un MOG réussi, en secondes de la production du joueur. */
-  mogPower: 22,
+  mogPower: 24,
   /** Part de la vie manquante rendue par un LOOKSMAX. Décroissant par nature :
    *  puissant quand on est bas, dérisoire quand on est au complet, donc
    *  impossible d'en faire une rente. */
@@ -176,11 +199,32 @@ export const COMBAT = {
   /** Ce qui passe encore à travers une garde NPC. Elle couvre aussi le tour
    *  suivant, ce qui permet d'anticiper une charge. */
   guardCut: 0.3,
-  /** Les dégâts du boss enflent de 3 % par tour. Sans cette montée, se
+  /** Ce que retient la garde **du boss** : le frapper alors qu'il se protège
+   *  ne porte qu'au quart. C'est ce qui fait de son intention une information
+   *  offensive et pas seulement défensive. */
+  bossGuard: 0.25,
+  /** Les dégâts du boss enflent de 5 % par tour. Sans cette montée, se
    *  retrancher derrière garde et soin rendait le joueur immortel. */
-  enragePerTurn: 0.03,
+  enragePerTurn: 0.05,
+  /** Ce qu'une garde NPC ajoute au MOG suivant, et son plafond. */
+  chargePerGuard: 0.7,
+  chargeMax: 1.4,
+  /** Ce qu'il reste de la charge quand on ne la dépense pas. Sans cette
+   *  dissipation, empiler les gardes préparait un coup fatal sans jamais
+   *  prendre de risque, et se retrancher redevenait la meilleure conduite. */
+  chargeDecay: 0.4,
+  /** Malus au dé par MOG consécutif, et son plafond. */
+  fatiguePerRepeat: 4,
+  fatigueMax: 12,
   /** Tours de recharge d'un enseignement après usage. */
-  cooldown: 2
+  cooldown: 2,
+  /**
+   * Seconde phase : sous cette part de vie, les boss qui en ont une changent
+   * de forme et frappent plus fort. Le seuil est la moitié, le plus lisible
+   * qui soit — on voit la jauge la franchir.
+   */
+  phaseThreshold: 0.5,
+  phaseTwoDamage: 1.35
 };
 
 /**

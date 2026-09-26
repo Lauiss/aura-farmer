@@ -1,0 +1,34 @@
+@if (cinematics.playing(); as scene) {
+  <!-- Le fond couvre tout : pendant une cinématique, il n'y a rien d'autre à
+       regarder ni à cliquer. Un clic n'importe où presse le plan suivant. -->
+  <div class="cinematic" (click)="advance()">
+    @if (shot(); as shot) {
+      <div class="stage">
+        @if (shot.left; as side) {
+          <img [class]="'actor left ' + beatClass(side.beat) + (side.actor.kind === 'boss' ? ' is-boss' : '')"
+            [src]="icon(side.actor)" alt="" aria-hidden="true">
+        }
+        @if (shot.right; as side) {
+          <img [class]="'actor right ' + beatClass(side.beat) + (side.actor.kind === 'boss' ? ' is-boss' : '')"
+            [src]="icon(side.actor)" alt="" aria-hidden="true">
+        }
+      </div>
+
+      @if (shot.speaker && shot.line) {
+        <!-- Même présentation que la bulle du jeu : une tête, un nom, une
+             ligne. Un personnage se présente pareil partout. -->
+        <div class="dialogue" role="status">
+          <img class="dialogue-head" [src]="icon(shot.speaker)" alt="" aria-hidden="true">
+          <div class="dialogue-text">
+            <p class="dialogue-name">{{ nameKey(shot.speaker) | translate }}</p>
+            <p class="dialogue-line">{{ shot.line | translate }}</p>
+          </div>
+        </div>
+      }
+    }
+
+    <button type="button" class="skip" (click)="skip(); $event.stopPropagation()">
+      {{ (cinematics.isLast() ? 'CINE_CONTINUE' : 'CINE_SKIP') | translate }}
+    </button>
+  </div>
+}

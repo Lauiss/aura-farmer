@@ -1,0 +1,186 @@
+@use '../../../menu-theme' as *;
+@use '../../../variables' as *;
+
+.cinematic {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: $spacing-300;
+  padding: $spacing-400 $spacing-300;
+  background: radial-gradient(circle at 50% 40%, #1d1c1a, #0a0a09 70%);
+  cursor: pointer;
+}
+
+/* --- La scène : deux silhouettes qui se font face --- */
+.stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: end;
+  justify-items: center;
+  min-height: 0;
+}
+
+.actor {
+  width: min(28vw, 15rem);
+  height: min(42vh, 18rem);
+  object-fit: contain;
+  filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.7));
+}
+
+// Les vignettes des boss sont cadrées de plus loin que celle de la statue
+// (7,6 contre 5,4) : à cadre égal, Chad paraissait deux fois plus petit que
+// celui qu'il vient de coucher. On agrandit la boîte plutôt que l'image —
+// un `transform` entrerait en conflit avec les animations de jeu.
+.actor.is-boss {
+  width: min(40vw, 21rem);
+  height: min(56vh, 25rem);
+}
+
+/* --- Les temps de jeu. Peu de verbes, mais lisibles sur une silhouette --- */
+.beat-stand {
+  animation: breathe 3.4s ease-in-out infinite;
+}
+
+.beat-enter-left {
+  animation: enter-left 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.beat-enter-right {
+  animation: enter-right 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+// La chute bascule **et** descend : une simple rotation se lisait comme une
+// révérence.
+.beat-fall {
+  animation: fall 1s cubic-bezier(0.5, 0, 0.9, 0.6) forwards;
+}
+
+.beat-down {
+  transform: rotate(-78deg) translateY(2.2rem);
+  opacity: 0.85;
+}
+
+.beat-rise {
+  animation: rise 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.beat-strike {
+  animation: strike 0.5s cubic-bezier(0.3, 0, 0.2, 1);
+}
+
+.beat-power {
+  animation: power 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-0.4rem); }
+}
+
+@keyframes enter-left {
+  from { transform: translateX(-60vw); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes enter-right {
+  from { transform: translateX(60vw); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fall {
+  0% { transform: rotate(0) translateY(0); }
+  35% { transform: rotate(-12deg) translateY(-0.6rem); }
+  100% { transform: rotate(-78deg) translateY(2.2rem); }
+}
+
+@keyframes rise {
+  0% { transform: rotate(-78deg) translateY(2.2rem); }
+  70% { transform: rotate(6deg) translateY(0); }
+  100% { transform: rotate(0) translateY(0); }
+}
+
+@keyframes strike {
+  0%, 100% { transform: translateX(0); }
+  40% { transform: translateX(-4rem) scale(1.06); }
+}
+
+@keyframes power {
+  from { transform: scale(1); filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.7)); }
+  to {
+    transform: scale(1.1);
+    filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 30px rgba(232, 184, 75, 0.8));
+  }
+}
+
+/* --- Le dialogue, sur le modèle de la bulle du jeu --- */
+.dialogue {
+  display: flex;
+  align-items: center;
+  gap: $spacing-200;
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: $spacing-200 $spacing-300;
+  background: $menu-surface;
+  border: 1px solid $menu-accent;
+  border-radius: $radius-150;
+}
+
+.dialogue-head {
+  width: 4rem;
+  height: 4rem;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.dialogue-name {
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $menu-accent;
+}
+
+.dialogue-line {
+  font-size: $menu-size-body;
+  color: $menu-text;
+}
+
+.skip {
+  position: absolute;
+  right: $spacing-300;
+  bottom: $spacing-300;
+  padding: $spacing-100 $spacing-200;
+  font: inherit;
+  font-size: $menu-size-small;
+  color: $menu-text-dim;
+  background: none;
+  border: 1px solid $menu-border;
+  border-radius: $radius-100;
+  cursor: pointer;
+}
+
+.skip:hover,
+.skip:focus-visible {
+  color: $menu-accent;
+  border-color: $menu-accent;
+}
+
+@media (max-width: 40rem) {
+  .actor {
+    width: 38vw;
+    height: 28vh;
+  }
+
+  .dialogue {
+    gap: $spacing-150;
+    padding: $spacing-150;
+  }
+
+  .dialogue-head {
+    width: 2.8rem;
+    height: 2.8rem;
+  }
+}

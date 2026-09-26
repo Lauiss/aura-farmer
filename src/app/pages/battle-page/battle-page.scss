@@ -264,6 +264,43 @@
   text-align: center;
 }
 
+/* --- Charge, fatigue, garde, hargne : l'état du tour en une ligne --- */
+.states {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: $spacing-100;
+}
+
+.state {
+  padding: 2px $spacing-150;
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  letter-spacing: 0.06em;
+  border-radius: $radius-100;
+  border: 1px solid currentColor;
+}
+
+.state.charge {
+  color: #ffd46b;
+}
+
+.state.fatigue {
+  color: #ff8a6b;
+}
+
+.state.awake {
+  color: #ff6b3d;
+  border-color: currentColor;
+}
+
+// Seconde phase : le portrait grandit un peu. Le changement de modèle suffit
+// à le dire, mais un adversaire qui se relève doit aussi occuper plus de
+// place.
+.boss-portrait.awakened {
+  transform: scale(1.12);
+}
+
 /* --- Les dés : le coeur du tour, donc le plus gros de l'écran --- */
 .dice {
   display: flex;

@@ -51,12 +51,26 @@
           <p class="intent-detail">{{ ('INTENT_' + intent().toUpperCase() + '_DESC') | translate }}</p>
         </div>
 
-        @if (enrage() > 1.05) {
-          <p class="enrage">{{ 'BATTLE_ENRAGE' | translate: { value: enragePercent() } }}</p>
-        }
-        @if (guarded()) {
-          <p class="shield">{{ 'BATTLE_SHIELDED' | translate }}</p>
-        }
+        <!-- Charge et fatigue sont le cœur de la décision : sans les voir, le
+             joueur ne peut ni préparer un coup ni comprendre pourquoi son dé
+             baisse. -->
+        <div class="states">
+          @if (charge() > 0) {
+            <p class="state charge">{{ 'BATTLE_CHARGE' | translate: { value: chargePercent() } }}</p>
+          }
+          @if (fatigue() > 0) {
+            <p class="state fatigue">{{ 'BATTLE_FATIGUE' | translate: { value: fatigue() } }}</p>
+          }
+          @if (guarded()) {
+            <p class="state shield">{{ 'BATTLE_SHIELDED' | translate }}</p>
+          }
+          @if (enrage() > 1.05) {
+            <p class="state enrage">{{ 'BATTLE_ENRAGE' | translate: { value: enragePercent() } }}</p>
+          }
+          @if (bossPhase() === 2) {
+            <p class="state awake">{{ ('PHASE_TWO_' + current.id.toUpperCase()) | translate }}</p>
+          }
+        </div>
 
         @if (lastRound(); as round) {
           @if (round.playerRoll !== undefined && round.bossRoll !== undefined) {
@@ -125,7 +139,8 @@
         }
       </section>
 
-      <img [src]="bossIcon(current)" alt="" class="portrait boss-portrait">
+      <img [src]="bossIcon(current, bossPhase())" alt="" class="portrait boss-portrait"
+        [class.awakened]="bossPhase() === 2">
     </main>
 
     @if (phase() === 'select') {
@@ -151,6 +166,8 @@
               <li><b class="npc">{{ 'ROLE_NPC' | translate }}</b> — {{ 'BATTLE_MANUAL_NPC' | translate }}</li>
               <li><b class="looksmax">{{ 'ROLE_LOOKSMAX' | translate }}</b> — {{ 'BATTLE_MANUAL_LOOKSMAX' | translate }}</li>
             </ul>
+            <p>{{ 'BATTLE_MANUAL_CHARGE' | translate }}</p>
+            <p>{{ 'BATTLE_MANUAL_FATIGUE' | translate }}</p>
             <p>{{ 'BATTLE_MANUAL_ENRAGE' | translate }}</p>
             <p>{{ 'BATTLE_MANUAL_COOLDOWN' | translate }}</p>
           </div>
