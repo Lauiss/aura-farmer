@@ -1,6 +1,15 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { SaveLocation, SaveManager } from './save-manager';
-import { CinematicDefinition, Shot, cinematic } from '../../assets/static/cinematics';
+import { AuraManager } from './aura-manager';
+import { BattleManager } from './battle-manager';
+import { BossId } from '../../assets/static/bosses';
+import {
+  CinematicDefinition,
+  LETTER_SEAL,
+  Shot,
+  cinematic,
+  victoryScene
+} from '../../assets/static/cinematics';
 
 /**
  * Les cinématiques : quelles scènes ont été vues, et où en est celle qui joue.
@@ -20,6 +29,8 @@ import { CinematicDefinition, Shot, cinematic } from '../../assets/static/cinema
 export class CinematicManager {
 
   private readonly saveManager = inject(SaveManager);
+  private readonly auraManager = inject(AuraManager);
+  private readonly battles = inject(BattleManager);
 
   private readonly seen = signal<Set<string>>(new Set());
 
@@ -61,8 +72,14 @@ export class CinematicManager {
 
     const scene = cinematic(id);
     if (!scene) return false;
+    return this.playScene(scene);
+  }
 
-    this.seen.update(list => new Set(list).add(id));
+  /** Lance une scène déjà construite — celles bâties à la demande passent ici. */
+  private playScene(scene: CinematicDefinition): boolean {
+    if (this.hasSeen(scene.id)) return false;
+
+    this.seen.update(list => new Set(list).add(scene.id));
     this.persist();
     this.playing.set(scene);
     this.shotIndex.set(0);
@@ -81,6 +98,31 @@ export class CinematicManager {
     }
     this.shotIndex.update(rank => rank + 1);
     this.schedule();
+  }
+
+  /**
+   * La scène de victoire d'un boss, à sa **première** défaite. Chad a droit à
+   * la sienne, qui n'est pas une félicitation mais une révélation.
+   */
+  playVictory(boss: BossId): void {
+    if (boss === 'chad') {
+      this.play('finale');
+      return;
+    }
+    this.playScene(victoryScene(boss));
+  }
+
+  /**
+   * La lettre du père se lit quand deux conditions tiennent : Chad battu, et
+   * assez d'aura pour en briser le sceau. Appelée par la boucle de jeu, elle
+   * ne fait rien tant que ce n'est pas le cas.
+   */
+  checkStory(): void {
+    if (this.playing()) return;
+    if (this.hasSeen('letter')) return;
+    if (!this.battles.isDefeated('chad')) return;
+    if (this.auraManager.auraCount().lt(LETTER_SEAL)) return;
+    this.play('letter');
   }
 
   /** Interrompt la scène. Elle compte comme vue : on ne la repropose pas. */

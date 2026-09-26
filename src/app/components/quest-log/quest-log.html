@@ -52,6 +52,9 @@
         @if (quests.finishedLabel(); as time) {
           <p class="finished-in">{{ 'QUEST_FINISHED_IN' | translate: { time: time } }}</p>
         }
+        @if (sealedLetter()) {
+          <p class="sealed">{{ 'LETTER_SEALED' | translate: { needed: sealNeeded } }}</p>
+        }
       }
     </section>
   </div>

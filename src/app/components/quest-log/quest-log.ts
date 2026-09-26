@@ -4,6 +4,8 @@ import { QuestManager, QuestProgress } from '../../services/quest-manager';
 import { ModelIcons } from '../../services/model-icons';
 import { formatAura } from '../../pipes/format-aura';
 import { STORY } from '../../../assets/static/quests';
+import { LETTER_SEAL } from '../../../assets/static/cinematics';
+import { CinematicManager } from '../../services/cinematic-manager';
 
 /**
  * Journal des quêtes : le chapitre en cours de l'histoire, et les trois
@@ -26,6 +28,15 @@ export class QuestLog {
 
   readonly quests = inject(QuestManager);
   private readonly modelIcons = inject(ModelIcons);
+  private readonly cinematics = inject(CinematicManager);
+
+  /**
+   * La lettre du père, une fois l'histoire finie et tant que son sceau tient.
+   * Sans cette ligne, le dernier objectif du jeu n'existerait nulle part : on
+   * ne peut pas viser ce dont on ignore l'existence.
+   */
+  readonly sealedLetter = computed(() => !this.cinematics.hasSeen('letter'));
+  readonly sealNeeded = formatAura(LETTER_SEAL);
 
   readonly scrollIcon = this.modelIcons.moyai();
   readonly total = STORY.length;

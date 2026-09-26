@@ -9,6 +9,15 @@ html {
     height: 100%;
     width: 100%;
     user-select: none;
+    /**
+     * Le fond du document est celui du jeu, et le rebond de défilement est
+     * coupé. Sans les deux, tirer sur une page au-delà de sa fin découvrait le
+     * **blanc du navigateur** au-dessus et en dessous : les écrans ont chacun
+     * leur propre conteneur de défilement, mais le document, lui, rebondissait
+     * sur rien.
+     */
+    background-color: #121211;
+    overscroll-behavior: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -20,6 +29,8 @@ body {
     height: 100%;
     width: 100%;
     line-height: 1.5;
+    background-color: #121211;
+    overscroll-behavior: none;
     // Pile système en attendant que la typo du jeu soit choisie.
     font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }

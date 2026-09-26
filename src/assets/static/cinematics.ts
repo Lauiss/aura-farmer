@@ -40,6 +40,11 @@ export type Beat =
   | 'power';
 
 export interface Shot {
+  /**
+   * Texte encadré affiché au centre, pour ce qui se lit plutôt que se dit —
+   * la lettre du père. Une réplique en bulle aurait fait parler un absent.
+   */
+  note?: string;
   /** Acteur de gauche, absent si le plan n'en a qu'un. */
   left?: { actor: Actor; beat: Beat };
   right?: { actor: Actor; beat: Beat };
@@ -81,7 +86,64 @@ const INTRO: CinematicDefinition = {
   ]
 };
 
-export const CINEMATICS: readonly CinematicDefinition[] = [INTRO];
+/**
+ * La fin : Chad à terre, et John Pork qui dit enfin d'où il vient. Elle
+ * remplace la petite scène de victoire pour ce boss-là — on ne félicite pas
+ * quelqu'un qui vient de reprendre sa succession, on lui explique.
+ */
+const FINALE: CinematicDefinition = {
+  id: 'finale',
+  shots: [
+    { left: { actor: HERO, beat: 'power' }, right: { actor: CHAD, beat: 'fall' }, durationMs: 1900 },
+    { left: { actor: HERO, beat: 'stand' }, right: { actor: CHAD, beat: 'down' },
+      speaker: CHAD, line: 'CINE_FINALE_1', durationMs: 3200 },
+    { left: { actor: HERO, beat: 'stand' }, right: { actor: JOHN, beat: 'enter-right' },
+      speaker: JOHN, line: 'CINE_FINALE_2', durationMs: 3600 },
+    { left: { actor: HERO, beat: 'stand' }, right: { actor: JOHN, beat: 'stand' },
+      speaker: JOHN, line: 'CINE_FINALE_3', durationMs: 3600 },
+    { left: { actor: HERO, beat: 'stand' }, right: { actor: JOHN, beat: 'stand' },
+      speaker: JOHN, line: 'CINE_FINALE_4', durationMs: 4000 }
+  ]
+};
+
+/**
+ * La lettre, une fois le sceau brisé. Elle n'a qu'un plan : ce qui compte est
+ * ce qui est écrit, pas ce qui bouge.
+ */
+const LETTER: CinematicDefinition = {
+  id: 'letter',
+  shots: [
+    { left: { actor: HERO, beat: 'stand' }, note: 'CINE_LETTER_TEXT', durationMs: 7000 },
+    { left: { actor: HERO, beat: 'stand' }, right: { actor: JOHN, beat: 'enter-right' },
+      speaker: JOHN, line: 'CINE_LETTER_AFTER', durationMs: 4000 }
+  ]
+};
+
+export const CINEMATICS: readonly CinematicDefinition[] = [INTRO, FINALE, LETTER];
+
+/**
+ * Aura nécessaire pour briser le sceau de la lettre. Un quintillion : c'est
+ * loin derrière le débit conseillé du dernier boss, donc atteignable, mais
+ * pas le lendemain de sa victoire — la lettre se mérite une deuxième fois.
+ */
+export const LETTER_SEAL = 1e18;
+
+/**
+ * La victoire sur un boss, construite à la demande : vingt scènes écrites à la
+ * main pour trois plans identiques n'auraient rien apporté, et chaque boss
+ * ajouté aurait demandé la sienne.
+ */
+export function victoryScene(boss: BossId): CinematicDefinition {
+  const fallen: Actor = { kind: 'boss', id: boss };
+  return {
+    id: `victory-${boss}`,
+    shots: [
+      { left: { actor: HERO, beat: 'power' }, right: { actor: fallen, beat: 'fall' }, durationMs: 1700 },
+      { left: { actor: HERO, beat: 'stand' }, right: { actor: JOHN, beat: 'enter-right' },
+        speaker: JOHN, line: 'CINE_VICTORY', durationMs: 2800 }
+    ]
+  };
+}
 
 export function cinematic(id: string): CinematicDefinition | undefined {
   return CINEMATICS.find(scene => scene.id === id);

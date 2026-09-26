@@ -14,6 +14,12 @@
         }
       </div>
 
+      @if (shot.note) {
+        <!-- La lettre : ce qui se lit, pas ce qui se dit. Elle prend le centre
+             de l'écran et personne ne parle par-dessus. -->
+        <blockquote class="letter">{{ shot.note | translate }}</blockquote>
+      }
+
       @if (shot.speaker && shot.line) {
         <!-- Même présentation que la bulle du jeu : une tête, un nom, une
              ligne. Un personnage se présente pareil partout. -->

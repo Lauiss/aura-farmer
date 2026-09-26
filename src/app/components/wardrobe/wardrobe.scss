@@ -21,6 +21,9 @@
   display: grid;
   grid-template-columns: 1fr minmax(12rem, 16rem);
   gap: $spacing-300;
+  // La colonne part du haut : centrer l'**élément** dans une colonne de deux
+  // mille pixels le plaçait au milieu du contenu, c'est-à-dire hors de l'écran.
+  // C'est le collage ci-dessous qui le centre, sur la fenêtre visible.
   align-items: start;
 }
 
@@ -31,9 +34,14 @@
   min-width: 0;
 }
 
+// Collé à mi-hauteur de la modale : l'aperçu reste au milieu du cadre visible
+// pendant que la liste défile sous lui. Posé en haut, il regardait le vide dès
+// qu'on descendait dans la liste ; centré dans la colonne, il se retrouvait au
+// milieu de deux mille pixels de contenu, donc invisible.
 .preview {
   position: sticky;
-  top: 0;
+  top: 50%;
+  translate: 0 -50%;
   display: grid;
   place-items: center;
   aspect-ratio: 3 / 4;

@@ -4,6 +4,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuraManager } from '../../services/aura-manager';
 import { BattleManager } from '../../services/battle-manager';
 import { GameLoop } from '../../services/game-loop';
+import { CinematicManager } from '../../services/cinematic-manager';
 import { HintManager } from '../../services/hint-manager';
 import { ModelIcons } from '../../services/model-icons';
 import { Item, ShopManager } from '../../services/shop-manager';
@@ -75,6 +76,7 @@ export class BattlePage {
   private readonly translate = inject(TranslateService);
   private readonly router = inject(Router);
   private readonly gameLoop = inject(GameLoop);
+  private readonly cinematics = inject(CinematicManager);
 
   readonly dieFaces = DIE_FACES;
   /** Part de vie manquante rendue par un LOOKSMAX, en pourcentage. */
@@ -382,6 +384,9 @@ export class BattlePage {
       this.wonRelic.set(relic);
       this.phase.set('won');
       this.soundManager.playFX(Sound.Buy);
+      // Une première victoire se met en scène. Les suivantes non : on refait
+      // un boss pour farmer, pas pour revoir sa chute.
+      if (first) this.cinematics.playVictory(boss.id);
       return;
     }
     if (this.playerHp() <= 0) {

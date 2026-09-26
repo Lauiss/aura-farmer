@@ -18,6 +18,7 @@ import { StoreManager } from './store-manager';
 import { CallManager } from './call-manager';
 import { QuestManager } from './quest-manager';
 import { PlayTime } from './play-time';
+import { CinematicManager } from './cinematic-manager';
 
 /**
  * Boucle de jeu : production d'aura passive, vérification des succès et
@@ -51,6 +52,7 @@ export class GameLoop {
   private readonly calls = inject(CallManager);
   private readonly quests = inject(QuestManager);
   private readonly playTime = inject(PlayTime);
+  private readonly cinematics = inject(CinematicManager);
 
   private started = false;
 
@@ -116,6 +118,7 @@ export class GameLoop {
       this.guard('consommables', () => this.consumables.tick());
       this.guard('quêtes', () => this.quests.tick());
       this.guard('temps de jeu', () => this.playTime.tick());
+      this.guard('histoire', () => this.cinematics.checkStory());
     });
 
     interval(10000).subscribe(() => this.guard('sauvegarde', () => this.createSave()));

@@ -8,27 +8,34 @@
 
 // Deux colonnes séparées par un filet. Elles se replient l'une sous l'autre
 // sur un écran étroit, où deux colonnes de quêtes ne tiennent pas.
+// Deux colonnes de **même largeur**, séparées par une bordure et non par un
+// pseudo-élément : placé en colonne 2, celui-ci faisait avancer le curseur de
+// placement automatique, si bien que les quotidiennes tombaient en colonne 3
+// et l'histoire à la ligne suivante — les deux sections n'étaient plus du
+// tout côte à côte.
 .columns {
   display: grid;
-  grid-template-columns: 1fr 1px 1.2fr;
-  gap: $spacing-300;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-400;
   align-items: start;
+}
 
-  &::before {
-    content: '';
-    grid-column: 2;
-    align-self: stretch;
-    background: $menu-border;
-  }
+.columns > .block + .block {
+  padding-left: $spacing-400;
+  border-left: 1px solid $menu-border;
 }
 
 @media (max-width: 44rem) {
   .columns {
     grid-template-columns: 1fr;
+    gap: $spacing-300;
+  }
 
-    &::before {
-      display: none;
-    }
+  .columns > .block + .block {
+    padding-left: 0;
+    padding-top: $spacing-300;
+    border-left: none;
+    border-top: 1px solid $menu-border;
   }
 }
 
@@ -40,6 +47,9 @@ h2 {
 .block {
   display: grid;
   gap: $spacing-100;
+  // Le contenu part du haut : sans cela, la colonne la plus courte flottait
+  // au milieu de sa hauteur et les deux ne se répondaient plus.
+  align-content: start;
 }
 
 .block-title {
@@ -130,6 +140,18 @@ h2 {
 .done {
   font-size: $menu-size-small;
   color: $menu-accent;
+}
+
+// Le dernier objectif du jeu, affiché comme tel : une ligne, et le montant
+// qu'il faut atteindre.
+.sealed {
+  margin-top: $spacing-100;
+  padding: $spacing-150;
+  font-size: $menu-size-small;
+  color: #e6dcc2;
+  background: rgba(230, 220, 194, 0.08);
+  border: 1px dashed rgba(230, 220, 194, 0.45);
+  border-radius: $radius-100;
 }
 
 .finished-in {
