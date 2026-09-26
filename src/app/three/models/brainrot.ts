@@ -1557,6 +1557,53 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
     }
 
     /**
+     * Le père. La même tête que ses deux fils, mais **mangée par le temps** :
+     * pierre délavée, mousse dans les creux, une fêlure en travers du front.
+     * Il n'a pas de couronne — il l'a donnée — et il n'est plus là : son aura
+     * est d'un vert-bleu froid, pas de l'or des vivants.
+     */
+    case 'ancestor': {
+      group.add(
+        createMoyai({
+          seed: 1789,
+          roughness: 0.06,
+          palette: { stone: color, stoneDark: 0x5f6a5e, cavity: 0x161a18, glow: accent }
+        })
+      );
+
+      // La fêlure, en biais sur le front : une entaille sombre et nette au
+      // milieu d'une pierre rongée.
+      group.add(
+        mesh(new THREE.BoxGeometry(0.1, 1.5, 0.1), material(0x14100e), [0.18, 0.7, 0.92], [0, 0, 0.42])
+      );
+      // Plaques de mousse, posées sur les **bords** et non en plein visage :
+      // au centre, elles se lisaient comme des taches collées sur les yeux.
+      for (const [x, y, z] of [[-0.74, 0.1, 0.42], [0.72, -0.55, 0.38], [-0.5, -1.05, 0.5], [0.66, 0.7, 0.3]]) {
+        group.add(mesh(new THREE.SphereGeometry(0.13, 5, 4), material(0x4a6a3c, 0.95), [x, y, z]));
+      }
+
+      // L'aura des morts : froide, et toujours là, dès la première phase.
+      for (const [index, radius] of [1.95, 2.25].entries()) {
+        const shell = new THREE.Mesh(
+          new THREE.IcosahedronGeometry(radius, 1),
+          new THREE.MeshBasicMaterial({
+            // Teintes **sombres** : en mélange additif, un cyan clair ne fait
+            // pas un halo, il repeint tout ce qu'il couvre.
+            color: index === 0 ? 0x2f7f7a : 0x24566e,
+            transparent: true,
+            opacity: phase >= 2 ? (index === 0 ? 0.26 : 0.16) : (index === 0 ? 0.12 : 0.07),
+            side: THREE.BackSide,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+          })
+        );
+        shell.userData['ignoreBounds'] = true;
+        group.add(shell);
+      }
+      break;
+    }
+
+    /**
      * Chad Moai, le frère. Il **n'avait aucun modèle** : sa forme `moai` ne
      * figurait pas dans ce `switch`, si bien que le boss final du jeu
      * s'affichait en vignette vide depuis qu'il existe.

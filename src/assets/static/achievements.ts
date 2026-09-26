@@ -1,7 +1,7 @@
 import { FormatAuraPipe } from "../../app/pipes/format-aura";
 import { Achievement } from "../../app/services/achievements-manager";
 import { COLLECTIBLES, RELICS } from "./collectibles";
-import { BOSSES, BossId } from "./bosses";
+import { LADDER, BossId } from "./bosses";
 import { COMPANIONS, CompanionId } from "./companions";
 import { CallStats } from "../../app/services/call-manager";
 
@@ -22,7 +22,9 @@ export function createAchievements(
   getComboPeak: () => number = () => 1,
   getCallStats: () => CallStats = () => ({
     answeredCount: 0, john: false, colonel: false, larry: false, refused: 0, larryRefused: false
-  })
+  }),
+  /** Ce qu'on a fait de la lettre : les deux fins ont chacune leur succès. */
+  getEnding: () => 'keep' | 'burn' | null = () => null
 ): Achievement[] {
   const achievements: Achievement[] = [
     {
@@ -651,7 +653,7 @@ export function createAchievements(
       title: "Chasseur de Brainrots",
       description: "Vaincre la moitié des boss des battles d'aura.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
-      condition: () => getBossCount() >= Math.ceil(BOSSES.length / 2),
+      condition: () => getBossCount() >= Math.ceil(LADDER.length / 2),
       unlocked: false,
     },
     {
@@ -792,6 +794,33 @@ export function createAchievements(
       unlocked: false,
     },
     {
+      id: 240,
+      title: "Ce qui reste",
+      description: "Garder la lettre du père.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getEnding() === 'keep',
+      unlocked: false,
+      secret: true,
+    },
+    {
+      id: 241,
+      title: "Cendres",
+      description: "Brûler la lettre du père.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => getEnding() === 'burn',
+      unlocked: false,
+      secret: true,
+    },
+    {
+      id: 242,
+      title: "Rendez-vous",
+      description: "Répondre au père en personne.",
+      icon: "assets/imgs/achievements/trophy_achievement.png",
+      condition: () => isBossDefeated('father'),
+      unlocked: false,
+      secret: true,
+    },
+    {
       id: 230,
       title: "Allô ?",
       description: "Décrocher un appel pendant le doomscrolling.",
@@ -854,7 +883,9 @@ export function createAchievements(
       title: "Aura Suprême",
       description: "Vaincre tous les boss des battles d'aura.",
       icon: "assets/imgs/achievements/trophy_achievement.png",
-      condition: () => getBossCount() >= BOSSES.length,
+      // L'échelle seule : le boss secret n'est pas sur le chemin, et exiger
+      // de l'avoir battu rendrait ce succès impossible à qui garde la lettre.
+      condition: () => getBossCount() >= LADDER.length,
       unlocked: false,
     }
   ];

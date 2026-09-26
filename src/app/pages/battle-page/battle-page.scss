@@ -111,6 +111,14 @@
   text-align: center;
 }
 
+.secret-tag {
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6fd6c8;
+}
+
 .recommended {
   font-size: $menu-size-small;
   color: $menu-text-dim;

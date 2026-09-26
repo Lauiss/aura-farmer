@@ -5,6 +5,7 @@ import { BattleManager } from './battle-manager';
 import { BossId } from '../../assets/static/bosses';
 import {
   CinematicDefinition,
+  Ending,
   LETTER_SEAL,
   Shot,
   cinematic,
@@ -34,6 +35,9 @@ export class CinematicManager {
 
   private readonly seen = signal<Set<string>>(new Set());
 
+  /** Ce qu'on a fait de la lettre. `null` tant que la question ne s'est pas posée. */
+  readonly ending = signal<Ending | null>(null);
+
   /** Scène en cours, `null` quand rien ne joue. */
   readonly playing = signal<CinematicDefinition | null>(null);
   /** Rang du plan affiché. */
@@ -50,8 +54,15 @@ export class CinematicManager {
   private timer?: ReturnType<typeof setTimeout>;
 
   constructor() {
-    const saved: string[] | null = this.saveManager.loadProgress(SaveLocation.Cinematics);
-    if (saved) this.seen.set(new Set(saved));
+    // Les premières parties n'enregistraient qu'un tableau de scènes vues.
+    const saved: string[] | { seen: string[]; ending?: Ending } | null =
+      this.saveManager.loadProgress(SaveLocation.Cinematics);
+    if (Array.isArray(saved)) {
+      this.seen.set(new Set(saved));
+    } else if (saved) {
+      this.seen.set(new Set(saved.seen ?? []));
+      this.ending.set(saved.ending ?? null);
+    }
   }
 
   hasSeen(id: string): boolean {
@@ -91,6 +102,9 @@ export class CinematicManager {
   next(): void {
     const scene = this.playing();
     if (!scene) return;
+    // On ne passe pas par-dessus une question : y répondre est le seul moyen
+    // d'avancer.
+    if (this.shot()?.choice) return;
 
     if (this.shotIndex() >= scene.shots.length - 1) {
       this.stop();
@@ -125,6 +139,22 @@ export class CinematicManager {
     this.play('letter');
   }
 
+  /**
+   * Tranche l'embranchement de la lettre. Le choix est **définitif** : c'est
+   * ce qui en fait un choix, et le brûler ouvre un adversaire qu'on n'aurait
+   * jamais vu autrement.
+   */
+  choose(option: string): void {
+    if (this.ending()) return;
+    const ending = option === 'burn' ? 'burn' : 'keep';
+    this.ending.set(ending);
+    this.persist();
+
+    if (ending === 'burn') this.battles.unlockSecret();
+    this.stop();
+    this.play(ending === 'burn' ? 'ending-burn' : 'ending-keep');
+  }
+
   /** Interrompt la scène. Elle compte comme vue : on ne la repropose pas. */
   stop(): void {
     clearTimeout(this.timer);
@@ -139,10 +169,14 @@ export class CinematicManager {
   private schedule(): void {
     clearTimeout(this.timer);
     const shot = this.shot();
-    if (shot) this.timer = setTimeout(() => this.next(), shot.durationMs);
+    // Un plan qui pose une question n'a pas de durée : il attend la réponse.
+    if (shot && !shot.choice) this.timer = setTimeout(() => this.next(), shot.durationMs);
   }
 
   private persist(): void {
-    this.saveManager.saveProgress(SaveLocation.Cinematics, [...this.seen()]);
+    this.saveManager.saveProgress(SaveLocation.Cinematics, {
+      seen: [...this.seen()],
+      ending: this.ending() ?? undefined
+    });
   }
 }

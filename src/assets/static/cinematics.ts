@@ -39,7 +39,20 @@ export type Beat =
   /** Grandit et s'illumine. */
   | 'power';
 
+/**
+ * Un embranchement : le plan attend une décision au lieu de s'enchaîner. Les
+ * deux options mènent à des suites différentes, et le choix est **définitif** —
+ * c'est ce qui en fait un choix.
+ */
+export interface Choice {
+  id: string;
+  /** Clé de traduction du libellé du bouton. */
+  label: string;
+}
+
 export interface Shot {
+  /** Décision demandée au joueur. Le plan ne s'enchaîne pas tant qu'elle tient. */
+  choice?: readonly Choice[];
   /**
    * Texte encadré affiché au centre, pour ce qui se lit plutôt que se dit —
    * la lettre du père. Une réplique en bulle aurait fait parler un absent.
@@ -63,6 +76,7 @@ export interface CinematicDefinition {
 const HERO: Actor = { kind: 'hero' };
 const CHAD: Actor = { kind: 'boss', id: 'chad' };
 const JOHN: Actor = { kind: 'caller', id: 'john' };
+const FATHER: Actor = { kind: 'boss', id: 'father' };
 
 /**
  * L'introduction : la défaite qui met le jeu en route. On y voit ce que le
@@ -115,11 +129,50 @@ const LETTER: CinematicDefinition = {
   shots: [
     { left: { actor: HERO, beat: 'stand' }, note: 'CINE_LETTER_TEXT', durationMs: 7000 },
     { left: { actor: HERO, beat: 'stand' }, right: { actor: JOHN, beat: 'enter-right' },
-      speaker: JOHN, line: 'CINE_LETTER_AFTER', durationMs: 4000 }
+      speaker: JOHN, line: 'CINE_LETTER_AFTER', durationMs: 4000 },
+    // L'embranchement. Garder, c'est accepter ; brûler, c'est demander des
+    // comptes à quelqu'un qui n'est plus là pour en rendre.
+    {
+      left: { actor: HERO, beat: 'stand' },
+      speaker: JOHN,
+      line: 'CINE_LETTER_CHOICE',
+      choice: [
+        { id: 'keep', label: 'CINE_LETTER_KEEP' },
+        { id: 'burn', label: 'CINE_LETTER_BURN' }
+      ],
+      durationMs: 0
+    }
   ]
 };
 
-export const CINEMATICS: readonly CinematicDefinition[] = [INTRO, FINALE, LETTER];
+/** Ce qu'on a fait de la lettre. `null` tant que la question ne s'est pas posée. */
+export type Ending = 'keep' | 'burn';
+
+/**
+ * Ce qui suit le choix. Garder clôt l'histoire ; brûler la rouvre — la fumée
+ * monte, et quelqu'un descend.
+ */
+const KEPT: CinematicDefinition = {
+  id: 'ending-keep',
+  shots: [
+    { left: { actor: HERO, beat: 'stand' }, note: 'CINE_KEEP_NOTE', durationMs: 5200 },
+    { left: { actor: HERO, beat: 'stand' }, right: { actor: JOHN, beat: 'stand' },
+      speaker: JOHN, line: 'CINE_KEEP_END', durationMs: 4200 }
+  ]
+};
+
+const BURNED: CinematicDefinition = {
+  id: 'ending-burn',
+  shots: [
+    { left: { actor: HERO, beat: 'power' }, speaker: JOHN, line: 'CINE_BURN_1', durationMs: 3400 },
+    { left: { actor: HERO, beat: 'stand' }, right: { actor: FATHER, beat: 'enter-right' },
+      speaker: FATHER, line: 'CINE_BURN_2', durationMs: 4000 },
+    { left: { actor: HERO, beat: 'stand' }, right: { actor: FATHER, beat: 'power' },
+      speaker: FATHER, line: 'CINE_BURN_3', durationMs: 4200 }
+  ]
+};
+
+export const CINEMATICS: readonly CinematicDefinition[] = [INTRO, FINALE, LETTER, KEPT, BURNED];
 
 /**
  * Aura nécessaire pour briser le sceau de la lettre. Un quintillion : c'est

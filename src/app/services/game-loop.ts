@@ -86,7 +86,8 @@ export class GameLoop {
         id => this.store.hasCompanion(id),
         () => this.store.companionCount(),
         () => this.spinCombo.peak(),
-        () => this.calls.stats()
+        () => this.calls.stats(),
+        () => this.cinematics.ending()
       )
     );
 

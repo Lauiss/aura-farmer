@@ -27,7 +27,8 @@ export type BossId =
   | 'glorbo'
   | 'burbaloni'
   | 'bananita'
-  | 'chad';
+  | 'chad'
+  | 'father';
 
 /** Allure générale d'un boss, qui commande son modèle low poly. */
 export type BossShape =
@@ -47,6 +48,7 @@ export type BossShape =
   | 'banana'
   | 'cup'
   | 'ballerina'
+  | 'ancestor'
   | 'melon'
   | 'coconut'
   | 'dolphin'
@@ -71,6 +73,13 @@ export interface BossDefinition {
   /** Teintes du modèle. */
   color: number;
   accent: number;
+  /**
+   * Boss **secret** : il ne figure pas dans l'échelle ordinaire, ne se
+   * déverrouille pas en battant le précédent, et n'entre pas dans les
+   * décomptes « tous les boss ». Le père en est le seul — on n'y arrive que
+   * par un choix, pas par la progression.
+   */
+  secret?: boolean;
   /**
    * Vrai pour les boss qui changent de forme à mi-vie. Réservé aux deux
    * derniers adversaires de l'histoire : une seconde phase sur chacun des
@@ -121,7 +130,12 @@ export const BOSSES: readonly BossDefinition[] = [
   { id: 'glorbo', shape: 'melon', recommended: 1e+13, hpSeconds: 89, damageSeconds: 8.45, reward: 238, color: 0x3f7a3a, accent: 0xd9453f },
   { id: 'burbaloni', shape: 'coconut', recommended: 2.6e+13, hpSeconds: 89, damageSeconds: 8.65, reward: 242, color: 0x7a5a38, accent: 0xf2efe6 },
   { id: 'bananita', shape: 'dolphin', recommended: 6.5e+13, hpSeconds: 89, damageSeconds: 8.85, reward: 246, color: 0x8fa3b8, accent: 0xe8c547 },
-  { id: 'chad', shape: 'moai', recommended: 1.6e+14, hpSeconds: 90, damageSeconds: 9, reward: 250, color: 0xb9b2a4, accent: 0xe8b84b, twoPhase: true }
+  { id: 'chad', shape: 'moai', recommended: 1.6e+14, hpSeconds: 90, damageSeconds: 9, reward: 250, color: 0xb9b2a4, accent: 0xe8b84b, twoPhase: true },
+  // Le père. Hors échelle : on ne l'atteint pas en progressant mais en
+  // brûlant la lettre. Calé par simulation à **48 %** de victoires pour un
+  // joueur qui maîtrise le combat, contre 66 % pour Chad — une pièce qu'on
+  // lance, ce qui est le bon niveau pour un adversaire facultatif.
+  { id: 'father', shape: 'ancestor', recommended: 1e+19, hpSeconds: 112, damageSeconds: 10, reward: 500, color: 0x8f9a8c, accent: 0x6fd6c8, secret: true, twoPhase: true }
 ];
 
 /**
@@ -130,6 +144,9 @@ export const BOSSES: readonly BossDefinition[] = [
  * améliorations de dé n'existent pour le joueur.
  */
 export const BATTLE_UNLOCK = BOSSES[0].recommended;
+
+/** Les boss de l'échelle ordinaire : tout sauf les secrets. */
+export const LADDER = BOSSES.filter(boss => !boss.secret);
 
 export function bossDefinition(id: BossId): BossDefinition {
   return BOSSES.find(boss => boss.id === id)!;

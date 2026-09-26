@@ -205,7 +205,7 @@
       <p class="lead">{{ 'BATTLE_LEAD' | translate }}</p>
 
       <div class="bosses">
-        @for (entry of battles.catalogue; track entry.id) {
+        @for (entry of battles.available(); track entry.id) {
           <article
             class="boss-card"
             [class.locked]="!battles.isUnlocked(entry.id)"
@@ -215,6 +215,11 @@
             <h2 class="name">
               {{ battles.isUnlocked(entry.id) ? (('BOSS_' + entry.id.toUpperCase()) | translate) : '?????' }}
             </h2>
+            <!-- On n'arrive au père que par un choix : la carte le dit, sinon
+                 il passerait pour un boss d'échelle qu'on aurait sauté. -->
+            @if (entry.secret) {
+              <p class="secret-tag">{{ 'BOSS_FATHER_TAG' | translate }}</p>
+            }
 
             @if (battles.isUnlocked(entry.id)) {
               <p class="recommended" [class.short]="!isReady(entry)">

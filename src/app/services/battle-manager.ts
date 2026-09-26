@@ -15,6 +15,8 @@ import {
 interface BattleSave {
   /** Boss déjà battus au moins une fois. */
   defeated: BossId[];
+  /** Le boss secret est-il accessible ? Il ne s'ouvre que par un choix. */
+  secret?: boolean;
   /** Brainrot porté à la place du moyai, `null` pour la statue d'origine. */
   worn: BossId | null;
 }
@@ -46,6 +48,7 @@ export class BattleManager {
     const saved: BattleSave | null = this.saveManager.loadProgress(SaveLocation.Battles);
     if (saved) {
       this.defeatedIds.set(new Set(saved.defeated ?? []));
+      this.secretUnlocked.set(saved.secret ?? false);
       this.worn.set(saved.worn ?? null);
     }
     // Les reliques sont nées après certaines victoires : une partie en cours
@@ -69,6 +72,24 @@ export class BattleManager {
     return id ? bossDefinition(id) : null;
   });
 
+  /**
+   * Le boss secret est ouvert. L'état vit ici plutôt que dans les cinématiques
+   * parce que c'est la liste des combats qui en dépend, et que l'inverse
+   * refermerait un cycle : les cinématiques connaissent déjà les battles.
+   */
+  readonly secretUnlocked = signal(false);
+
+  /** Boss proposés : l'échelle, plus le secret une fois ouvert. */
+  readonly available = computed(() =>
+    BOSSES.filter(boss => !boss.secret || this.secretUnlocked())
+  );
+
+  unlockSecret(): void {
+    if (this.secretUnlocked()) return;
+    this.secretUnlocked.set(true);
+    this.persist();
+  }
+
   isDefeated(id: BossId): boolean {
     return this.defeatedIds().has(id);
   }
@@ -79,7 +100,11 @@ export class BattleManager {
    */
   isUnlocked(id: BossId): boolean {
     const index = BOSSES.findIndex(boss => boss.id === id);
-    if (index <= 0) return true;
+    if (index < 0) return false;
+    // Un boss secret ne suit pas la chaîne : il s'ouvre par un choix, et pas
+    // en battant celui qui le précède dans la liste.
+    if (BOSSES[index].secret) return this.secretUnlocked();
+    if (index === 0) return true;
     return this.defeatedIds().has(BOSSES[index - 1].id);
   }
 
@@ -120,6 +145,7 @@ export class BattleManager {
   private persist(): void {
     this.saveManager.saveProgress(SaveLocation.Battles, {
       defeated: [...this.defeatedIds()],
+      secret: this.secretUnlocked(),
       worn: this.worn()
     } satisfies BattleSave);
   }

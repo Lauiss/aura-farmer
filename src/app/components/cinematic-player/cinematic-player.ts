@@ -74,4 +74,8 @@ export class CinematicPlayer {
   advance(): void {
     this.cinematics.next();
   }
+
+  choose(option: string): void {
+    this.cinematics.choose(option);
+  }
 }
