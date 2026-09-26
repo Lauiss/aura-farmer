@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { TranslatePipe } from '@ngx-translate/core';
 import { CinematicManager } from '../../services/cinematic-manager';
 import { ModelIcons } from '../../services/model-icons';
+import { SettingsManager } from '../../services/settings-manager';
 import { Actor, Beat } from '../../../assets/static/cinematics';
 
 /**
@@ -30,6 +31,14 @@ export class CinematicPlayer {
 
   readonly cinematics = inject(CinematicManager);
   private readonly modelIcons = inject(ModelIcons);
+  /**
+   * Le mode calme ne masque pas la scène — elle raconte l'histoire — il en
+   * fige les mouvements. Le composant doit donc le **connaître** pour poser
+   * ses états finaux : la feuille globale coupe les animations, mais il faut
+   * quelqu'un pour dire où se trouve un personnage qui vient de tomber.
+   */
+  private readonly settings = inject(SettingsManager);
+  readonly calm = this.settings.calm;
 
   readonly shot = this.cinematics.shot;
 

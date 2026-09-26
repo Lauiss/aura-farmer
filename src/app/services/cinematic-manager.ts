@@ -1,6 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { SaveLocation, SaveManager } from './save-manager';
-import { SettingsManager } from './settings-manager';
 import { CinematicDefinition, Shot, cinematic } from '../../assets/static/cinematics';
 
 /**
@@ -21,7 +20,6 @@ import { CinematicDefinition, Shot, cinematic } from '../../assets/static/cinema
 export class CinematicManager {
 
   private readonly saveManager = inject(SaveManager);
-  private readonly settings = inject(SettingsManager);
 
   private readonly seen = signal<Set<string>>(new Set());
 
@@ -50,16 +48,16 @@ export class CinematicManager {
   }
 
   /**
-   * Joue une scène si elle ne l'a jamais été. Renvoie `false` si elle est déjà
-   * vue, ou si le joueur a demandé le mode calme — quelqu'un qui coupe les
-   * effets n'a pas envie d'une scène animée imposée.
+   * Joue une scène si elle ne l'a jamais été.
+   *
+   * Le mode calme ne l'empêche **pas** : une cinématique raconte l'histoire,
+   * elle n'est pas un effet décoratif, et la sauter priverait le joueur de ce
+   * qui donne son sens à la partie. Ce sont ses mouvements qui se taisent —
+   * la feuille de style globale coupe les animations, et les plans s'y
+   * enchaînent en poses fixes (voir `cinematic-player.scss`).
    */
   play(id: string): boolean {
-    if (this.hasSeen(id) || this.settings.calm()) {
-      this.seen.update(list => new Set(list).add(id));
-      this.persist();
-      return false;
-    }
+    if (this.hasSeen(id)) return false;
 
     const scene = cinematic(id);
     if (!scene) return false;

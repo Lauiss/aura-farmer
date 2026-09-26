@@ -115,6 +115,29 @@
   }
 }
 
+/**
+ * Mode calme : les animations sont coupées à la racine du document, mais la
+ * scène doit rester lisible. Chaque temps de jeu se replie donc sur sa **pose
+ * finale** — celui qui tombe est à terre, celui qui entre est en place. On
+ * perd le mouvement, jamais l'information.
+ *
+ * La classe est posée par le composant et non lue sur `:root[data-calm]` :
+ * l'encapsulation des styles ajoute l'attribut du composant au **dernier**
+ * sélecteur, et une règle ancrée sur la racine du document ne s'appliquait
+ * tout simplement pas — vérifié, la pose de chute restait sans effet.
+ */
+.cinematic.calm {
+  .beat-fall {
+    transform: rotate(-78deg) translateY(2.2rem);
+    opacity: 0.85;
+  }
+
+  .beat-power {
+    transform: scale(1.1);
+    filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 30px rgba(232, 184, 75, 0.8));
+  }
+}
+
 /* --- Le dialogue, sur le modèle de la bulle du jeu --- */
 .dialogue {
   display: flex;
