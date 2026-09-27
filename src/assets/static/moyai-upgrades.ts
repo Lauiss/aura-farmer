@@ -1,5 +1,5 @@
 import { signal } from "@angular/core";
-import { MoyaiUpgrades } from "../../app/components/aura-btn/aura-btn";
+import { MoyaiUpgrades } from "../../app/models/outfit";
 import { UpgradeType } from "../../app/services/shop-manager";
 import { outfitUpgrades } from "./outfit-upgrades";
 import { sortByPrice } from "./order";

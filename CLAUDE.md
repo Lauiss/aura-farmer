@@ -268,9 +268,22 @@ Dans l'ordre où elle a été demandée, à garder sous la main :
 - Huit descriptions portent un seuil chiffré : elles gardent leur valeur, mise en forme par `FormatAuraPipe` à la déclaration et passée en `params`. Le nombre se lit pareil dans les deux langues, mais sa **place dans la phrase**, non — d'où l'interpolation plutôt qu'une concaténation.
 - Toute chaîne visible passe par `fr.json` **et** `en.json`, dont les jeux de clés doivent rester identiques. Le contrôle tient en une ligne : charger les deux fichiers et comparer les ensembles de clés.
 
-## Restes à nettoyer
+## Plus aucune image 2D
 
-`shop-list` n'est plus utilisé depuis que la boutique est passée en carte. `aura-btn` ne sert plus comme composant mais **son fichier porte les interfaces** `MoyaiUpgrades`, `Effect` et `MoyaiUpgradeSave`, dont dépendent `shop-manager` et `save-manager` : le supprimer casserait le modèle de données. Déplacer ces types avant toute suppression.
+Le jeu ne contient **plus un seul PNG d'interface** : tout ce qui s'affiche est rendu depuis `three/models/`. Ce qui a été retiré et pourquoi :
+
+- les quatre composants de l'ancienne boutique 2D (`shop-list`, `item-upgrades`, `moyai-upgrades`, `aura-btn`), qui ne portaient plus que ces images — ils formaient un bloc mort ne se référençant que l'un l'autre ;
+- les interfaces `MoyaiUpgrades`, `Effect` et `MoyaiUpgradeSave` qui vivaient dans `aura-btn` sont passées dans [models/outfit.ts](src/app/models/outfit.ts) : elles servent toujours à `ShopManager` et `SaveManager`, elles n'avaient rien à faire dans une vue supprimée ;
+- les champs `icon` des succès (106) et des articles (11), **jamais lus** — l'affichage passe par `ModelIcons` ;
+- le repli en images de `ModelIcons` : le jeu **est** du WebGL, la statue principale étant un canevas vivant. Sans lui il n'y a pas de partie à sauver par quelques icônes de remplacement.
+
+Ne restent que `favicon.png` et `favicon-192.png`, qui sont eux-mêmes des **rendus** de `createMoyai()` (voir plus haut) : à régénérer si le modèle change.
+
+Piège au passage : un `<img src="">` ne rend pas « rien », il résout à l'adresse de la page et donne une image cassée. Un élément qu'on ne veut pas montrer ne se vide pas, il ne se rend pas.
+
+## Exporter un modèle
+
+Les modèles n'existent nulle part sous forme de fichier : ils sont construits par du code au démarrage. [tools/export-obj.mjs](tools/export-obj.mjs) en écrit une copie en OBJ + MTL, ouvrable dans Blender — c'est une **copie datée**, pas la source, qui reste le TypeScript. Le lancer depuis un dossier où `three/` a été compilé (voir la recette du rastériseur).
 
 ## Déploiement
 

@@ -2,7 +2,7 @@ import { Injectable, Signal, WritableSignal, computed, inject, signal } from '@a
 import { AuraManager } from './aura-manager';
 import { shopItems } from '../../assets/static/static-items';
 import { moyaiUpgrades } from '../../assets/static/moyai-upgrades';
-import { Effect, MoyaiUpgrades, MoyaiUpgradeSave } from '../components/aura-btn/aura-btn';
+import { Effect, MoyaiUpgrades, MoyaiUpgradeSave } from '../models/outfit';
 import { UpgradeType } from '../../assets/static/enum/upgrade-types';
 
 export interface Item {
@@ -22,7 +22,6 @@ export interface Item {
   displayCondition: Signal<boolean>;
   unlocked: boolean;
   upgrades?: ItemUpgrade[];
-  icon: string;
 }
 
 /**

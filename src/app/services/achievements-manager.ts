@@ -7,7 +7,6 @@ export interface Achievement {
   id: number;
   title: string;
   description: string;
-  icon?: string;
   /**
    * Interpolation de la description, pour les seuils chiffrés. Le nombre est
    * mis en forme par `FormatAuraPipe` à la déclaration : il se lit pareil

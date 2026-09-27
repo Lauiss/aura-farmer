@@ -100,6 +100,15 @@
   object-fit: contain;
 }
 
+// La silhouette d'un boss qu'on n'a pas encore atteint.
+.locked-portrait {
+  display: grid;
+  place-items: center;
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: $menu-border-strong;
+}
+
 .boss-card.locked .portrait {
   opacity: 0.2;
   filter: grayscale(1);

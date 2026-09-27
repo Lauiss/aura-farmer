@@ -225,7 +225,13 @@
             [class.locked]="!battles.isUnlocked(entry.id)"
             [class.defeated]="battles.isDefeated(entry.id)"
           >
-            <img [src]="battles.isUnlocked(entry.id) ? bossIcon(entry) : ''" alt="" class="portrait">
+            <!-- Pas d'image du tout pour un boss verrouillé : une source vide
+                 se résout à l'adresse de la page et donne une image cassée. -->
+            @if (battles.isUnlocked(entry.id)) {
+              <img [src]="bossIcon(entry)" alt="" class="portrait">
+            } @else {
+              <span class="portrait locked-portrait" aria-hidden="true">?</span>
+            }
             <h2 class="name">
               {{ battles.isUnlocked(entry.id) ? (('BOSS_' + entry.id.toUpperCase()) | translate) : '?????' }}
             </h2>

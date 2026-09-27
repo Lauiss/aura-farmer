@@ -16,8 +16,7 @@ export const shopItems: Item[] = [
     basePrice: 15,
     displayCondition: signal(true),
     unlocked: true,
-    upgrades: jawlineUpgrades,
-    icon: 'assets/imgs/upgrades/jawline_check.png'
+    upgrades: jawlineUpgrades
   },
   {
     id: 2,
@@ -36,8 +35,7 @@ export const shopItems: Item[] = [
         return false;
       }),
     unlocked: false,
-    upgrades: rizzUpgrades,
-    icon: 'assets/imgs/upgrades/rizz.png'
+    upgrades: rizzUpgrades
   },
   {
     id: 3,
@@ -56,8 +54,7 @@ export const shopItems: Item[] = [
         return false;
       }),
     unlocked: false,
-    upgrades: bicepsUpgrades,
-    icon: 'assets/imgs/upgrades/biceps_flex.png'
+    upgrades: bicepsUpgrades
   },
   {
     id: 4,
@@ -76,8 +73,7 @@ export const shopItems: Item[] = [
         return false;
       }),
     unlocked: false,
-    upgrades: mewingUpgrades,
-    icon: 'assets/imgs/upgrades/mewing.png'
+    upgrades: mewingUpgrades
   },
   {
     id: 5,
@@ -96,8 +92,7 @@ export const shopItems: Item[] = [
         return false;
       }),
     unlocked: false,
-    upgrades: silenceUpgrades,
-    icon: 'assets/imgs/upgrades/silence_farming.png'
+    upgrades: silenceUpgrades
   },
   {
     id: 6,
@@ -116,8 +111,7 @@ export const shopItems: Item[] = [
         return false;
       }),
     unlocked: false,
-    upgrades: gamingUpgrades,
-    icon: 'assets/imgs/upgrades/gaming.png'
+    upgrades: gamingUpgrades
   },
     {
     id: 7,
@@ -136,8 +130,7 @@ export const shopItems: Item[] = [
         return false;
       }),
     unlocked: false,
-    upgrades: fartUpgrades,
-    icon: 'assets/imgs/upgrades/farting_in_public.png'
+    upgrades: fartUpgrades
   },
       {
     id: 8,
@@ -156,8 +149,7 @@ export const shopItems: Item[] = [
         return false;
       }),
     unlocked: false,
-    upgrades: monetizeUpgrades,
-    icon: 'assets/imgs/upgrades/monetize_aura.png'
+    upgrades: monetizeUpgrades
   },
   {
     id: 9,
@@ -171,8 +163,7 @@ export const shopItems: Item[] = [
     basePrice: 68000000000,
     displayCondition: computed(() => shopItems[7].level() >= 10),
     unlocked: false,
-    upgrades: moggingUpgrades,
-    icon: 'assets/imgs/upgrades/upgrade_generic.png'
+    upgrades: moggingUpgrades
   },
   {
     id: 10,
@@ -186,8 +177,7 @@ export const shopItems: Item[] = [
     basePrice: 1100000000000,
     displayCondition: computed(() => shopItems[8].level() >= 10),
     unlocked: false,
-    upgrades: sixSevenUpgrades,
-    icon: 'assets/imgs/upgrades/upgrade_generic.png'
+    upgrades: sixSevenUpgrades
   },
   {
     id: 11,
@@ -201,8 +191,7 @@ export const shopItems: Item[] = [
     basePrice: 16000000000000,
     displayCondition: computed(() => shopItems[9].level() >= 10),
     unlocked: false,
-    upgrades: dabUpgrades,
-    icon: 'assets/imgs/upgrades/upgrade_generic.png'
+    upgrades: dabUpgrades
   },
 ];
 

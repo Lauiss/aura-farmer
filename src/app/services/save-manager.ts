@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ItemSave } from './shop-manager';
-import { MoyaiUpgradeSave } from '../components/aura-btn/aura-btn';
+import { MoyaiUpgradeSave } from '../models/outfit';
 import { SettingsConfig } from './settings-manager';
 import { AchievementSave } from './achievements-manager';
 

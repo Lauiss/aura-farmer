@@ -12,7 +12,7 @@ import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuraManager } from '../../services/aura-manager';
 import { HintManager } from '../../services/hint-manager';
 import { BuyAmount, Item, ItemUpgrade, Purchasable, ShopManager } from '../../services/shop-manager';
-import { MoyaiUpgrades } from '../../components/aura-btn/aura-btn';
+import { MoyaiUpgrades } from '../../models/outfit';
 import { BackgroundDefinition, BackgroundUpgrade } from '../../three/models/backgrounds';
 import { BackgroundManager } from '../../services/background-manager';
 import { UtilityDefinition, UtilityManager, UtilityUpgrade } from '../../services/utility-manager';

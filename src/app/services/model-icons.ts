@@ -39,26 +39,6 @@ import * as THREE from 'three';
 })
 export class ModelIcons {
 
-  /** Images conservées si le rendu 3D n'est pas possible, faute de WebGL. */
-  private static readonly FALLBACK: Record<string, string> = {
-    'trophy-true': 'assets/imgs/achievements/trophy_achievement.png',
-    'trophy-false': 'assets/imgs/achievements/locked_achievement.png',
-    gear: 'assets/imgs/upgrades/upgrade_generic.png',
-    shop: 'assets/imgs/upgrades/monetize_aura.png',
-    moyai: 'assets/imgs/moyai/moyai_base.png',
-    question: 'assets/imgs/upgrades/unknown_upgrade.png',
-    arrow: 'assets/imgs/upgrades/upgrade_generic.png',
-    hanger: 'assets/imgs/moyai/moyai_tuxedo.png',
-    phone: 'assets/imgs/upgrades/upgrade_generic.png',
-    'weak-point': 'assets/imgs/upgrades/upgrade_generic.png',
-    sniper: 'assets/imgs/upgrades/upgrade_generic.png',
-    gem: 'assets/imgs/upgrades/upgrade_generic.png',
-    hourglass: 'assets/imgs/upgrades/upgrade_generic.png',
-    die: 'assets/imgs/upgrades/upgrade_generic.png',
-    swords: 'assets/imgs/upgrades/upgrade_generic.png',
-    coin: 'assets/imgs/upgrades/monetize_aura.png'
-  };
-
   private cache = new Map<string, string>();
 
   /** Trophée ambré si le succès est débloqué, gris sinon. */
@@ -283,15 +263,16 @@ export class ModelIcons {
     const cached = this.cache.get(key);
     if (cached) return cached;
 
+    // Plus d'image de secours : le jeu **est** du WebGL — la statue de l'écran
+    // principal est un canevas vivant. Sans lui, il n'y a pas de partie à
+    // sauver par quelques icônes de remplacement, et les PNG de l'ancienne
+    // version n'avaient plus d'autre raison d'exister.
     let icon: string;
     try {
       icon = draw();
-    } catch {
-      // Les statuettes et les coffres, trop nombreux pour avoir chacun une
-      // image de secours, se rabattent sur celle du moyai ou de l'engrenage.
-      icon =
-        ModelIcons.FALLBACK[key] ??
-        (key.startsWith('moyai-') ? ModelIcons.FALLBACK['moyai'] : ModelIcons.FALLBACK['gear']);
+    } catch (error) {
+      console.error(`Rendu de l'icône « ${key} » :`, error);
+      icon = '';
     }
     this.cache.set(key, icon);
     return icon;
