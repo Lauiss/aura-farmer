@@ -36,7 +36,7 @@
             <p class="achievement-description">{{ 'ACHIEVEMENT_SECRET' | translate }}</p>
           } @else {
             <h3 class="achievement-title">{{ achievement.title | translate }}</h3>
-            <p class="achievement-description">{{ achievement.description | translate }}</p>
+            <p class="achievement-description">{{ achievement.description | translate: achievement.params }}</p>
           }
           @if (!achievement.unlocked) {
             <span class="locked-badge">{{ 'LOCKED' | translate }}</span>

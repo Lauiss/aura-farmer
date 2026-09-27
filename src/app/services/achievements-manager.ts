@@ -8,6 +8,12 @@ export interface Achievement {
   title: string;
   description: string;
   icon?: string;
+  /**
+   * Interpolation de la description, pour les seuils chiffrés. Le nombre est
+   * mis en forme par `FormatAuraPipe` à la déclaration : il se lit pareil
+   * dans les deux langues, mais sa **place** dans la phrase, non.
+   */
+  params?: Record<string, unknown>;
   condition: () => boolean;
   unlocked: boolean;
   /**

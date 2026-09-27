@@ -262,6 +262,12 @@ Dans l'ordre où elle a été demandée, à garder sous la main :
 - **Housing** : la « maison » est un **garage**. Des objets prédéfinis à débloquer et améliorer, qui montent les statistiques des voitures trouvées dans les coffres, et des **sessions de drift** pour gagner aura et gemmes.
 - **Musique** du menu et du jeu à refaire : rien ne peut être produit ici, il faut une source audio externe.
 
+## Traductions
+
+- Les succès passent par des **clés** (`ACH_<SLUG>_TITLE` / `_DESC`) comme le reste du jeu. Ils portaient jusqu'ici leurs textes français en dur, traversant le pipe `translate` sans correspondance : l'interface en anglais affichait cent six succès en français, la seule incohérence visible du produit. Les clés sont dérivées du **titre** et non de l'index, pour qu'insérer un succès n'en décale pas deux cents.
+- Huit descriptions portent un seuil chiffré : elles gardent leur valeur, mise en forme par `FormatAuraPipe` à la déclaration et passée en `params`. Le nombre se lit pareil dans les deux langues, mais sa **place dans la phrase**, non — d'où l'interpolation plutôt qu'une concaténation.
+- Toute chaîne visible passe par `fr.json` **et** `en.json`, dont les jeux de clés doivent rester identiques. Le contrôle tient en une ligne : charger les deux fichiers et comparer les ensembles de clés.
+
 ## Restes à nettoyer
 
 `shop-list` n'est plus utilisé depuis que la boutique est passée en carte. `aura-btn` ne sert plus comme composant mais **son fichier porte les interfaces** `MoyaiUpgrades`, `Effect` et `MoyaiUpgradeSave`, dont dépendent `shop-manager` et `save-manager` : le supprimer casserait le modèle de données. Déplacer ces types avant toute suppression.

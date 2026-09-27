@@ -6,6 +6,6 @@
 
     <img [src]="trophyIcon" alt="" class="trophy">
     <h2 class="title">{{ achievement.title | translate }}</h2>
-    <p class="description">{{ achievement.description | translate }}</p>
+    <p class="description">{{ achievement.description | translate: achievement.params }}</p>
   </div>
 }

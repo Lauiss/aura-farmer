@@ -38,7 +38,7 @@ export class AchievementsList {
     return this.achievementsManager.achievements().filter(achievement => {
       if (this.isHidden(achievement)) return false;
       const haystack = AchievementsList.fold(
-        `${this.translate.instant(achievement.title)} ${this.translate.instant(achievement.description)}`
+        `${this.translate.instant(achievement.title)} ${this.translate.instant(achievement.description, achievement.params)}`
       );
       return haystack.includes(needle);
     });
