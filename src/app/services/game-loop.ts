@@ -100,6 +100,9 @@ export class GameLoop {
     // quête déjà franchis se rattrapent de la même façon.
     this.achievementsManager.checkAchievementsSilently();
     this.quests.catchUp();
+    // Idem pour les scènes : celles que la partie a déjà dépassées ne se
+    // rejouent pas.
+    this.cinematics.catchUp();
     this.startAuraGain();
   }
 

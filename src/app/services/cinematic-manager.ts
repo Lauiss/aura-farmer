@@ -2,7 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { SaveLocation, SaveManager } from './save-manager';
 import { AuraManager } from './aura-manager';
 import { BattleManager } from './battle-manager';
-import { BossId } from '../../assets/static/bosses';
+import { BOSSES, BossId } from '../../assets/static/bosses';
 import {
   CinematicDefinition,
   Ending,
@@ -112,6 +112,33 @@ export class CinematicManager {
     }
     this.shotIndex.update(rank => rank + 1);
     this.schedule();
+  }
+
+  /**
+   * Marque en silence tout ce que la partie a déjà dépassé. Appelée une fois,
+   * après le chargement.
+   *
+   * Sans elle, une partie créée avant les cinématiques n'a aucune scène
+   * enregistrée : l'introduction, la fin et les vingt victoires redeviennent
+   * toutes éligibles d'un coup. Le principe est le même que pour les succès
+   * et les chapitres de quête — ce qui a été franchi avant que la mise en
+   * scène n'existe ne se rejoue pas.
+   *
+   * La **lettre** fait exception et reste jouable : c'est le seul contenu
+   * réellement nouveau pour qui avait déjà fini, et son déclenchement est
+   * précis. La taire reviendrait à ne jamais la montrer à ces parties-là.
+   */
+  catchUp(): void {
+    const already = new Set(this.seen());
+    if (this.auraManager.allTimeAura().gt(0)) already.add('intro');
+
+    for (const boss of BOSSES) {
+      if (!this.battles.isDefeated(boss.id)) continue;
+      already.add(boss.id === 'chad' ? 'finale' : `victory-${boss.id}`);
+    }
+
+    this.seen.set(already);
+    this.persist();
   }
 
   /**

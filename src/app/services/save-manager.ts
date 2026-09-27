@@ -66,6 +66,19 @@ export class SaveManager {
     }
   }
 
+  /**
+   * Une sauvegarde existe-t-elle sous cette clé ?
+   *
+   * À distinguer de `loadProgress` : on veut parfois savoir si une partie a
+   * **déjà été jouée** sans la charger. L'écran titre en a besoin — il décide
+   * d'y jouer l'introduction alors que la boucle de jeu, et donc la
+   * sauvegarde, n'a pas encore démarré : interroger l'état en mémoire à ce
+   * moment-là renvoie toujours celui d'une partie neuve.
+   */
+  hasProgress(key: string): boolean {
+    return localStorage.getItem(key) !== null;
+  }
+
   loadProgress<T>(key: string): any {
     const json = localStorage.getItem(key);
     if (json) {
