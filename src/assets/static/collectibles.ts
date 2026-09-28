@@ -227,7 +227,7 @@ export const RELICS: readonly RelicDefinition[] = [
   { id: 'bell', boss: 'vacca', bonus: 1.158, color: 0xd9b45a, glow: 0x8a6412 },
   { id: 'grenade', boss: 'gusini', bonus: 1.167, color: 0x4b5a3c, glow: 0x2a3321 },
   { id: 'magnifier', boss: 'spioniro', bonus: 1.177, color: 0xb59a6d, glow: 0x6b7686 },
-  { id: 'turban', boss: 'piccolo', bonus: 1.187, color: 0xeeeae0, glow: 0x7fb069 },
+  { id: 'turban', boss: 'verdolino', bonus: 1.187, color: 0xeeeae0, glow: 0x7fb069 },
   { id: 'banana', boss: 'chimpanzini', bonus: 1.196, color: 0xe8c547, glow: 0x8a6412 },
   { id: 'katana', boss: 'cappuccino', bonus: 1.206, color: 0xc9ced6, glow: 0x1c1c1f },
   { id: 'slipper', boss: 'ballerina', bonus: 1.216, color: 0xf2a7c3, glow: 0xa84a74 },
@@ -246,3 +246,116 @@ export function relicDefinition(id: string): RelicDefinition | undefined {
   return RELICS.find(relic => relic.id === id);
 }
 
+
+// --- Montres ---------------------------------------------------------------
+
+/**
+ * Les montres : une collection de dix pièces qui **s'achètent en gemmes**, très
+ * cher, et qui montent la production d'aura.
+ *
+ * Elles répondent à un manque du gacha. Les statuettes ne sont que la même tête
+ * dans soixante-cinq matières, et les reliques tombent toutes seules en battant
+ * les boss : rien, dans le jeu, ne se **vise**. Une montre coûte assez pour
+ * qu'on décide de l'acheter plutôt que de la trouver, et assez pour qu'on farme
+ * dans ce but précis.
+ *
+ * Elles tombent aussi, rarement, des coffres — c'est alors l'équivalent du prix
+ * en gemmes qu'on économise, pas une seconde voie d'obtention.
+ *
+ * Chaque marque parodie la sienne. Ce sont volontairement des **objets
+ * différents** et non un même boîtier recoloré : une Cas.io à affichage
+ * numérique et une Philippe Psartek en or à trois compteurs n'ont ni la même
+ * forme de boîtier, ni la même lunette, ni le même bracelet. Le paramétrage ne
+ * sert qu'à éviter dix fichiers ; il ne sert pas à fabriquer dix variantes de
+ * la même chose.
+ */
+
+/** Forme du boîtier — c'est elle qui porte la silhouette. */
+export type WatchCase = 'round' | 'square' | 'cushion' | 'tonneau';
+
+/**
+ * Lunette. `guard` sont les butées de protection d'une montre de chantier,
+ * `screws` les vis apparentes d'une montre de plongée de luxe, `fluted` la
+ * lunette cannelée des montres de ville.
+ */
+export type WatchBezel = 'plain' | 'fluted' | 'dive' | 'screws' | 'guard';
+
+/** Bracelet. Le matériau change autant la lecture que le boîtier. */
+export type WatchBand = 'resin' | 'leather' | 'steel' | 'nato';
+
+/** Cadran : aiguilles, affichage numérique, ou trois compteurs. */
+export type WatchDial = 'hands' | 'digital' | 'chrono';
+
+export interface WatchDefinition {
+  id: string;
+  /** Prix en gemmes. */
+  price: number;
+  /** Facteur de production, multiplié à celui des autres montres. */
+  bonus: number;
+  case: WatchCase;
+  bezel: WatchBezel;
+  band: WatchBand;
+  dial: WatchDial;
+  /** Boîtier, bracelet, cadran, et la touche qui signe la marque. */
+  metal: number;
+  strap: number;
+  face: number;
+  accent: number;
+}
+
+/**
+ * Les prix montent d'un facteur deux et demi environ. Le dernier palier est un
+ * objectif de fin de partie assumé : c'est la seule chose du jeu qui demande de
+ * farmer les gemmes pour elles-mêmes.
+ *
+ * Réunies, les dix montres font **×7,4** de production — en dessous des ×22 des
+ * reliques, qui récompensent toute la progression des battles, et au-dessus de
+ * ce que rapporte n'importe quelle autre famille de collection.
+ */
+export const WATCHES: readonly WatchDefinition[] = [
+  // La montre de tout le monde : résine, affichage numérique, boîtier carré.
+  { id: 'casio', price: 200, bonus: 1.05, case: 'square', bezel: 'plain', band: 'resin', dial: 'digital',
+    metal: 0x3a3d42, strap: 0x2a2c30, face: 0x8fa38c, accent: 0xd6dbe0 },
+  // La montre de chantier : butées de protection débordantes, résine épaisse.
+  { id: 'gimpact', price: 500, bonus: 1.07, case: 'cushion', bezel: 'guard', band: 'resin', dial: 'digital',
+    metal: 0x1e2024, strap: 0x16181b, face: 0x5f6f52, accent: 0xe8631f },
+  // Acier brossé, cadran sobre : la montre qu'on offre pour un départ.
+  { id: 'monument', price: 1200, bonus: 1.09, case: 'round', bezel: 'plain', band: 'steel', dial: 'hands',
+    metal: 0x9aa0a8, strap: 0x878d95, face: 0x1c1f24, accent: 0xd6dbe0 },
+  // Première plongeuse de la série : lunette crantée, bracelet toile.
+  { id: 'occident', price: 2800, bonus: 1.12, case: 'round', bezel: 'dive', band: 'nato', dial: 'hands',
+    metal: 0x8d939b, strap: 0x2f3a4a, face: 0x16304a, accent: 0xe8b84b },
+  // Cuir et boîtier tonneau : la montre de celui qui ne veut ressembler à personne.
+  { id: 'outsider', price: 6000, bonus: 1.15, case: 'tonneau', bezel: 'plain', band: 'leather', dial: 'hands',
+    metal: 0xb0b6be, strap: 0x5c3a24, face: 0xe4ddcd, accent: 0x2f6f4a },
+  // Plongeuse d'acier, lunette bleue : le classique japonais.
+  { id: 'seika', price: 12000, bonus: 1.18, case: 'cushion', bezel: 'dive', band: 'steel', dial: 'hands',
+    metal: 0xa5abb3, strap: 0x9aa0a8, face: 0x14284a, accent: 0xd6a03a },
+  // Chronographe de pilote, trois compteurs sur cuir.
+  { id: 'alpha', price: 24000, bonus: 1.22, case: 'round', bezel: 'plain', band: 'leather', dial: 'chrono',
+    metal: 0xc4cad2, strap: 0x2a2320, face: 0x1a1d22, accent: 0xd94f3a },
+  // Lunette cannelée et bracelet d'acier : la montre qu'on reconnaît de loin.
+  { id: 'xelor', price: 45000, bonus: 1.28, case: 'round', bezel: 'fluted', band: 'steel', dial: 'hands',
+    metal: 0xe8c55a, strap: 0xe0bd52, face: 0x0f3a2a, accent: 0xf2e4a8 },
+  // Vis apparentes sur la lunette, carrure noire : la montre de sportif riche.
+  { id: 'hubelot', price: 80000, bonus: 1.45, case: 'cushion', bezel: 'screws', band: 'resin', dial: 'chrono',
+    metal: 0x2a2c31, strap: 0x1a1c1f, face: 0x14161a, accent: 0xc9ced6 },
+  // Le graal : or, cadran crème, trois compteurs, bracelet cuir cousu.
+  { id: 'psartek', price: 150000, bonus: 1.75, case: 'round', bezel: 'plain', band: 'leather', dial: 'chrono',
+    metal: 0xe8c55a, strap: 0x4a2a1c, face: 0xf0e9d6, accent: 0x8a6412 }
+];
+
+/**
+ * Chance qu'un coffre donne une montre encore manquante, par tier. Le coffre du
+ * doomscrolling est exclu : il est gratuit et tombe en continu, une montre y
+ * serait une loterie sans mise.
+ */
+export const WATCH_CHEST_CHANCE: Partial<Record<ChestTier, number>> = {
+  basic: 0.004,
+  premium: 0.012,
+  mythic: 0.035
+};
+
+export function watchDefinition(id: string): WatchDefinition | undefined {
+  return WATCHES.find(watch => watch.id === id);
+}

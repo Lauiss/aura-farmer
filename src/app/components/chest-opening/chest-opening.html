@@ -43,6 +43,9 @@
             @if (total.collectibles > 0) {
               <li>{{ 'CHEST_BULK_FIGURES' | translate: { count: total.collectibles } }}</li>
             }
+            @if (total.watches > 0) {
+              <li>{{ 'CHEST_BULK_WATCHES' | translate: { count: total.watches } }}</li>
+            }
             @if (total.aura > 0) {
               <li>+{{ total.aura | formatAura }} {{ 'AURA' | translate }}</li>
             }
@@ -61,7 +64,11 @@
         <div class="reward" [style.--rarity]="rarityColors[reward.rarity]" role="status">
           <p class="rarity">{{ ('RARITY_' + reward.rarity.toUpperCase()) | translate }}</p>
 
-          @if (reward.collectible; as collectible) {
+          @if (reward.watch; as watch) {
+            <img [src]="rewardIcon()" alt="" class="figure">
+            <p class="new">{{ 'CHEST_WATCH' | translate }}</p>
+            <h2 class="title">{{ ('WATCH_' + watch.id.toUpperCase()) | translate }}</h2>
+          } @else if (reward.collectible; as collectible) {
             <img [src]="rewardIcon()" alt="" class="figure">
             <p class="new">{{ 'CHEST_NEW' | translate }}</p>
             <h2 class="title">{{ ('COLLECTIBLE_' + collectible.id.toUpperCase()) | translate }}</h2>

@@ -20,7 +20,7 @@ export type BossId =
   | 'vacca'
   | 'gusini'
   | 'spioniro'
-  | 'piccolo'
+  | 'verdolino'
   | 'chimpanzini'
   | 'cappuccino'
   | 'ballerina'
@@ -44,7 +44,7 @@ export type BossShape =
   | 'cow'
   | 'goose'
   | 'spy'
-  | 'namek'
+  | 'alien'
   | 'banana'
   | 'cup'
   | 'ballerina'
@@ -92,7 +92,7 @@ export interface BossDefinition {
  * Les boss se suivent dans l'ordre : chacun se déverrouille en battant le
  * précédent. Le frère Chad Moai ferme toujours la marche.
  *
- * Trois brainrots sont d'abord venus s'intercaler entre Piccolo et Chad, qui a
+ * Trois brainrots sont d'abord venus s'intercaler entre Antennino et Chad, qui a
  * reculé d'autant (1e12 → 1e13). Trois autres ont suivi — Trippi Troppi,
  * Boneca Ambalabu et La Vacca Saturno — mais **au milieu de l'échelle**, là où
  * deux boss voisins étaient séparés d'un facteur huit, et non à sa fin : Chad
@@ -123,7 +123,7 @@ export const BOSSES: readonly BossDefinition[] = [
   { id: 'vacca', shape: 'cow', recommended: 4.5e+08, hpSeconds: 64, damageSeconds: 7.25, reward: 97, color: 0xf2efe6, accent: 0xd9b45a },
   { id: 'gusini', shape: 'goose', recommended: 1.2e+09, hpSeconds: 68, damageSeconds: 7.5, reward: 110, color: 0xeeeae0, accent: 0x7d8796 },
   { id: 'spioniro', shape: 'spy', recommended: 1e+10, hpSeconds: 75, damageSeconds: 8, reward: 145, color: 0x6b7686, accent: 0xb59a6d },
-  { id: 'piccolo', shape: 'namek', recommended: 8e+10, hpSeconds: 82, damageSeconds: 8.5, reward: 190, color: 0x7fb069, accent: 0xd6d0c0, twoPhase: true },
+  { id: 'verdolino', shape: 'alien', recommended: 8e+10, hpSeconds: 82, damageSeconds: 8.5, reward: 190, color: 0x7fb069, accent: 0xd6d0c0, twoPhase: true },
   { id: 'chimpanzini', shape: 'banana', recommended: 3e+11, hpSeconds: 84, damageSeconds: 8.6, reward: 205, color: 0xe8c547, accent: 0x5b3b24 },
   { id: 'cappuccino', shape: 'cup', recommended: 1e+12, hpSeconds: 86, damageSeconds: 8.7, reward: 220, color: 0xefe6d8, accent: 0x1c1c1f },
   { id: 'ballerina', shape: 'ballerina', recommended: 3.3e+12, hpSeconds: 88, damageSeconds: 8.8, reward: 235, color: 0xf2a7c3, accent: 0xefe6d8 },
@@ -135,7 +135,7 @@ export const BOSSES: readonly BossDefinition[] = [
   // brûlant la lettre. Calé par simulation à **48 %** de victoires pour un
   // joueur qui maîtrise le combat, contre 66 % pour Chad — une pièce qu'on
   // lance, ce qui est le bon niveau pour un adversaire facultatif.
-  { id: 'father', shape: 'ancestor', recommended: 1e+19, hpSeconds: 112, damageSeconds: 10, reward: 500, color: 0x8f9a8c, accent: 0x6fd6c8, secret: true, twoPhase: true }
+  { id: 'father', shape: 'ancestor', recommended: 3e+15, hpSeconds: 112, damageSeconds: 10, reward: 500, color: 0x8f9a8c, accent: 0x6fd6c8, secret: true, twoPhase: true }
 ];
 
 /**

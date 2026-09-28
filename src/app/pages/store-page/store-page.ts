@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { NgTemplateOutlet } from '@angular/common';
+import { ChestQuantity } from '../../components/chest-quantity/chest-quantity';
 import { ChestOpening } from '../../components/chest-opening/chest-opening';
 import { CollectionManager } from '../../services/collection-manager';
 import { ConsumableManager } from '../../services/consumable-manager';
@@ -17,7 +18,8 @@ import {
   ChestTier,
   RARITIES,
   RARITY_COLORS,
-  Rarity
+  Rarity,
+  WatchDefinition
 } from '../../../assets/static/collectibles';
 import { ConsumableDefinition } from '../../../assets/static/consumables';
 
@@ -128,15 +130,47 @@ export class StorePage {
     return `${Math.floor(total / 60)}:${`${total % 60}`.padStart(2, '0')}`;
   }
 
+  /**
+   * Demande d'abord **combien**. Les coffres se prenaient un par un, chacun
+   * ouvrant aussitôt son animation : constituer une réserve d'une vingtaine
+   * demandait vingt allers-retours par la caisse.
+   *
+   * L'ouverture n'est plus enchaînée automatiquement — elle le serait vingt
+   * fois. Les coffres rejoignent la réserve, que « tout ouvrir » vide d'un
+   * coup juste au-dessus.
+   */
   buyChest(chest: ChestDefinition): void {
-    if (!this.collection.buyChest(chest.tier)) {
+    if (chest.price !== null && this.collection.gems() < chest.price) {
+      this.say('STORE_SAY_BROKE');
+      return;
+    }
+    this.soundManager.playFX(Sound.Plop);
+    this.modalManager.open(ChestQuantity, { tier: chest.tier }, 'sm');
+  }
+
+  /**
+   * Les montres en rayon : celles qu'on n'a pas, puis celles qu'on a. Une
+   * montre achetée reste **affichée** — c'est une collection, et la voir
+   * partir du rayon donnerait l'impression de l'avoir consommée.
+   */
+  readonly watchStock = computed(() =>
+    [...this.collection.watchCatalogue].sort(
+      (a, b) => Number(this.collection.isWatchOwned(a.id)) - Number(this.collection.isWatchOwned(b.id))
+    )
+  );
+
+  watchIcon(id: string): string {
+    return this.modelIcons.watch(id);
+  }
+
+  buyWatch(watch: WatchDefinition): void {
+    if (!this.collection.buyWatch(watch.id)) {
       this.say('STORE_SAY_BROKE');
       return;
     }
     this.soundManager.playFX(Sound.Buy);
-    this.celebrate(`chest-${chest.tier}`);
-    this.say('STORE_SAY_THANKS');
-    this.openChest(chest.tier);
+    this.celebrate(`watch-${watch.id}`);
+    this.say('STORE_SAY_WATCH');
   }
 
   openChest(tier: ChestTier): void {

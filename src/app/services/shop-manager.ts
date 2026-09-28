@@ -385,9 +385,23 @@ export class ShopManager {
     return index > 0 ? [list[index - 1]] : [];
   }
 
-  /** Vrai quand tous les prérequis sont acquis. */
+  /**
+   * Vrai quand tous les prérequis sont **portés à leur maximum**.
+   *
+   * Un seul exemplaire suffisait auparavant, si bien qu'on pouvait traverser
+   * une chaîne en achetant un exemplaire de chaque maillon pour atteindre au
+   * plus vite la dernière amélioration, la plus puissante, sans jamais finir
+   * les précédentes. Exiger le maximum rend la chaîne linéaire : on termine ce
+   * qu'on a commencé avant de voir la suite.
+   *
+   * Une amélioration **déjà possédée** reste disponible quoi qu'il arrive :
+   * les parties d'avant cette règle en portent dont le prérequis n'est pas
+   * maxé, et les leur fermer reviendrait à geler leur progression sur un
+   * changement d'équilibrage.
+   */
   isUpgradeAvailable<T extends Purchasable>(list: T[], upgrade: T): boolean {
-    return this.upgradeRequirements(list, upgrade).every(required => this.isUpgradeOwned(required));
+    if (this.isUpgradeOwned(upgrade)) return true;
+    return this.upgradeRequirements(list, upgrade).every(required => this.isUpgradeMaxed(required));
   }
 
   /**

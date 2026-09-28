@@ -1,0 +1,107 @@
+@use '../../../menu-theme' as *;
+@use '../../../variables' as *;
+
+.ending {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-150;
+  text-align: center;
+}
+
+.trophy {
+  width: 6rem;
+  height: 6rem;
+  object-fit: contain;
+}
+
+.thanks {
+  margin: 0;
+  font-size: $menu-size-title;
+  font-weight: $menu-weight-strong;
+}
+
+.completed {
+  margin: $spacing-100 0 0;
+  font-size: $menu-size-small;
+  color: $menu-text-dim;
+}
+
+// Le chrono est le chiffre qu'on vient lire : chasse fixe, pour que les
+// chiffres ne dansent pas, et la taille d'un score.
+.clock {
+  margin: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 2.4rem;
+  line-height: 1.1;
+  font-weight: $menu-weight-strong;
+  color: $menu-accent;
+  letter-spacing: 0.04em;
+}
+
+.flavour {
+  margin: 0;
+  max-width: 30rem;
+  color: $menu-text-dim;
+}
+
+.tally {
+  width: 100%;
+  max-width: 24rem;
+  margin: $spacing-100 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: $spacing-100;
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    gap: $spacing-200;
+    padding-bottom: $spacing-100;
+    border-bottom: 1px solid $menu-border;
+  }
+}
+
+.tally-label {
+  color: $menu-text-dim;
+}
+
+.tally-value {
+  font-weight: $menu-weight-strong;
+}
+
+.after {
+  margin: 0;
+  font-size: $menu-size-small;
+  color: $menu-text-faint;
+  max-width: 28rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: $spacing-150;
+  margin-top: $spacing-100;
+}
+
+.ghost,
+.solid {
+  padding: $spacing-100 $spacing-300;
+  border-radius: $radius-100;
+  font-weight: $menu-weight-strong;
+  cursor: pointer;
+}
+
+.ghost {
+  border: 1px solid $menu-border;
+  background: transparent;
+  color: $menu-text;
+}
+
+.solid {
+  border: 1px solid $menu-accent;
+  background: $menu-accent;
+  color: #1a1710;
+}

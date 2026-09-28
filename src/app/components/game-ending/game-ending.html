@@ -1,0 +1,25 @@
+<div class="ending">
+  <img [src]="trophy" alt="" class="trophy">
+
+  <h2 class="thanks">{{ 'ENDING_THANKS' | translate }}</h2>
+
+  <p class="completed">{{ 'ENDING_COMPLETED' | translate }}</p>
+  <p class="clock">{{ clock() }}</p>
+
+  <p class="flavour">
+    {{ (ending() === 'burn' ? 'ENDING_FLAVOUR_BURN' : 'ENDING_FLAVOUR_KEEP') | translate }}
+  </p>
+
+  <ul class="tally">
+    @for (line of tally(); track line.key) {
+      <li><span class="tally-label">{{ line.key | translate }}</span><span class="tally-value">{{ line.value }}</span></li>
+    }
+  </ul>
+
+  <p class="after">{{ 'ENDING_AFTER' | translate }}</p>
+
+  <div class="actions">
+    <button type="button" class="solid" (click)="close()">{{ 'ENDING_KEEP_PLAYING' | translate }}</button>
+    <button type="button" class="ghost" (click)="toMenu()">{{ 'ENDING_MENU' | translate }}</button>
+  </div>
+</div>

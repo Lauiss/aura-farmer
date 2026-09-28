@@ -1,25 +1,11 @@
 <div class="shop-map">
   <header class="bar">
     <button type="button" class="back" (click)="back()">&larr; {{ 'BACK' | translate }}</button>
-
+    <h1 class="heading">{{ 'SHOP_TITLE' | translate }}</h1>
     <p class="aura">
       {{ auraManager.auraCount() | formatAura }} <span>{{ 'AURA' | translate }}</span>
     </p>
 
-    @if (collection.gemsEarned() > 0) {
-      <p class="gems" [attr.aria-label]="'GEMS' | translate">
-        {{ collection.gems() }} <span aria-hidden="true">💎</span>
-      </p>
-    }
-
-    <div class="tools">
-      <button type="button" class="tool wide" (click)="cycleBuyAmount()">
-        {{ 'BUY' | translate }} &times;{{ buyAmount() === 'MAX' ? ('BUY_MAX' | translate) : buyAmount() }}
-      </button>
-      <button type="button" class="tool" [attr.aria-label]="'ZOOM_OUT' | translate" (click)="zoomBy(1 / 1.25)">&minus;</button>
-      <button type="button" class="tool" [attr.aria-label]="'ZOOM_IN' | translate" (click)="zoomBy(1.25)">+</button>
-      <button type="button" class="tool wide" (click)="recenter()">{{ 'RECENTER' | translate }}</button>
-    </div>
   </header>
 
   <div
@@ -78,6 +64,11 @@
             }
           </span>
           <span class="name">{{ nodeName(node) }}</span>
+          <!-- Dire **pourquoi** c'est fermé, sous la tuile et sans survol :
+               une tuile grise sans explication se lit comme un bug. -->
+          @if (needsMaxedParent(node)) {
+            <span class="gate">{{ 'SHOP_GATE_MAX' | translate }}</span>
+          }
         </button>
       }
     </div>

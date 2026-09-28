@@ -260,3 +260,10 @@ h3 {
     clip-path: inset(50%);
     white-space: nowrap;
 }
+
+// Chasse fixe : un numéro de version se recopie dans un rapport de bug, les
+// chiffres ne doivent pas danser.
+.version {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}

@@ -4,7 +4,7 @@ import { createGear } from '../three/models/gear';
 import { createHanger } from '../three/models/hanger';
 import { createMoyai } from '../three/models/moyai';
 import { createChest } from '../three/models/chest';
-import { ChestTier, collectibleDefinition, relicDefinition } from '../../assets/static/collectibles';
+import { ChestTier, collectibleDefinition, relicDefinition, watchDefinition } from '../../assets/static/collectibles';
 import { createExclamation, createQuestionMark } from '../three/models/question-mark';
 import { createBuilding } from '../three/models/building';
 import { createTrophy } from '../three/models/trophy';
@@ -21,6 +21,7 @@ import { createSwords } from '../three/models/swords';
 import { createCoin } from '../three/models/coin';
 import { CompanionId, companionDefinition } from '../../assets/static/companions';
 import { ConsumableId, consumableDefinition } from '../../assets/static/consumables';
+import { createWatch } from '../three/models/watch';
 import { createRelic } from '../three/models/relic';
 import { createBrainrot } from '../three/models/brainrot';
 import { createCaller } from '../three/models/caller';
@@ -231,9 +232,12 @@ export class ModelIcons {
   /** Brainrot d'un boss de battle. */
   boss(id: BossId, phase = 1): string {
     return this.render(`boss-${id}-${phase}`, () =>
+      // À 7,6 la créature n'occupait que 58 % de sa vignette : gabarit commun
+      // de 2,8 dans un cadre de 4,8. Elle flottait au milieu du vide, ce qui
+      // la faisait paraître falote dans l'écran de combat comme dans la liste.
       renderToDataUrl(createBrainrot(bossDefinition(id), phase), {
         size: 192,
-        distance: 7.6,
+        distance: 5.9,
         rotation: [0.05, 0.45, 0]
       })
     );
@@ -244,6 +248,21 @@ export class ModelIcons {
     return this.render('hourglass', () =>
       renderToDataUrl(createHourglass(), { size: 192, distance: 6.4, rotation: [0.12, 0.4, 0] })
     );
+  }
+
+  /** Montre de la collection, présentée de trois quarts, bracelet ouvert. */
+  watch(id: string): string {
+    return this.render(`watch-${id}`, () => {
+      const definition = watchDefinition(id);
+      if (!definition) throw new Error(`montre inconnue : ${id}`);
+      // Une plongée plus forte cachait le bracelet arrière derrière le boîtier,
+      // et la montre paraissait n'en avoir qu'un.
+      return renderToDataUrl(createWatch(definition), {
+        size: 192,
+        distance: 4.8,
+        rotation: [0.48, 0.42, 0]
+      });
+    });
   }
 
   /** Relique sacrée. Un identifiant inconnu retombe sur l'image de secours. */

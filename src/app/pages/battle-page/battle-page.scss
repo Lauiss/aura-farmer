@@ -1,10 +1,22 @@
 @use '../../../menu-theme' as *;
 @use '../../../variables' as *;
 
+/**
+ * L'écran tient dans la fenêtre et c'est la **liste** qui défile, jamais le
+ * document — même convention que le marchand, la collection et le casino.
+ *
+ * Dans l'iframe d'itch.io le défilement du document est le plus souvent coupé.
+ * À vingt et un boss la liste dépasse d'un bon millier de pixels : les six
+ * derniers, dont Chad et le boss secret, étaient tout simplement
+ * **inatteignables** pour qui jouait depuis la page itch. Dans un navigateur
+ * ordinaire le bug ne se voit pas, le document défilant normalement.
+ */
 .battle-page {
-  min-height: 100vh;
+  height: 100vh;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   background: $menu-bg;
   color: $menu-text;
 }
@@ -54,6 +66,10 @@
 
 /* --- Liste des boss ---------------------------------------------------- */
 .roster {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: $spacing-300;
 }
 
@@ -559,12 +575,8 @@
 
   // Le combat doit tenir dans l'écran : le choix des coups défile dans sa
   // propre zone, sinon il fallait faire défiler la page entre le moment où
-  // l'on choisit et celui où l'on voit ce que ça a donné.
-  .battle-page {
-    height: 100vh;
-    min-height: 0;
-    overflow: hidden;
-  }
+  // l'on choisit et celui où l'on voit ce que ça a donné. La règle de base
+  // s'en charge désormais pour toutes les tailles.
 
   .fight {
     min-height: 0;

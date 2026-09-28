@@ -23,16 +23,10 @@ export interface Ring {
   chamfer?: number;
 }
 
-/** Générateur pseudo-aléatoire déterministe (mulberry32). */
-export function createRandom(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+// Le générateur déterministe vit dans `utils/random` : les décors 2D s'en
+// servent aussi, et il n'a rien à voir avec la géométrie. Il reste exporté
+// d'ici, tous les modèles l'important par ce chemin.
+export { createRandom } from '../utils/random';
 
 /** Les huit sommets d'une section : un rectangle dont les angles sont coupés. */
 function ringPoints(ring: Ring): THREE.Vector3[] {

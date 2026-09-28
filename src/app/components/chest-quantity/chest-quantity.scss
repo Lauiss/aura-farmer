@@ -1,0 +1,116 @@
+@use '../../../menu-theme' as *;
+@use '../../../variables' as *;
+
+.quantity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-150;
+  text-align: center;
+}
+
+.chest {
+  width: 5.5rem;
+  height: 5.5rem;
+  object-fit: contain;
+}
+
+.title {
+  margin: 0;
+  font-size: $menu-size-title;
+  font-weight: $menu-weight-strong;
+}
+
+.lead {
+  margin: 0;
+  font-size: $menu-size-small;
+  color: $menu-text-dim;
+}
+
+// Le nombre choisi est ce qu'on regarde en faisant glisser : il est en grand.
+.count {
+  margin: $spacing-100 0 0;
+  font-size: 2.6rem;
+  line-height: 1;
+  font-weight: $menu-weight-strong;
+  color: $menu-accent;
+}
+
+.slider {
+  width: 100%;
+  display: block;
+
+  input {
+    width: 100%;
+    accent-color: $menu-accent;
+    cursor: pointer;
+  }
+}
+
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: $spacing-100;
+}
+
+.step {
+  padding: $spacing-100 $spacing-150;
+  border: 1px solid $menu-border;
+  border-radius: $radius-100;
+  background: transparent;
+  color: $menu-text;
+  font-weight: $menu-weight;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    border-color: $menu-accent;
+  }
+
+  &.on {
+    border-color: $menu-accent;
+    color: $menu-accent;
+  }
+}
+
+.total {
+  margin: 0;
+  color: $menu-text-dim;
+
+  strong {
+    color: $menu-text;
+    font-weight: $menu-weight-strong;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: $spacing-150;
+  margin-top: $spacing-100;
+}
+
+.ghost,
+.solid {
+  padding: $spacing-100 $spacing-300;
+  border-radius: $radius-100;
+  font-weight: $menu-weight-strong;
+  cursor: pointer;
+}
+
+.ghost {
+  border: 1px solid $menu-border;
+  background: transparent;
+  color: $menu-text;
+}
+
+.solid {
+  border: 1px solid $menu-accent;
+  background: $menu-accent;
+  color: #1a1710;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}

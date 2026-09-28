@@ -24,6 +24,16 @@ import {
  * sauvegarde : revoir la défaite initiale à chaque lancement serait une
  * punition, pas une mise en scène.
  */
+/**
+ * Les scènes de victoire portent l'identifiant du boss. Renommer un boss sans
+ * renommer sa scène la rendrait à nouveau éligible, et la cinématique se
+ * rejouerait à qui l'avait déjà vue — le travers que `catchUp` existe
+ * précisément pour empêcher.
+ */
+function renameScene(id: string): string {
+  return id === 'victory-piccolo' ? 'victory-verdolino' : id;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -58,9 +68,9 @@ export class CinematicManager {
     const saved: string[] | { seen: string[]; ending?: Ending } | null =
       this.saveManager.loadProgress(SaveLocation.Cinematics);
     if (Array.isArray(saved)) {
-      this.seen.set(new Set(saved));
+      this.seen.set(new Set(saved.map(renameScene)));
     } else if (saved) {
-      this.seen.set(new Set(saved.seen ?? []));
+      this.seen.set(new Set((saved.seen ?? []).map(renameScene)));
       this.ending.set(saved.ending ?? null);
     }
   }
@@ -164,6 +174,33 @@ export class CinematicManager {
     if (!this.battles.isDefeated('chad')) return;
     if (this.auraManager.auraCount().lt(LETTER_SEAL)) return;
     this.play('letter');
+  }
+
+  /** L'écran de fin a-t-il déjà été montré ? Il est retenu comme une scène. */
+  private static readonly ENDING_SCREEN = 'thanks';
+
+  /**
+   * La partie est-elle finie, et l'écran de fin reste-t-il à montrer ?
+   *
+   * Les deux fins ne se terminent pas au même moment, et c'est tout leur
+   * intérêt : **garder** la lettre clôt l'histoire sur-le-champ, tandis que la
+   * **brûler** ouvre un dernier adversaire. Montrer le générique à qui vient
+   * d'appeler son père en duel serait lui annoncer la fin avant le combat.
+   */
+  shouldThank(): boolean {
+    if (this.playing()) return false;
+    if (this.hasSeen(CinematicManager.ENDING_SCREEN)) return false;
+
+    const ending = this.ending();
+    if (!ending) return false;
+    if (ending === 'keep') return this.hasSeen('ending-keep');
+    return this.battles.isDefeated('father');
+  }
+
+  /** Marque l'écran de fin comme vu : il ne se rouvre pas de lui-même. */
+  markThanked(): void {
+    this.seen.update(list => new Set(list).add(CinematicManager.ENDING_SCREEN));
+    this.persist();
   }
 
   /**

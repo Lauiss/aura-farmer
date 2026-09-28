@@ -13,14 +13,13 @@ import { AuraManager } from '../../services/aura-manager';
 import { HintManager } from '../../services/hint-manager';
 import { BuyAmount, Item, ItemUpgrade, Purchasable, ShopManager } from '../../services/shop-manager';
 import { MoyaiUpgrades } from '../../models/outfit';
-import { BackgroundDefinition, BackgroundUpgrade } from '../../three/models/backgrounds';
+import { BackgroundDefinition, BackgroundUpgrade } from '../../../assets/static/backgrounds';
 import { BackgroundManager } from '../../services/background-manager';
 import { UtilityDefinition, UtilityManager, UtilityUpgrade } from '../../services/utility-manager';
 import { Sound, SoundManager } from '../../services/sound-manager';
 import { FormatAuraPipe, formatAura } from '../../pipes/format-aura';
 import { ModelIcons } from '../../services/model-icons';
 import { GameLoop } from '../../services/game-loop';
-import { CollectionManager } from '../../services/collection-manager';
 import { UpgradeType } from '../../../assets/static/enum/upgrade-types';
 import { StoreManager } from '../../services/store-manager';
 import { CHESTS, ChestTier } from '../../../assets/static/collectibles';
@@ -79,27 +78,62 @@ interface EffectLine {
 }
 
 /** Dimensions du monde. Les nœuds sont placés dans ce repère, pas en pixels écran. */
-const WORLD = { width: 12000, height: 9000 };
+const WORLD = { width: 18000, height: 18000 };
 /** La racine est au centre : chaque branche part dans sa propre direction. */
 const CENTER = { x: WORLD.width / 2, y: WORLD.height / 2 };
+
 /**
- * Distance de la racine aux catégories, puis entre deux nœuds voisins. Les
- * branches est et ouest partent plus loin : les améliorations des décors et
- * de l'outfit, qui s'étirent vers la droite, doivent passer avant elles.
- */
-const BRANCH = 560;
-const SIDE_BRANCH = 1000;
-/**
- * La boutique se pose bien plus loin que les quatre autres branches.
+ * La carte est une **étoile** : cinq branches réparties à angle égal autour de
+ * la racine, chacune s'étirant vers l'extérieur le long de son rayon.
  *
- * Posée à la distance ordinaire, elle tombait en plein dans la zone des
- * améliorations d'enseignements, qui montent **et** descendent de chaque
- * article sur plus de mille cent unités : ses tuiles se superposaient aux
- * leurs. À ces coordonnées elle garde près de deux mille unités de dégagement,
- * et ses abscisses ne croisent celles d'aucune autre branche.
+ * Elle était auparavant un assemblage de directions cardinales — les
+ * enseignements à l'est, l'outfit au sud, les décors au nord, les utilitaires à
+ * l'ouest — avec la boutique repoussée en diagonale bien plus loin que les
+ * autres pour ne pas recouvrir leurs tuiles, et ses propres rayons empilés en
+ * lignes parallèles. Rien ne reliait ces choix entre eux : la carte se lisait
+ * comme cinq mises en page cousues ensemble.
+ *
+ * Avec des rayons réguliers, la place de chaque branche découle d'une seule
+ * règle, et il n'y a plus de cas particulier à tenir.
  */
-const STORE_SPOT = { x: 2600, y: -2800 };
-const STEP = 300;
+const RAY_COUNT = 5;
+
+interface Ray {
+  cos: number;
+  sin: number;
+}
+
+/** Rayon numéro `index`, le premier pointant vers le haut. */
+function ray(index: number): Ray {
+  const angle = -Math.PI / 2 + (index * 2 * Math.PI) / RAY_COUNT;
+  return { cos: Math.cos(angle), sin: Math.sin(angle) };
+}
+
+/**
+ * Point situé à `distance` de la racine le long du rayon, décalé de `offset`
+ * perpendiculairement. C'est la seule primitive de placement de la carte.
+ */
+function along(r: Ray, distance: number, offset = 0): { x: number; y: number } {
+  return {
+    x: CENTER.x + r.cos * distance - r.sin * offset,
+    y: CENTER.y + r.sin * distance + r.cos * offset
+  };
+}
+
+/**
+ * Distance de la racine aux catégories.
+ *
+ * Elle ne se choisit pas au jugé : les chaînes d'améliorations partent
+ * **perpendiculairement** au rayon, sur `5 × UPGRADE_STEP` au plus, tandis que
+ * la place disponible entre deux rayons voisins ne vaut que `r × sin(36°)` à la
+ * distance `r`. C'est donc près du centre que ça coince, et c'est ce qui fixe
+ * ce rayon de départ. Voir la vérification de chevauchement documentée dans
+ * CLAUDE.md avant de le réduire.
+ */
+const HUB_RADIUS = 1700;
+/** Pas entre deux nœuds voisins d'une même branche, vers l'extérieur. */
+const STEP = 480;
+/** Pas d'une chaîne d'améliorations, perpendiculaire au rayon. */
 const UPGRADE_STEP = 230;
 /** Demi-côté d'une tuile, en unités du monde, pour placer l'infobulle. */
 const TILE_HALF = 60;
@@ -107,7 +141,13 @@ const HUB_HALF = 85;
 
 const MIN_ZOOM = 0.12;
 const MAX_ZOOM = 1.8;
-const DEFAULT_ZOOM = 0.55;
+/**
+ * Zoom d'arrivée. Il se déduit de `HUB_RADIUS` : il faut que les **cinq**
+ * branches de l'étoile tiennent dans la fenêtre au premier coup d'œil, sinon
+ * on arrive sur un moyai isolé et deux traits qui filent hors du cadre. À
+ * 1700 unités de rayon, 0,2 place les catégories à 340 px du centre.
+ */
+const DEFAULT_ZOOM = 0.2;
 /** Largeur de l'infobulle, en pixels écran, pour la garder dans le cadre. */
 const TOOLTIP_WIDTH = 320;
 
@@ -142,7 +182,6 @@ export class ShopMap {
   private readonly gameLoop = inject(GameLoop);
   readonly backgroundManager = inject(BackgroundManager);
   readonly utilityManager = inject(UtilityManager);
-  readonly collection = inject(CollectionManager);
   readonly store = inject(StoreManager);
 
   readonly world = WORLD;
@@ -157,9 +196,17 @@ export class ShopMap {
     sniper: this.modelIcons.sniper(),
     gem: this.modelIcons.gem(),
     hourglass: this.modelIcons.hourglass(),
-    die: this.modelIcons.die()
+    die: this.modelIcons.die(),
+    gear: this.modelIcons.gear(),
+    coin: this.modelIcons.coin(),
+    swords: this.modelIcons.swords()
   };
 
+  /**
+   * Quantité achetée d'un clic. Le sélecteur ×1 / ×10 / max a été retiré de la
+   * barre : un clic prend donc **un** exemplaire, et `Maj + clic` le maximum.
+   * Le réglage reste ici parce que les deux chemins d'achat le lisent.
+   */
   readonly buyAmount = signal<BuyAmount>('1');
 
   /** Décalage et échelle de la carte, pilotés par le glissement et la molette. */
@@ -184,18 +231,19 @@ export class ShopMap {
     // La carte part du moyai, acquis d'entrée : tout se ramifie à partir de lui.
     nodes.push({ key: 'root', kind: 'root', branch: 'root', x: root.x, y: root.y, parent: null, labelKey: 'SHOP_ROOT' });
 
-    const category = (branch: Exclude<Branch, 'root'>, labelKey: string, dx: number, dy: number) => {
-      const spot = { x: root.x + dx * SIDE_BRANCH, y: root.y + dy * BRANCH };
+    const category = (branch: Exclude<Branch, 'root'>, labelKey: string, r: Ray) => {
+      const spot = along(r, HUB_RADIUS);
       nodes.push({ key: `category-${branch}`, kind: 'category', branch, ...spot, parent: root, labelKey });
       return spot;
     };
 
-    // --- Est : les enseignements, en ligne, leurs améliorations en colonne,
-    // une fois vers le haut, une fois vers le bas pour ne pas se chevaucher.
-    const teachings = category('teachings', 'SHOP_CATEGORY_TEACHINGS', 1, 0);
+    // --- Rayon 0 : les enseignements. Leurs améliorations partent de part et
+    // d'autre du rayon, alternativement, pour ne pas se chevaucher.
+    const teachingsRay = ray(0);
+    const teachings = category('teachings', 'SHOP_CATEGORY_TEACHINGS', teachingsRay);
     let previous = teachings;
     for (const [index, item] of this.shopManager.getAllItems().entries()) {
-      const spot = { x: teachings.x + (index + 1) * STEP * 1.15, y: teachings.y };
+      const spot = along(teachingsRay, HUB_RADIUS + (index + 1) * STEP);
       nodes.push({ key: `item-${item.id}`, kind: 'item', branch: 'teachings', ...spot, parent: previous, item });
       previous = spot;
 
@@ -205,8 +253,9 @@ export class ShopMap {
 
       const direction = index % 2 === 0 ? -1 : 1;
       let parent = spot;
+      let blocked = false;
       for (const [u, upgrade] of (item.upgrades ?? []).entries()) {
-        const position = { x: spot.x, y: spot.y + direction * (u + 1) * UPGRADE_STEP };
+        const position = along(teachingsRay, HUB_RADIUS + (index + 1) * STEP, direction * (u + 1) * UPGRADE_STEP);
         nodes.push({
           key: `upgrade-${item.id}-${upgrade.id}`,
           kind: 'upgrade',
@@ -217,23 +266,34 @@ export class ShopMap {
           upgrade
         });
         parent = position;
-        if (!this.shopManager.isUpgradeOwned(upgrade)) break;
+        // On pose la tuile suivante **une fois de plus** après la première
+        // qui n'est pas maxée : le joueur doit voir qu'il y a une suite, et
+        // pourquoi elle est fermée. S'arrêter net donnait une chaîne qui
+        // semblait finie.
+        if (blocked) break;
+        if (!this.shopManager.isUpgradeMaxed(upgrade)) blocked = true;
       }
     }
 
-    // --- Sud : l'outfit. Les pièces descendent, leurs améliorations partent
-    // vers la droite. Les pièces ne se conditionnent pas l'une l'autre.
-    const outfit = category('outfit', 'SHOP_CATEGORY_OUTFIT', 0, 1);
+    // --- Rayon 3 : l'outfit. Les pièces s'éloignent, leurs améliorations
+    // partent sur le côté. Les pièces ne se conditionnent pas l'une l'autre.
+    const outfitRay = ray(3);
+    const outfit = category('outfit', 'SHOP_CATEGORY_OUTFIT', outfitRay);
     previous = outfit;
     this.shopManager.moyaiUpgrades().forEach((piece, index) => {
-      const spot = { x: outfit.x, y: outfit.y + (index + 1) * STEP };
+      const spot = along(outfitRay, HUB_RADIUS + (index + 1) * STEP);
       nodes.push({ key: `outfit-${piece.id}`, kind: 'outfit', branch: 'outfit', ...spot, parent: previous, piece, pieceIndex: index });
       previous = spot;
       if (!piece.unlocked) return;
 
       let parent = spot;
+      let blocked = false;
       for (const [u, upgrade] of (piece.upgrades ?? []).entries()) {
-        const position = { x: spot.x + (u + 1) * STEP, y: spot.y };
+        const position = along(
+          outfitRay,
+          HUB_RADIUS + (index + 1) * STEP,
+          (index % 2 === 0 ? -1 : 1) * (u + 1) * UPGRADE_STEP
+        );
         nodes.push({
           key: `outfit-upgrade-${piece.id}-${upgrade.id}`,
           kind: 'outfit-upgrade',
@@ -245,22 +305,33 @@ export class ShopMap {
           upgrade
         });
         parent = position;
-        if (!this.shopManager.isUpgradeOwned(upgrade)) break;
+        // On pose la tuile suivante **une fois de plus** après la première
+        // qui n'est pas maxée : le joueur doit voir qu'il y a une suite, et
+        // pourquoi elle est fermée. S'arrêter net donnait une chaîne qui
+        // semblait finie.
+        if (blocked) break;
+        if (!this.shopManager.isUpgradeMaxed(upgrade)) blocked = true;
       }
     });
 
-    // --- Nord : les décors, qui montent, leurs améliorations vers la droite.
-    const scenery = category('scenery', 'SHOP_CATEGORY_SCENERY', 0, -1);
+    // --- Rayon 2 : les décors, leurs améliorations sur le côté.
+    const sceneryRay = ray(2);
+    const scenery = category('scenery', 'SHOP_CATEGORY_SCENERY', sceneryRay);
     previous = scenery;
     this.backgroundManager.catalogue.forEach((background, index) => {
-      const spot = { x: scenery.x, y: scenery.y - (index + 1) * STEP };
+      const spot = along(sceneryRay, HUB_RADIUS + (index + 1) * STEP);
       nodes.push({ key: `background-${background.id}`, kind: 'background', branch: 'scenery', ...spot, parent: previous, background });
       previous = spot;
       if (!this.backgroundManager.isOwned(background.id)) return;
 
       let parent = spot;
+      let blocked = false;
       for (const [u, upgrade] of background.upgrades.entries()) {
-        const position = { x: spot.x + (u + 1) * STEP, y: spot.y };
+        const position = along(
+          sceneryRay,
+          HUB_RADIUS + (index + 1) * STEP,
+          (index % 2 === 0 ? -1 : 1) * (u + 1) * UPGRADE_STEP
+        );
         nodes.push({
           key: `background-upgrade-${background.id}-${upgrade.id}`,
           kind: 'background-upgrade',
@@ -271,23 +342,30 @@ export class ShopMap {
           backgroundUpgrade: upgrade
         });
         parent = position;
-        if (!this.shopManager.isUpgradeOwned(upgrade)) break;
+        // On pose la tuile suivante **une fois de plus** après la première
+        // qui n'est pas maxée : le joueur doit voir qu'il y a une suite, et
+        // pourquoi elle est fermée. S'arrêter net donnait une chaîne qui
+        // semblait finie.
+        if (blocked) break;
+        if (!this.shopManager.isUpgradeMaxed(upgrade)) blocked = true;
       }
     });
 
-    // --- Ouest : les utilitaires, en ligne, leurs améliorations en colonne.
-    const tools = category('utilities', 'SHOP_CATEGORY_UTILITIES', -1, 0);
+    // --- Rayon 4 : les utilitaires, améliorations de part et d'autre.
+    const toolsRay = ray(4);
+    const tools = category('utilities', 'SHOP_CATEGORY_UTILITIES', toolsRay);
     previous = tools;
     this.utilityManager.visibleCatalogue().forEach((utility, index) => {
-      const spot = { x: tools.x - (index + 1) * STEP * 1.15, y: tools.y };
+      const spot = along(toolsRay, HUB_RADIUS + (index + 1) * STEP);
       nodes.push({ key: `utility-${utility.id}`, kind: 'utility', branch: 'utilities', ...spot, parent: previous, utility });
       previous = spot;
       if (!this.utilityManager.isOwned(utility.id)) return;
 
       const direction = index % 2 === 0 ? -1 : 1;
       let parent = spot;
+      let blocked = false;
       for (const [u, upgrade] of utility.upgrades.entries()) {
-        const position = { x: spot.x, y: spot.y + direction * (u + 1) * UPGRADE_STEP };
+        const position = along(toolsRay, HUB_RADIUS + (index + 1) * STEP, direction * (u + 1) * UPGRADE_STEP);
         nodes.push({
           key: `utility-upgrade-${utility.id}-${upgrade.id}`,
           kind: 'utility-upgrade',
@@ -298,13 +376,23 @@ export class ShopMap {
           utilityUpgrade: upgrade
         });
         parent = position;
-        if (!this.shopManager.isUpgradeOwned(upgrade)) break;
+        // On pose la tuile suivante **une fois de plus** après la première
+        // qui n'est pas maxée : le joueur doit voir qu'il y a une suite, et
+        // pourquoi elle est fermée. S'arrêter net donnait une chaîne qui
+        // semblait finie.
+        if (blocked) break;
+        if (!this.shopManager.isUpgradeMaxed(upgrade)) blocked = true;
       }
     });
 
-    // --- Nord-est : la boutique. Les rayons partent vers le haut, les
-    // compagnons descendent depuis une sous-catégorie qui leur est propre.
-    const store = { x: root.x + STORE_SPOT.x, y: root.y + STORE_SPOT.y };
+    // --- Rayon 1 : la boutique. Elle portait cinq rangées empilées à des
+    // décalages arbitraires, et se tenait bien plus loin que les autres
+    // branches pour ne pas recouvrir leurs tuiles. Elle est désormais sur son
+    // rayon comme les autres, ses rangées se distinguant par un décalage
+    // **régulier** de part et d'autre : coffres au centre, boissons et plats
+    // d'un côté, casino et compagnons de l'autre.
+    const storeRay = ray(1);
+    const store = along(storeRay, HUB_RADIUS);
     nodes.push({
       key: 'category-store',
       kind: 'category',
@@ -316,7 +404,7 @@ export class ShopMap {
 
     previous = store;
     for (const [index, chest] of CHESTS.filter(c => c.price !== null).entries()) {
-      const spot = { x: store.x + (index + 1) * STEP, y: store.y - STEP * 1.05 };
+      const spot = along(storeRay, HUB_RADIUS + (index + 1) * STEP);
       nodes.push({
         key: `chest-${chest.tier}`,
         kind: 'chest-unlock',
@@ -335,14 +423,13 @@ export class ShopMap {
       key: 'store-casino',
       kind: 'casino',
       branch: 'store',
-      x: store.x,
-      y: store.y + SIDE_BRANCH * 0.7,
+      ...along(storeRay, HUB_RADIUS, UPGRADE_STEP * 3.4),
       parent: store
     });
 
     previous = store;
     for (const [index, drink] of DRINKS.entries()) {
-      const spot = { x: store.x + (index + 1) * STEP, y: store.y + STEP * 1.05 };
+      const spot = along(storeRay, HUB_RADIUS + (index + 1) * STEP, -UPGRADE_STEP * 2);
       nodes.push({
         key: `drink-${drink.id}`,
         kind: 'drink-unlock',
@@ -360,7 +447,7 @@ export class ShopMap {
     // Les plats, une rangée sous les canettes : même mécanique, rayon voisin.
     previous = store;
     for (const [index, food] of FOODS.entries()) {
-      const spot = { x: store.x + (index + 1) * STEP, y: store.y + STEP * 2.1 };
+      const spot = along(storeRay, HUB_RADIUS + (index + 1) * STEP, -UPGRADE_STEP * 4);
       nodes.push({
         key: `food-${food.id}`,
         kind: 'drink-unlock',
@@ -373,10 +460,9 @@ export class ShopMap {
       if (!this.store.isDrinkUnlocked(food.id)) break;
     }
 
-    // Sous-catégorie des compagnons, au-dessus de la boutique. Ils s'étirent
-    // vers la **droite** : vers la gauche, ils traversaient la colonne des
-    // décors qui monte depuis la racine.
-    const companionsHub = { x: store.x, y: store.y - SIDE_BRANCH * 0.7 };
+    // Sous-catégorie des compagnons, décalée de l'autre côté du rayon que les
+    // consommables, et filant vers l'extérieur comme tout le reste.
+    const companionsHub = along(storeRay, HUB_RADIUS, UPGRADE_STEP * 1.7);
     nodes.push({
       key: 'category-companions',
       kind: 'category',
@@ -388,7 +474,7 @@ export class ShopMap {
 
     previous = companionsHub;
     for (const [index, companion] of COMPANIONS.entries()) {
-      const spot = { x: companionsHub.x + (index + 1) * STEP, y: companionsHub.y };
+      const spot = along(storeRay, HUB_RADIUS + (index + 1) * STEP, UPGRADE_STEP * 1.7);
       nodes.push({
         key: `companion-${companion.id}`,
         kind: 'companion',
@@ -408,8 +494,7 @@ export class ShopMap {
         key: 'companion-phones',
         kind: 'phones',
         branch: 'store',
-        x: previous.x + STEP,
-        y: previous.y,
+        ...along(storeRay, HUB_RADIUS + (COMPANIONS.length + 1) * STEP, UPGRADE_STEP * 1.7),
         parent: previous
       });
     }
@@ -624,7 +709,35 @@ export class ShopMap {
       case 'item':
         return this.icons.moyai;
       case 'category':
-        return node.branch === 'outfit' ? this.icons.hanger : this.icons.building;
+        // Trois catégories sur six montraient la **même** vignette de bâtiment,
+        // alors que leurs contenus n'ont rien à voir. Chacune reprend désormais
+        // l'enseigne de ce qu'elle contient.
+        //
+        // Le tri se fait sur le **libellé** et non sur la branche : le marchand
+        // et les compagnons partagent la branche `store`, et s'arrêter à elle
+        // leur redonnait la même pièce d'or.
+        switch (node.labelKey) {
+          case 'SHOP_CATEGORY_COMPANIONS':
+            return this.modelIcons.companion('vermouth');
+          case 'SHOP_CATEGORY_STORE':
+            return this.icons.coin;
+          default:
+            break;
+        }
+        switch (node.branch) {
+          case 'outfit':
+            return this.icons.hanger;
+          case 'utilities':
+            return this.icons.gear;
+          case 'scenery':
+            return this.icons.building;
+          // Les enseignements ne reprennent **pas** la tête de moyai de leurs
+          // articles : la racine la porte déjà, et les deux tuiles se suivent
+          // sur la même ligne, de la même couleur. Les épées parce que chaque
+          // enseignement acheté devient une carte de combat.
+          default:
+            return this.icons.swords;
+        }
       case 'outfit':
         return this.icons.hanger;
       case 'background':
@@ -665,19 +778,8 @@ export class ShopMap {
 
   /** Une amélioration dont les prérequis manquent n'est pas encore achetable. */
   isAvailable(node: MapNode): boolean {
-    if (node.kind === 'upgrade') {
-      return this.shopManager.isUpgradeAvailable(node.item!.upgrades ?? [], node.upgrade!);
-    }
-    if (node.kind === 'outfit-upgrade') {
-      return this.shopManager.isUpgradeAvailable(node.piece!.upgrades ?? [], node.upgrade!);
-    }
-    if (node.kind === 'utility-upgrade') {
-      return this.shopManager.isUpgradeAvailable(node.utility!.upgrades, node.utilityUpgrade!);
-    }
-    if (node.kind === 'background-upgrade') {
-      return this.shopManager.isUpgradeAvailable(node.background!.upgrades, node.backgroundUpgrade!);
-    }
-    return true;
+    const chain = this.upgradeListOf(node);
+    return chain ? this.shopManager.isUpgradeAvailable(chain.list, chain.upgrade) : true;
   }
 
   price(node: MapNode): number {
@@ -734,6 +836,44 @@ export class ShopMap {
   }
 
   /** État d'une tuile, qui en commande l'apparence. */
+  /**
+   * Ce nœud est-il fermé parce que l'amélioration qui le précède n'est pas
+   * portée à son maximum ? C'est la seule raison de blocage qu'on explique
+   * sous la tuile : les autres (prérequis d'article, dévoilement) tiennent à
+   * la progression générale et se lisent dans la carte elle-même.
+   */
+  needsMaxedParent(node: MapNode): boolean {
+    if (this.state(node) !== 'blocked') return false;
+    const chain = this.upgradeListOf(node);
+    if (!chain) return false;
+    return this.shopManager
+      .upgradeRequirements(chain.list, chain.upgrade)
+      .some(required => !this.shopManager.isUpgradeMaxed(required));
+  }
+
+  /**
+   * La chaîne à laquelle appartient un nœud d'amélioration, s'il en est un.
+   *
+   * Les quatre familles rangent la leur à un endroit différent. Ce repérage est
+   * fait **une fois** et sert à la fois à savoir si le nœud est disponible et à
+   * savoir pourquoi il ne l'est pas : deux tables séparées auraient fini par
+   * diverger au premier ajout de famille.
+   */
+  private upgradeListOf(node: MapNode): { list: Purchasable[]; upgrade: Purchasable } | null {
+    switch (node.kind) {
+      case 'upgrade':
+        return { list: node.item!.upgrades ?? [], upgrade: node.upgrade! };
+      case 'outfit-upgrade':
+        return { list: node.piece!.upgrades ?? [], upgrade: node.upgrade! };
+      case 'background-upgrade':
+        return { list: node.background!.upgrades, upgrade: node.backgroundUpgrade! };
+      case 'utility-upgrade':
+        return { list: node.utility!.upgrades, upgrade: node.utilityUpgrade! };
+      default:
+        return null;
+    }
+  }
+
   state(node: MapNode): 'locked' | 'owned' | 'ready' | 'poor' | 'blocked' {
     if (!this.isRevealed(node)) return 'locked';
     if (this.isOwned(node)) return 'owned';
@@ -931,17 +1071,12 @@ export class ShopMap {
     }
   }
 
-  cycleBuyAmount(): void {
-    const order: BuyAmount[] = ['1', '10', 'MAX'];
-    this.buyAmount.set(order[(order.indexOf(this.buyAmount()) + 1) % order.length]);
-  }
-
   // --- Achat -------------------------------------------------------------
 
   /**
-   * Quantité visée pour ce clic. `Maj` force le maximum sans toucher au
-   * réglage courant : c'est le raccourci attendu dans un clicker, on n'a pas
-   * envie de faire défiler ×1 → ×10 → max pour un seul achat groupé.
+   * Quantité visée pour ce clic. `Maj` force le maximum : c'est le seul achat
+   * groupé depuis que le sélecteur a quitté la barre, et la bulle d'aide en bas
+   * de l'écran le rappelle.
    */
   private wantedAmount(event?: MouseEvent): BuyAmount {
     return event?.shiftKey ? 'MAX' : this.buyAmount();
@@ -1098,6 +1233,7 @@ export class ShopMap {
     if (!this.moved) return;
     this.panX.set(this.pointerStart.panX + dx);
     this.panY.set(this.pointerStart.panY + dy);
+    this.clampPan();
   }
 
   onPointerUp(): void {
@@ -1125,6 +1261,33 @@ export class ShopMap {
     this.panX.set(pointerX - (pointerX - this.panX()) * ratio);
     this.panY.set(pointerY - (pointerY - this.panY()) * ratio);
     this.zoom.set(next);
+    this.clampPan();
+  }
+
+  /**
+   * Empêche la carte de sortir complètement de l'écran.
+   *
+   * Le bouton « recentrer » a quitté la barre : sans butée, un glissement un
+   * peu vif emmène l'arbre hors de vue et **plus rien ne permet de le
+   * retrouver**. On garde donc toujours un quart de la fenêtre occupé par la
+   * carte, ce qui suffit à revenir en glissant dans l'autre sens.
+   *
+   * Les bornes sont rangées par `min`/`max` plutôt qu'écrites dans l'ordre :
+   * quand la carte est plus petite que la fenêtre — c'est le cas au zoom
+   * minimal — la borne basse passe au-dessus de la borne haute, et un
+   * `clamp` écrit naïvement renverrait n'importe quoi.
+   */
+  private clampPan(): void {
+    const { width, height } = this.measureViewport();
+    const zoom = this.zoom();
+    const slackX = width * 0.75;
+    const slackY = height * 0.75;
+
+    const edgeX = width - this.world.width * zoom - slackX;
+    const edgeY = height - this.world.height * zoom - slackY;
+
+    this.panX.update(x => Math.min(Math.max(slackX, edgeX), Math.max(Math.min(slackX, edgeX), x)));
+    this.panY.update(y => Math.min(Math.max(slackY, edgeY), Math.max(Math.min(slackY, edgeY), y)));
   }
 
   /** Ramène la vue sur la racine, point d'entrée de la carte. */

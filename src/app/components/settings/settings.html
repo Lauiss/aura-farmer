@@ -54,6 +54,13 @@
     <span></span>
     <span>{{ playTime.label() }}</span>
   </div>
+  <!-- La version, juste sous le temps de jeu : c'est le premier renseignement
+       qu'on demande à quelqu'un qui signale un problème. -->
+  <div class="align">
+    <span>{{ 'VERSION' | translate }}</span>
+    <span></span>
+    <span class="version">{{ version }}</span>
+  </div>
   <div class="block">
     <div class="buttons">
       <button type="button" class="btn" [disabled]="busy()" (click)="exportSave()">{{ 'SAVE_EXPORT' | translate }}</button>

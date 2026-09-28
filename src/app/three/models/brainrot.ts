@@ -51,15 +51,122 @@ function lying(color: number, rings: Ring[], position: [number, number, number])
   return mesh(geometry, material(color), position);
 }
 
-/** Deux yeux ronds : c'est ce qui rend la chose vivante. */
-function eyes(position: [number, number, number], spread: number, scale = 1): THREE.Group {
+/**
+ * Le regard d'une créature.
+ *
+ * Toutes portaient jusqu'ici les **mêmes** deux billes blanches à pupille
+ * noire, de face, à la même taille : vingt corps très différents partageaient
+ * un seul regard, et c'est ce qui les faisait toutes se ressembler. Un regard
+ * en dit pourtant plus qu'un corps — un requin n'a pas les yeux d'une vache,
+ * et un pigeon les a sur les côtés du crâne.
+ *
+ * Il se décrit donc, plutôt que de se répéter. Les valeurs par défaut
+ * redonnent exactement l'ancien œil rond : ce qui n'a pas de raison de
+ * changer ne change pas.
+ */
+interface Gaze {
+  /**
+   * Forme de l'œil. `bead` n'a pas de blanc du tout — l'œil noir des oiseaux
+   * et des requins, qu'un blanc rendrait au contraire attendrissant.
+   */
+  shape?: 'round' | 'oval' | 'bead' | 'slit' | 'bulge';
+  /** Part de l'œil couverte par la paupière, de 0 (grand ouvert) à 1 (fermé). */
+  lid?: number;
+  /** Sourcil : négatif fronce, positif relève. `0` pour aucun sourcil. */
+  brow?: number;
+  /** Inclinaison de l'œil. Positif relève le coin externe. */
+  tilt?: number;
+  /** Écart des yeux vers les côtés du crâne, en radians. 0 les laisse de face. */
+  splay?: number;
+  /** Teinte de l'iris ; sans elle, la pupille est noire et occupe tout. */
+  iris?: number;
+  /** Couleur de la paupière et du sourcil : celle de la peau, autour. */
+  skin?: number;
+}
+
+function eyes(
+  position: [number, number, number],
+  spread: number,
+  scale = 1,
+  gaze: Gaze = {}
+): THREE.Group {
+  const { shape = 'round', lid = 0, brow = 0, tilt = 0, splay = 0, iris, skin = 0x2a2724 } = gaze;
+
   const group = new THREE.Group();
   const white = new THREE.MeshBasicMaterial({ color: 0xf4f1e8 });
-  const pupil = new THREE.MeshBasicMaterial({ color: 0x14120f });
+  const dark = new THREE.MeshBasicMaterial({ color: 0x14120f });
+  const flesh = new THREE.MeshStandardMaterial({ color: skin, flatShading: true, roughness: 0.8 });
   const [x, y, z] = position;
+
+  // Rayon de l'œil, et son aplatissement. Un œil plissé n'est pas un petit
+  // œil : c'est un œil de même largeur que la paupière écrase.
+  const radius = (shape === 'bead' ? 0.1 : shape === 'bulge' ? 0.21 : 0.19) * scale;
+  const squash = shape === 'oval' ? 1.35 : shape === 'slit' ? 0.42 : 1;
+
   for (const side of [-1, 1]) {
-    group.add(mesh(new THREE.SphereGeometry(0.19 * scale, 6, 5), white, [x + side * spread, y, z]));
-    group.add(mesh(new THREE.SphereGeometry(0.095 * scale, 5, 4), pupil, [x + side * spread, y, z + 0.13 * scale]));
+    // Chaque œil vit dans son propre repère : c'est ce qui permet de le
+    // tourner vers le côté du crâne sans recalculer sa position à la main.
+    const eye = new THREE.Group();
+    eye.position.set(x + side * spread, y, z);
+    eye.rotation.y = side * splay;
+    eye.rotation.z = side * tilt;
+
+    if (shape === 'bead') {
+      // Un œil entièrement noir : pas de blanc, donc pas de regard de dessin
+      // animé. C'est ce qui sépare un prédateur d'une peluche.
+      eye.add(mesh(new THREE.SphereGeometry(radius, 5, 4), dark));
+      eye.add(mesh(new THREE.SphereGeometry(radius * 0.34, 4, 3), white, [radius * 0.3, radius * 0.3, radius * 0.72]));
+    } else {
+      const ball = mesh(new THREE.SphereGeometry(radius, 6, 5), white);
+      ball.scale.set(1, squash, 1);
+      eye.add(ball);
+
+      if (iris !== undefined) {
+        const ring = mesh(
+          new THREE.SphereGeometry(radius * 0.62, 5, 4),
+          new THREE.MeshBasicMaterial({ color: iris }),
+          [0, 0, radius * 0.5]
+        );
+        ring.scale.set(1, squash, 0.5);
+        eye.add(ring);
+      }
+      const pupil = mesh(new THREE.SphereGeometry(radius * (iris === undefined ? 0.5 : 0.3), 5, 4), dark, [0, 0, radius * 0.7]);
+      pupil.scale.set(1, squash, 0.5);
+      eye.add(pupil);
+
+      // Sur un œil bombé, une tige courte sort du crâne : l'œil est *devant*
+      // la tête et non posé dessus.
+      if (shape === 'bulge') {
+        eye.add(mesh(new THREE.CylinderGeometry(radius * 0.4, radius * 0.5, radius * 1.2, 5), flesh,
+          [0, 0, -radius * 0.7], [Math.PI / 2, 0, 0]));
+      }
+    }
+
+    // La paupière est une calotte de la couleur de la peau, posée par-dessus :
+    // elle **couvre** l'œil au lieu de le rétrécir, ce qui est la différence
+    // entre un regard mi-clos et un petit œil rond.
+    if (lid > 0) {
+      const cap = mesh(
+        new THREE.SphereGeometry(radius * 1.08, 6, 4, 0, Math.PI * 2, 0, Math.max(0.1, lid) * Math.PI * 0.62),
+        flesh
+      );
+      cap.scale.set(1, squash, 1);
+      eye.add(cap);
+    }
+
+    if (brow !== 0) {
+      eye.add(mesh(
+        new THREE.BoxGeometry(radius * 2.3, radius * 0.42, radius * 0.5),
+        flesh,
+        // Le sourcil suit l'aplatissement de l'œil : calé sur un rayon fixe, il
+        // décollait du visage au-dessus des yeux ovales et se lisait comme une
+        // barre flottante.
+        [0, radius * (squash * 0.9 + 0.3), radius * 0.72],
+        [0, 0, -side * brow]
+      ));
+    }
+
+    group.add(eye);
   }
   return group;
 }
@@ -225,7 +332,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
       group.add(sneakerLeg(0.45, 0.45, -0.2, 0x2f6fd0));
       group.add(sneakerLeg(0, -0.85, -0.25, 0x2f6fd0));
 
-      group.add(eyes([0, 0.58, 0.9], 0.36, 0.9));
+      // Le requin a l'œil noir et latéral du prédateur : un blanc le rendrait attendrissant.
+      group.add(eyes([0, 0.58, 0.9], 0.36, 0.9, { shape: 'bead', splay: 0.55 }));
       break;
     }
 
@@ -283,7 +391,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
         ], [-1.18, 0.55, 0.18], [0, 0, 0.35])
       );
 
-      group.add(eyes([0, 0.85, 0.6], 0.27));
+      // La bûche fronce : c'est un tueur, pas une mascotte.
+      group.add(eyes([0, 0.85, 0.6], 0.27, 1, { brow: -0.34, lid: 0.18, skin: color }));
       // Bouche large, taillée dans le bois.
       group.add(
         part(0x2e2016, [
@@ -332,7 +441,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
           { y: 0.86, halfWidth: 0.16, front: 0.92, back: 0.6, chamfer: 0.35 }
         ])
       );
-      group.add(eyes([0, 0.96, 0.84], 0.26, 0.85));
+      // Sourcils relevés : le singe-arbre est ahuri.
+      group.add(eyes([0, 0.96, 0.84], 0.26, 0.85, { shape: 'oval', lid: 0.12, brow: 0.22, skin: color }));
 
       // Chapeau doré, posé sur le feuillage.
       group.add(
@@ -424,7 +534,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
           ], [side * 0.82, 0, 0.1], [0, side * 0.35, side * 0.15])
         );
       }
-      group.add(eyes([0, 0.82, 0.66], 0.32, 0.85));
+      // Paupière lourde de l'éléphant.
+      group.add(eyes([0, 0.82, 0.66], 0.32, 0.85, { shape: 'oval', lid: 0.4, brow: -0.12, skin: color }));
 
       // L'horloge, accrochée au flanc : « un orologio che fa tic tac ».
       group.add(
@@ -488,7 +599,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
           { y: 0.76, halfWidth: 0.14, front: 1.78, back: 1.5, chamfer: 0.34 }
         ])
       );
-      group.add(eyes([0, 0.78, 1.15], 0.28, 0.85));
+      // Pupille fendue du reptile, coin externe relevé.
+      group.add(eyes([0, 0.78, 1.15], 0.28, 0.85, { shape: 'slit', brow: -0.42, tilt: 0.14, skin: color }));
 
       // Ailes, et une hélice au bout de chacune.
       for (const side of [-1, 1]) {
@@ -557,7 +669,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
         ])
       );
       group.add(beak(0xe4a03c, 1.18, 0.3, 0.3));
-      group.add(eyes([0, 1.3, 0.24], 0.22, 0.75));
+      // Les yeux du pigeon sont sur les **côtés** du crâne — c'est ce qui fait l'oiseau.
+      group.add(eyes([0, 1.3, 0.24], 0.22, 0.75, { shape: 'bead', splay: 0.95 }));
 
       // Gorge irisée, la tache claire du pigeon de ville.
       group.add(
@@ -643,7 +756,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
           ], [side * 0.2, 0, 0.18], [0, 0, side * -0.3])
         );
       }
-      group.add(eyes([0, 2.1, 0.5], 0.2, 0.8));
+      // Le chameau a l'œil mi-clos et tombant.
+      group.add(eyes([0, 2.1, 0.5], 0.2, 0.8, { shape: 'oval', lid: 0.34, tilt: -0.1, skin: color }));
 
       // Pattes, et les grosses boots.
       for (const side of [-1, 1]) {
@@ -691,7 +805,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
         ])
       );
       group.add(beak(0xe4832c, 1.5, 1.2, 0.42));
-      group.add(eyes([0, 1.62, 1.04], 0.2, 0.75));
+      // Œil latéral d'oiseau, mais l'oie est armée : elle fronce.
+      group.add(eyes([0, 1.62, 1.04], 0.2, 0.75, { shape: 'bead', splay: 0.8, brow: -0.3, skin: color }));
 
       // Ailes d'avion, moteur et hélice à chaque bout.
       for (const side of [-1, 1]) {
@@ -771,7 +886,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
         ])
       );
       group.add(beak(0x3f4854, 1.24, 0.32, 0.28));
-      group.add(eyes([0, 1.36, 0.26], 0.22, 0.75));
+      // L'espion ne montre qu'une fente sous le bord du chapeau.
+      group.add(eyes([0, 1.36, 0.26], 0.22, 0.75, { shape: 'slit', lid: 0.55, skin: color }));
 
       // Chapeau mou : calotte puis bord large.
       group.add(
@@ -792,15 +908,15 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
       break;
     }
 
-    /** Piccolo : silhouette namek, antennes, turban et col de cape rigide. */
+    /** Antennino Verdolino : alien vert à antennes, turban et col de cape rigide. */
     /**
-     * Piccolo, en **deux phases**. Sans cape il combat en gi mauve, ceinture
+     * Antennino Verdolino, en **deux phases**. Sans cape il combat en gi mauve, ceinture
      * rouge, turban blanc, oreilles pointues et deux antennes ; c'est sa tenue
      * d'entraînement. Passé la moitié de sa vie il remet **la cape blanche et
      * les épaulières**, et se retourne — on ne voit plus que son dos et le
      * tissu qui tombe, ce qui est l'image du personnage.
      */
-    case 'namek': {
+    case 'alien': {
       const skin = color;
       const gi = 0x6b4fb0;
       const cloth = 0xeeeae0;
@@ -869,7 +985,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
           ], [side * 0.16, 1.55, 0.12], [0.3, 0, side * 0.3])
         );
       }
-      group.add(eyes([0, 1.0, 0.36], 0.18, 0.85));
+      // Son regard tient à ses sourcils : sans eux, c'est un martien vert.
+      group.add(eyes([0, 1.0, 0.36], 0.18, 0.85, { shape: 'oval', brow: -0.5, lid: 0.2, iris: 0xd94f3a, skin: color }));
 
       if (phase >= 2) {
         // Épaulières et cape : lourdes, tombant jusqu'aux mollets. Elles sont
@@ -967,7 +1084,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
           ], [side * 0.5, 0.55, 0.1], [0, 0, side * 1.1])
         );
       }
-      group.add(eyes([0, 1.44, 0.46], 0.17, 0.75));
+      // Le singe est surpris, pas menaçant.
+      group.add(eyes([0, 1.44, 0.46], 0.17, 0.75, { lid: 0.1, brow: 0.3, skin: accent }));
       break;
     }
 
@@ -1015,7 +1133,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
           ], [side * 0.12, 0.42, -0.68], [-1.9, 0, side * 0.35])
         );
       }
-      group.add(eyes([0, 0.42, 0.62], 0.24, 0.72));
+      // Un assassin plisse les yeux.
+      group.add(eyes([0, 0.42, 0.62], 0.24, 0.72, { shape: 'slit', tilt: 0.3, brow: -0.36, skin: 0x1c1c1f }));
 
       // Deux katanas croisés dans le dos : lame claire, garde dorée,
       // poignée noire.
@@ -1135,7 +1254,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
         ])
       );
       group.add(mesh(new THREE.TorusGeometry(0.17, 0.05, 4, 8), material(accent), [0.48, 1.1, 0]));
-      group.add(eyes([0, 1.12, 0.36], 0.15, 0.6));
+      // Paupière basse et coin relevé : le seul regard maquillé du jeu.
+      group.add(eyes([0, 1.12, 0.36], 0.15, 0.6, { shape: 'oval', lid: 0.28, tilt: 0.18, iris: 0x6f9ad4, skin: accent }));
       break;
     }
 
@@ -1162,7 +1282,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
           { y: 1.38, halfWidth: 0.78, front: 0.66, back: -0.56, chamfer: 0.17 }
         ])
       );
-      group.add(eyes([0, 0.82, 0.56], 0.32, 0.9));
+      // L'arcade de pierre du frère, héritée du moyai.
+      group.add(eyes([0, 0.82, 0.56], 0.32, 0.9, { shape: 'oval', lid: 0.42, brow: -0.3, skin: color }));
       break;
     }
 
@@ -1255,7 +1376,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
           );
         }
       }
-      group.add(eyes([0, 0.24, 0.9], 0.2, 0.75));
+      // Yeux pédonculés : c'est le trait du crustacé, pas ses pattes.
+      group.add(eyes([0, 0.24, 0.9], 0.2, 0.75, { shape: 'bulge', splay: 0.35, skin: color }));
       break;
     }
 
@@ -1304,7 +1426,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
           ], [side * 0.21, 0, 0.04])
         );
       }
-      group.add(eyes([0, 1.35, 0.08], 0.21, 0.66));
+      // La grenouille a l'œil globuleux à iris d'or, posé au sommet du crâne.
+      group.add(eyes([0, 1.35, 0.08], 0.21, 0.66, { shape: 'bulge', splay: 0.3, lid: 0.15, iris: 0xd9c23a, skin: color }));
 
       // Les jambes humaines, qui sortent du pneu.
       for (const side of [-1, 1]) {
@@ -1383,7 +1506,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
         );
         group.add(humanFoot(side * 0.32, 0.12, SKIN));
       }
-      group.add(eyes([0, 1.3, 0.34], 0.24, 0.8));
+      // Grand œil placide de la vache.
+      group.add(eyes([0, 1.3, 0.34], 0.24, 0.8, { shape: 'oval', lid: 0.3, tilt: -0.14, skin: color }));
       break;
     }
 
@@ -1492,7 +1616,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
       for (const side of [-1, 1]) {
         group.add(mesh(new THREE.SphereGeometry(0.15, 6, 5), material(0x6b4f36), [side * 0.42, 0.66, -0.05]));
       }
-      group.add(eyes([0, 0.5, 0.42], 0.24, 0.5));
+      // Le capybara a toujours l'air de dormir debout. C'est tout le personnage.
+      group.add(eyes([0, 0.5, 0.42], 0.24, 0.5, { shape: 'slit', lid: 0.5, skin: color }));
       break;
     }
 
@@ -1532,7 +1657,8 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
           ], [side * 0.4, -0.35, 0.1], [0.2, 0, side * 1.25])
         );
       }
-      group.add(eyes([0, 0.3, 0.7], 0.26, 0.7));
+      // Le dauphin a un petit œil sombre, loin du museau.
+      group.add(eyes([0, 0.3, 0.7], 0.26, 0.7, { shape: 'bead', splay: 0.4 }));
 
       // La banane prend **la moitié arrière** de la bête, pas un bout de
       // queue : à peine esquissée, on ne voyait qu'un dauphin avec une tache

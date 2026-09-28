@@ -12,7 +12,8 @@ import {
   RARITY_BONUS,
   RARITY_COLORS,
   Rarity,
-  RelicDefinition
+  RelicDefinition,
+  WatchDefinition
 } from '../../../assets/static/collectibles';
 
 /**
@@ -92,6 +93,17 @@ export class CollectionPage {
 
   /** Bonus cumulé des reliques, arrondi : il se compte en facteur, pas en %. */
   readonly relicMultiplier = computed(() => Number(this.collection.relicBonus().toFixed(2)));
+
+  /** Bonus cumulé des montres, au même format que celui des reliques. */
+  readonly watchMultiplier = computed(() => Number(this.collection.watchBonus().toFixed(2)));
+
+  /**
+   * La montre s'affiche toujours, obtenue ou non : elle se vend, et un
+   * catalogue dont on ne voit pas la marchandise ne donne envie de rien.
+   */
+  watchFigure(watch: WatchDefinition): string {
+    return this.modelIcons.watch(watch.id);
+  }
 
   /** Relique trouvée : sa figure. Sinon le point d'interrogation. */
   relicFigure(relic: RelicDefinition): string {

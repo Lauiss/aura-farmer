@@ -12,6 +12,21 @@ import {
   bossDefinition
 } from '../../assets/static/bosses';
 
+/**
+ * Boss renommés depuis qu'ils existent. Une sauvegarde porte l'identifiant du
+ * jour où la victoire a été remportée : sans cette table, renommer un boss
+ * ferait **reperdre sa victoire et sa relique** à qui l'avait déjà battu, et
+ * rouvrirait un combat déjà gagné au milieu de l'échelle.
+ *
+ * `piccolo` est devenu `verdolino` pour s'éloigner de la franchise dont il
+ * était le sosie.
+ */
+const RENAMED: Record<string, BossId> = { piccolo: 'verdolino' };
+
+function renameBoss(id: BossId): BossId {
+  return RENAMED[id] ?? id;
+}
+
 interface BattleSave {
   /** Boss déjà battus au moins une fois. */
   defeated: BossId[];
@@ -47,9 +62,18 @@ export class BattleManager {
   constructor() {
     const saved: BattleSave | null = this.saveManager.loadProgress(SaveLocation.Battles);
     if (saved) {
-      this.defeatedIds.set(new Set(saved.defeated ?? []));
+      const defeated = (saved.defeated ?? []).map(renameBoss);
+      this.defeatedIds.set(new Set(defeated));
       this.secretUnlocked.set(saved.secret ?? false);
-      this.worn.set(saved.worn ?? null);
+      this.worn.set(saved.worn ? renameBoss(saved.worn) : null);
+
+      // La correspondance est rejouée à chaque chargement, donc inoffensive si
+      // elle ne s'écrit pas — mais sans cette réécriture immédiate, l'ancien
+      // identifiant reste dans la sauvegarde tant qu'une victoire ne la met
+      // pas à jour, et la table devrait être gardée indéfiniment.
+      const renamed = (saved.defeated ?? []).some((id, rank) => id !== defeated[rank])
+        || (!!saved.worn && saved.worn !== this.worn());
+      if (renamed) this.persist();
     }
     // Les reliques sont nées après certaines victoires : une partie en cours
     // récupère celles des boss qu'elle a déjà battus.

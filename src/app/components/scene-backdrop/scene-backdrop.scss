@@ -1,0 +1,14 @@
+:host {
+  position: absolute;
+  inset: 0;
+  // Le décor est un fond : il ne doit intercepter ni le clic sur la statue ni
+  // la rotation à la souris, qui se jouent sur le canvas posé par-dessus.
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.backdrop {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

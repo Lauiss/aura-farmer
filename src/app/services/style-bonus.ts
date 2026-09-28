@@ -41,6 +41,8 @@ export class StyleBonus {
           this.backgrounds.bonus() *
           this.collection.bonus() *
           this.collection.relicBonus() *
+          // Les montres achetées en gemmes, elles aussi multiplicatives.
+          this.collection.watchBonus() *
           // Les canettes en cours : un facteur temporaire, au même endroit que
           // les bonus permanents puisque `ShopManager` n'en attend qu'un seul.
           this.consumables.multiplier() *

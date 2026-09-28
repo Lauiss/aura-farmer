@@ -7,6 +7,7 @@ import { AchievementsManager } from './achievements-manager';
 import { ModalManager } from './modal-manager';
 import { OfflineProgressAnnouncer } from '../components/offline-progress-announcer/offline-progress-announcer';
 import { createAchievements } from '../../assets/static/achievements';
+import { GameEnding } from '../components/game-ending/game-ending';
 import { StyleBonus } from './style-bonus';
 import { SecretTracker } from './secret-tracker';
 import { SpinCombo } from './spin-combo';
@@ -87,7 +88,8 @@ export class GameLoop {
         () => this.store.companionCount(),
         () => this.spinCombo.peak(),
         () => this.calls.stats(),
-        () => this.cinematics.ending()
+        () => this.cinematics.ending(),
+        () => this.collection.watchCount()
       )
     );
 
@@ -123,6 +125,7 @@ export class GameLoop {
       this.guard('quêtes', () => this.quests.tick());
       this.guard('temps de jeu', () => this.playTime.tick());
       this.guard('histoire', () => this.cinematics.checkStory());
+      this.guard('fin', () => this.showEndingScreen());
     });
 
     interval(10000).subscribe(() => this.guard('sauvegarde', () => this.createSave()));
@@ -132,6 +135,17 @@ export class GameLoop {
    * Exécute une tâche de la boucle sans laisser son échec emporter les autres
    * ni la souscription elle-même.
    */
+  /**
+   * L'écran de fin, une fois la partie terminée. Il vit dans la boucle et non
+   * dans le lecteur de cinématiques : la fin « brûler » ne se conclut pas sur
+   * une scène mais sur une victoire, qui peut tomber n'importe quand.
+   */
+  private showEndingScreen(): void {
+    if (!this.cinematics.shouldThank()) return;
+    this.cinematics.markThanked();
+    this.modalManager.open(GameEnding, undefined, 'md');
+  }
+
   private guard(label: string, task: () => void): void {
     try {
       task();

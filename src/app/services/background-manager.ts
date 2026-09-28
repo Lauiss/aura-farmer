@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { BackgroundId, BACKGROUNDS, backgroundDefinition } from '../three/models/backgrounds';
+import { BackgroundId, BACKGROUNDS, backgroundDefinition } from '../../assets/static/backgrounds';
 import { AuraManager } from './aura-manager';
 import { SaveLocation, SaveManager } from './save-manager';
 import { ShopManager } from './shop-manager';

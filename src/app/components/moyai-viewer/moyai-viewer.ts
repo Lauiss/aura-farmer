@@ -17,7 +17,8 @@ import { disposeObject } from '../../three/geometry';
 import { MoyaiPalette, applyMoyaiPalette, createMoyai } from '../../three/models/moyai';
 import { createCursor, setCursorOpacity } from '../../three/models/cursor';
 import { CosmeticId, createCosmetic } from '../../three/models/cosmetics';
-import { BackgroundId, backgroundDefinition, createBackground } from '../../three/models/backgrounds';
+import { BackgroundId } from '../../../assets/static/backgrounds';
+import { SceneBackdrop } from '../scene-backdrop/scene-backdrop';
 import { createBullet, createSniper, setSniperOpacity } from '../../three/models/sniper';
 import { animateWeakPoint, createWeakPoint } from '../../three/models/weak-point';
 import { auraShellOpacity, createAuraShard, createAuraShell } from '../../three/models/aura';
@@ -44,6 +45,7 @@ export interface WeakPointConfig {
 @Component({
   selector: 'app-moyai-viewer',
   standalone: true,
+  imports: [SceneBackdrop],
   templateUrl: './moyai-viewer.html',
   styleUrl: './moyai-viewer.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -159,9 +161,6 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
    * décor posé dans la même scène tournerait donc avec lui. Le rendre à part,
    * avec une caméra fixe, le laisse immobile.
    */
-  private backgroundScene?: THREE.Scene;
-  private backgroundCamera?: THREE.PerspectiveCamera;
-  private backgroundGroup?: THREE.Group;
   private camera?: THREE.PerspectiveCamera;
   private controls?: TrackballControls;
   private moyai?: THREE.Group;
@@ -252,11 +251,6 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
       if (this.moyai && !this.creature()) applyMoyaiPalette(this.moyai, palette);
     });
 
-    effect(() => {
-      const id = this.background();
-      this.zone.runOutsideAngular(() => this.syncBackground(id));
-    });
-
     // Passer en économie en cours de partie baisse la densité tout de suite ;
     // l'anticrénelage, lui, ne se choisit qu'à la création du contexte.
     effect(() => {
@@ -298,7 +292,6 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     if (this.moyai) disposeObject(this.moyai);
     if (this.sniper) disposeObject(this.sniper);
     if (this.bullet) disposeObject(this.bullet);
-    if (this.backgroundGroup) disposeObject(this.backgroundGroup);
     if (this.weakPoint) disposeObject(this.weakPoint);
     if (this.auraShell) disposeObject(this.auraShell);
     for (const shard of this.shards) disposeObject(shard);
@@ -324,15 +317,6 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
 
     this.scene = new THREE.Scene();
 
-    this.backgroundScene = new THREE.Scene();
-    this.backgroundCamera = new THREE.PerspectiveCamera(52, 1, 0.1, 200);
-    this.backgroundCamera.position.set(0, 1.5, 16);
-    this.backgroundCamera.lookAt(0, 0, -10);
-    this.backgroundScene.add(new THREE.HemisphereLight(0xcfd8e4, 0x14181e, 1.5));
-    const backgroundKey = new THREE.DirectionalLight(0xffe9d2, 1.1);
-    backgroundKey.position.set(-6, 8, 4);
-    this.backgroundScene.add(backgroundKey);
-    this.syncBackground(this.background());
 
     this.camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
     this.camera.position.set(0, 0.1, this.distance());
@@ -716,26 +700,6 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     }
   }
 
-  /** Installe ou retire le décor de fond. */
-  private syncBackground(id: BackgroundId | null): void {
-    if (!this.backgroundScene) return;
-
-    if (this.backgroundGroup) {
-      this.backgroundScene.remove(this.backgroundGroup);
-      disposeObject(this.backgroundGroup);
-      this.backgroundGroup = undefined;
-    }
-
-    this.backgroundScene.background = null;
-    if (!id) return;
-
-    // La couleur du ciel est posée sur la scène en plus du plan peint : quel
-    // que soit le format de l'écran, aucun bord ne peut rester vide.
-    this.backgroundScene.background = new THREE.Color(backgroundDefinition(id).sky);
-    this.backgroundGroup = createBackground(id);
-    this.backgroundScene.add(this.backgroundGroup);
-  }
-
   /**
    * Joue le trickshot : le fusil apparaît en hauteur, la balle file vers le
    * front de la statue, puis tout s'efface.
@@ -1050,10 +1014,6 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.renderer.setSize(width, height, false);
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
-    if (this.backgroundCamera) {
-      this.backgroundCamera.aspect = width / height;
-      this.backgroundCamera.updateProjectionMatrix();
-    }
     this.controls?.handleResize();
   }
 
@@ -1090,17 +1050,9 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
     this.reportBackFacing(delta);
     if (!this.renderer || !this.scene || !this.camera) return;
 
-    if (this.backgroundGroup && this.backgroundScene && this.backgroundCamera) {
-      // Le décor est peint d'abord, puis la profondeur est remise à zéro pour
-      // que la statue se dessine devant quelle que soit sa distance.
-      this.renderer.autoClear = false;
-      this.renderer.clear();
-      this.renderer.render(this.backgroundScene, this.backgroundCamera);
-      this.renderer.clearDepth();
-      this.renderer.render(this.scene, this.camera);
-    } else {
-      this.renderer.autoClear = true;
-      this.renderer.render(this.scene, this.camera);
-    }
+    // Une seule scène à peindre. Le décor était auparavant une **seconde**
+    // scène rendue juste avant, profondeur remise à zéro ; il est désormais du
+    // SVG posé derrière le canvas, qui est transparent (`alpha: true`).
+    this.renderer.render(this.scene, this.camera);
   };
 }

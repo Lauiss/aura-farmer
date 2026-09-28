@@ -14,10 +14,14 @@ import {
   RELICS,
   Rarity,
   RelicDefinition,
+  WATCHES,
+  WATCH_CHEST_CHANCE,
+  WatchDefinition,
   chestDefinition,
   collectibleDefinition,
   relicDefinition,
-  relicForBoss
+  relicForBoss,
+  watchDefinition
 } from '../../assets/static/collectibles';
 import type { BossId } from '../../assets/static/bosses';
 import type { MoyaiPalette } from '../three/models/moyai';
@@ -31,6 +35,8 @@ export interface ChestReward {
   collectible?: CollectibleDefinition;
   /** Aura rendue quand la rareté ne donne pas de statuette. */
   aura: number;
+  /** Montre trouvée, très rarement : l'équivalent de son prix en gemmes. */
+  watch?: WatchDefinition;
 }
 
 interface CollectionSave {
@@ -40,6 +46,8 @@ interface CollectionSave {
   owned: string[];
   /** Reliques sacrées trouvées. */
   relics?: string[];
+  /** Montres achetées ou trouvées. */
+  watches?: string[];
   chests: Partial<Record<ChestTier, number>>;
   skin: string | null;
   /** Coffres ouverts depuis le début, pour les quêtes. */
@@ -77,6 +85,7 @@ export class CollectionManager {
   readonly chestsOpened = signal(0);
   private readonly ownedIds = signal<Set<string>>(new Set());
   private readonly relicIds = signal<Set<string>>(new Set());
+  private readonly watchIds = signal<Set<string>>(new Set());
   /** Coffres possédés et pas encore ouverts, par tier. */
   readonly chests = signal<Partial<Record<ChestTier, number>>>({});
   /** Statuette dont la statue du jeu porte la matière, `null` pour la pierre. */
@@ -101,6 +110,7 @@ export class CollectionManager {
         this.gems.update(gems => gems + retired * CollectionManager.RETIRED_RELIC_GEMS);
         this.persist();
       }
+      this.watchIds.set(new Set(saved.watches ?? []));
       this.chests.set(saved.chests ?? {});
       this.skin.set(saved.skin ?? null);
     }
@@ -109,6 +119,8 @@ export class CollectionManager {
   readonly ownedCount = computed(() => this.ownedIds().size);
   readonly relicCount = computed(() => this.relicIds().size);
   readonly relicCatalogue = RELICS;
+  readonly watchCatalogue = WATCHES;
+  readonly watchCount = computed(() => this.watchIds().size);
   readonly pendingChests = computed(() =>
     Object.values(this.chests()).reduce((total, count) => total + (count ?? 0), 0)
   );
@@ -136,6 +148,38 @@ export class CollectionManager {
     }
     return total;
   });
+
+  /**
+   * Bonus des montres. **Multiplicatif** comme celui des reliques : une montre
+   * coûte des dizaines de milliers de gemmes, un bonus qui s'ajoute se
+   * perdrait dans le total au moment même où il est le plus cher payé.
+   * Réunies, les dix font ×7,4.
+   */
+  readonly watchBonus = computed(() => {
+    let total = 1;
+    for (const id of this.watchIds()) {
+      const definition = watchDefinition(id);
+      if (definition) total *= definition.bonus;
+    }
+    return total;
+  });
+
+  isWatchOwned(id: string): boolean {
+    return this.watchIds().has(id);
+  }
+
+  /**
+   * Achète une montre. Elle ne s'obtient qu'une fois, et son prix ne baisse
+   * jamais : c'est le seul objectif du jeu qui se vise en gemmes.
+   */
+  buyWatch(id: string): boolean {
+    const definition = watchDefinition(id);
+    if (!definition || this.isWatchOwned(id) || this.gems() < definition.price) return false;
+    this.gems.update(gems => gems - definition.price);
+    this.watchIds.update(owned => new Set(owned).add(id));
+    this.persist();
+    return true;
+  }
 
   /** Gemmes rendues pour chaque relique de l'ancienne formule. */
   private static readonly RETIRED_RELIC_GEMS = 60;
@@ -219,6 +263,20 @@ export class CollectionManager {
     // La rareté tirée peut être déjà complète. Plutôt que de se rabattre
     // aussitôt sur de l'aura, on monte d'un cran : commun épuisé, le coffre
     // donne du rare, puis de l'épique, et ainsi de suite.
+    // La montre se tire **avant** la rareté et prend toute la place : elle vaut
+    // des milliers de gemmes, la faire cohabiter avec une statuette dans le
+    // même coffre noierait la seule chose qu'on retiendra de l'ouverture.
+    const watch = this.rollWatch(tier);
+    if (watch) {
+      this.watchIds.update(owned => new Set(owned).add(watch.id));
+      const reward: ChestReward = { tier, rarity: 'legendary', gems: RARITY_GEMS.legendary, aura: 0, watch };
+      this.gems.update(gems => gems + reward.gems);
+      this.gemsEarned.update(total => total + reward.gems);
+      this.chestsOpened.update(total => total + 1);
+      this.persist();
+      return reward;
+    }
+
     const rolled = this.rollRarity(tier);
     const rarity = this.firstRarityWithMissing(rolled) ?? rolled;
     const reward: ChestReward = { tier, rarity, gems: RARITY_GEMS[rarity], aura: 0 };
@@ -264,6 +322,17 @@ export class CollectionManager {
     return null;
   }
 
+  /**
+   * Une montre encore manquante, très rarement. Le coffre du doomscrolling en
+   * est exclu par ses données : il est gratuit et tombe en continu.
+   */
+  private rollWatch(tier: ChestTier): WatchDefinition | null {
+    const chance = WATCH_CHEST_CHANCE[tier];
+    if (!chance || Math.random() >= chance) return null;
+    const missing = WATCHES.filter(watch => !this.watchIds().has(watch.id));
+    return missing.length ? missing[Math.floor(Math.random() * missing.length)] : null;
+  }
+
   private rollRarity(tier: ChestTier): Rarity {
     const odds = chestDefinition(tier).odds;
     let roll = Math.random();
@@ -281,6 +350,7 @@ export class CollectionManager {
       chestsOpened: this.chestsOpened(),
       owned: [...this.ownedIds()],
       relics: [...this.relicIds()],
+      watches: [...this.watchIds()],
       chests: this.chests(),
       skin: this.skin()
     } satisfies CollectionSave);

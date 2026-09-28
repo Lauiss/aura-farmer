@@ -42,6 +42,36 @@
       </div>
     </details>
 
+    <!-- Les montres se **voient** même quand on ne les a pas : ce sont les
+         seuls objets du jeu qu'on vise et qu'on achète, et on ne vise pas un
+         point d'interrogation. Le prix reste donc affiché tant qu'elle manque. -->
+    <details class="section" [open]="isOpen('watches')" (toggle)="onToggle('watches', $event)">
+      <summary class="section-head">
+        <h2 class="section-title">{{ 'COLLECTION_WATCHES' | translate }}</h2>
+        <p class="progress">
+          {{ collection.watchCount() }}/{{ collection.watchCatalogue.length }}
+          · &times;{{ watchMultiplier() }} {{ 'RELIC_PRODUCTION' | translate }}
+        </p>
+      </summary>
+      <p class="section-lead">{{ 'COLLECTION_WATCHES_LEAD' | translate }}</p>
+
+      <div class="figures">
+        @for (watch of collection.watchCatalogue; track watch.id) {
+          <div class="figure watch" [class.owned]="collection.isWatchOwned(watch.id)">
+            <img [src]="watchFigure(watch)" alt="" class="figure-icon">
+            <span class="figure-name">{{ ('WATCH_' + watch.id.toUpperCase()) | translate }}</span>
+            <span class="figure-action">
+              @if (collection.isWatchOwned(watch.id)) {
+                &times;{{ watch.bonus }}
+              } @else {
+                {{ watch.price }} 💎
+              }
+            </span>
+          </div>
+        }
+      </div>
+    </details>
+
     <details class="section" [open]="isOpen('figures')" (toggle)="onToggle('figures', $event)">
       <summary class="section-head">
         <h2 class="section-title">{{ 'COLLECTION_FIGURES' | translate }}</h2>

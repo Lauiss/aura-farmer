@@ -3,7 +3,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { CosmeticId } from '../../three/models/cosmetics';
 import { WardrobeManager } from '../../services/wardrobe-manager';
 import { BackgroundManager } from '../../services/background-manager';
-import { BackgroundId } from '../../three/models/backgrounds';
+import { BackgroundId } from '../../../assets/static/backgrounds';
 import { Sound, SoundManager } from '../../services/sound-manager';
 import { BattleManager } from '../../services/battle-manager';
 import { BossId } from '../../../assets/static/bosses';

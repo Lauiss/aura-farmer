@@ -1,3 +1,4 @@
+import { APP_VERSION } from '../../app-version';
 import { Component, inject, ChangeDetectionStrategy, computed, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -27,6 +28,9 @@ type TransferState =
 })
 
 export class Settings {
+
+  /** Version du jeu, tirée de `package.json`. */
+  readonly version = APP_VERSION;
 
   language: string = 'en';
 

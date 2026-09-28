@@ -65,8 +65,11 @@ export class ChestOpening implements AfterViewInit, OnDestroy {
   readonly rarityColors = RARITY_COLORS;
 
   readonly rewardIcon = computed(() => {
-    const collectible = this.reward()?.collectible;
-    return collectible ? this.modelIcons.moyaiSkin(collectible.id) : null;
+    const reward = this.reward();
+    // La montre passe avant la statuette : un coffre qui en donne une ne donne
+    // que ça, c'est la seule chose qu'on retiendra de l'ouverture.
+    if (reward?.watch) return this.modelIcons.watch(reward.watch.id);
+    return reward?.collectible ? this.modelIcons.moyaiSkin(reward.collectible.id) : null;
   });
 
   private renderer?: THREE.WebGLRenderer;
@@ -118,7 +121,7 @@ export class ChestOpening implements AfterViewInit, OnDestroy {
   }
 
   /** Récapitulatif d'une ouverture en série, `null` hors de ce mode. */
-  readonly bulk = signal<{ gems: number; collectibles: number; aura: number; count: number } | null>(null);
+  readonly bulk = signal<{ gems: number; collectibles: number; watches: number; aura: number; count: number } | null>(null);
 
   /**
    * Ouvre d'un coup tous les coffres du tier en réserve.
@@ -130,7 +133,7 @@ export class ChestOpening implements AfterViewInit, OnDestroy {
   openAll(): void {
     if (this.phase() !== 'idle' || this.remaining() <= 0) return;
 
-    const total = { gems: 0, collectibles: 0, aura: 0, count: 0 };
+    const total = { gems: 0, collectibles: 0, watches: 0, aura: 0, count: 0 };
     while (this.collection.chestCount(this.tier) > 0) {
       const reward = this.collection.openChest(this.tier);
       if (!reward) break;
@@ -138,6 +141,7 @@ export class ChestOpening implements AfterViewInit, OnDestroy {
       total.gems += reward.gems;
       total.aura += reward.aura;
       if (reward.collectible) total.collectibles++;
+      if (reward.watch) total.watches++;
     }
 
     this.bulk.set(total);

@@ -147,6 +147,37 @@
         </ul>
       </section>
 
+      <!-- Les montres ferment la boutique : ce sont les articles les plus chers
+           du jeu, et les faire passer avant les coffres aurait donné leur prix
+           à lire d'abord à un joueur qui n'a pas dix gemmes. -->
+      <section class="shelf">
+        <h2 class="shelf-title">{{ 'STORE_WATCHES' | translate }}</h2>
+        <p class="shelf-lead">{{ 'STORE_WATCHES_LEAD' | translate }}</p>
+        <ul class="rows">
+          @for (watch of watchStock(); track watch.id) {
+            <li class="row" [class.bought]="bought() === 'watch-' + watch.id">
+              <img [src]="watchIcon(watch.id)" alt="" class="row-icon">
+              <span class="row-name">{{ ('WATCH_' + watch.id.toUpperCase()) | translate }}</span>
+              <span class="row-note">
+                {{ 'STORE_WATCH_BONUS' | translate: { value: watch.bonus } }}
+              </span>
+              @if (collection.isWatchOwned(watch.id)) {
+                <span class="row-price owned">{{ 'STORE_OWNED' | translate }}</span>
+              } @else {
+                <button
+                  type="button"
+                  class="row-price buy"
+                  [disabled]="collection.gems() < watch.price"
+                  (click)="buyWatch(watch)"
+                >
+                  {{ watch.price }} 💎
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      </section>
+
       <p class="to-collection">
         <button type="button" class="link" (click)="openCollection()">
           {{ 'STORE_TO_COLLECTION' | translate }} &rarr;

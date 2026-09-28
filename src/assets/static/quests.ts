@@ -74,7 +74,7 @@ export const STORY: readonly QuestDefinition[] = [
   { id: 'rumour', goal: 'bosses', target: 5, gems: 40 },
   { id: 'company', goal: 'companions', target: 3, gems: 50 },
   { id: 'trophies', goal: 'relics', target: 10, gems: 65 },
-  { id: 'namek', goal: 'bosses', target: 13, gems: 80 },
+  { id: 'verdolino', goal: 'bosses', target: 13, gems: 80 },
   { id: 'six-seven', goal: 'combo', target: 6.7, gems: 100 },
   { id: 'threshold', goal: 'production', target: 1.6e14, gems: 150 },
   { id: 'succession', goal: 'bosses', target: 20, gems: 300 }

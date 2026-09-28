@@ -1,6 +1,6 @@
 import { FormatAuraPipe } from "../../app/pipes/format-aura";
 import { Achievement } from "../../app/services/achievements-manager";
-import { COLLECTIBLES, RELICS } from "./collectibles";
+import { COLLECTIBLES, RELICS, WATCHES } from "./collectibles";
 import { LADDER, BossId } from "./bosses";
 import { COMPANIONS, CompanionId } from "./companions";
 import { CallStats } from "../../app/services/call-manager";
@@ -24,7 +24,8 @@ export function createAchievements(
     answeredCount: 0, john: false, colonel: false, larry: false, refused: 0, larryRefused: false
   }),
   /** Ce qu'on a fait de la lettre : les deux fins ont chacune leur succès. */
-  getEnding: () => 'keep' | 'burn' | null = () => null
+  getEnding: () => 'keep' | 'burn' | null = () => null,
+  getWatchCount: () => number = () => 0
 ): Achievement[] {
   const achievements: Achievement[] = [
     {
@@ -546,9 +547,9 @@ export function createAchievements(
     },
     {
       id: 109,
-      title: "ACH_NAMEK_TITLE",
-      description: "ACH_NAMEK_DESC",
-      condition: () => isBossDefeated('piccolo'),
+      title: "ACH_ANTENNINO_TITLE",
+      description: "ACH_ANTENNINO_DESC",
+      condition: () => isBossDefeated('verdolino'),
       unlocked: false,
     },
     {
@@ -788,6 +789,20 @@ export function createAchievements(
       // L'échelle seule : le boss secret n'est pas sur le chemin, et exiger
       // de l'avoir battu rendrait ce succès impossible à qui garde la lettre.
       condition: () => getBossCount() >= LADDER.length,
+      unlocked: false,
+    },
+    {
+      id: 122,
+      title: "ACH_PREMIERE_MONTRE_TITLE",
+      description: "ACH_PREMIERE_MONTRE_DESC",
+      condition: () => getWatchCount() >= 1,
+      unlocked: false,
+    },
+    {
+      id: 123,
+      title: "ACH_COLLECTIONNEUR_TITLE",
+      description: "ACH_COLLECTIONNEUR_DESC",
+      condition: () => getWatchCount() >= WATCHES.length,
       unlocked: false,
     }
   ];

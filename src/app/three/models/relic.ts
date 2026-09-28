@@ -177,9 +177,17 @@ function object(relic: RelicDefinition): THREE.Group {
         transparent: true,
         opacity: 0.85
       });
-      const cube = mesh(new THREE.BoxGeometry(1.1, 1.1, 1.1), ice, [0, -0.2, 0]);
-      cube.rotation.set(0.5, 0.6, 0.2);
-      group.add(cube);
+      // Trois blocs de tailles et d'orientations différentes plutôt qu'un cube
+      // unique : un cube seul et parfaitement régulier se lit comme une forme
+      // par défaut, pas comme de la glace.
+      const blocks: [number, [number, number, number], [number, number, number]][] = [
+        [0.95, [0, -0.35, 0], [0.42, 0.6, 0.18]],
+        [0.6, [0.42, 0.34, -0.16], [0.9, 0.25, 0.55]],
+        [0.42, [-0.46, 0.12, 0.22], [0.2, 0.85, 0.3]]
+      ];
+      for (const [size, position, rotation] of blocks) {
+        group.add(mesh(new THREE.BoxGeometry(size, size, size), ice, position, rotation));
+      }
       break;
     }
 
@@ -242,15 +250,19 @@ function object(relic: RelicDefinition): THREE.Group {
      */
     case 'tyre': {
       const wheel = new THREE.Group();
-      wheel.add(mesh(new THREE.TorusGeometry(0.62, 0.26, 5, 14), main));
+      // Le caoutchouc est peint en sombre : `main` porte ici l'émission verte
+      // de la grenouille, qui teintait le pneu en vert pomme.
+      wheel.add(mesh(new THREE.TorusGeometry(0.62, 0.26, 5, 14), plain(0x1f2125)));
       wheel.add(mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.3, 8), plain(0x9aa0a8), [0, 0, 0], [Math.PI / 2, 0, 0]));
       for (let i = 0; i < 8; i++) {
         const angle = (i / 8) * Math.PI * 2;
         wheel.add(mesh(new THREE.BoxGeometry(0.1, 0.22, 0.18), plain(0x15171a),
           [Math.cos(angle) * 0.66, Math.sin(angle) * 0.66, 0], [0, 0, -angle]));
       }
-      wheel.rotation.set(0.95, 0.35, 0);
-      wheel.position.y = -0.2;
+      // Presque debout : couché à 0,95 rad il se lisait comme un anneau posé à
+      // plat, c'est-à-dire comme le halo de la relique en plus gros.
+      wheel.rotation.set(0.26, 0.4, 0.1);
+      wheel.position.y = -0.3;
       group.add(wheel);
       break;
     }
@@ -286,7 +298,7 @@ function object(relic: RelicDefinition): THREE.Group {
       break;
     }
 
-    // Turban de Piccolo : bourrelet enroulé, tissu qui retombe.
+    // Turban d'Antennino : bourrelet enroulé, tissu qui retombe.
     case 'turban': {
       group.add(mesh(loft([round(-0.95, 0.6, 0.38), round(-0.45, 0.66, 0.38), round(0.05, 0.56, 0.38), round(0.35, 0.3, 0.4)]), main));
       group.add(mesh(new THREE.TorusGeometry(0.62, 0.1, 3, 10), lit(0xd6d0c0, relic.glow), [0, -0.45, 0], [Math.PI / 2, 0, 0]));
@@ -332,6 +344,108 @@ function object(relic: RelicDefinition): THREE.Group {
     case 'slipper': {
       group.add(shoe(main, lit(0xe38fb0, relic.glow), 0.45, 1.1));
       group.add(mesh(new THREE.TorusGeometry(0.34, 0.045, 3, 10), lit(0xf7c6d8, relic.glow), [0, -0.2, 0], [0.3, 0, 0.9]));
+      break;
+    }
+
+    /**
+     * Tranche de pastèque de Glorbo Fruttodrillo. Elle tombait jusqu'ici dans
+     * le `default` ci-dessous, c'est-à-dire qu'une pastèque s'affichait en
+     * couronne verte — comme la noix de coco et la peau de banane. Trois
+     * reliques sur vingt étaient le même modèle recoloré.
+     *
+     * La tranche se lit mieux que le fruit entier : de loin, une pastèque
+     * ronde n'est qu'une sphère verte.
+     */
+    case 'melon': {
+      const slice = new THREE.Group();
+      // Un secteur de cylindre : la pointe tombe sur l'axe, l'arc s'ouvre vers
+      // le haut. La chair est plus **épaisse** que l'écorce, donc elle déborde
+      // des deux faces plates et ne laisse le vert qu'en croûte sur l'arc.
+      const wedge = (radius: number, depth: number, material: THREE.Material) => {
+        const geometry = new THREE.CylinderGeometry(radius, radius, depth, 7, 1, false, Math.PI * 0.28, Math.PI * 0.44);
+        geometry.rotateX(Math.PI / 2);
+        return mesh(geometry, material);
+      };
+      slice.add(wedge(1.05, 0.28, main));
+      slice.add(wedge(0.86, 0.34, lit(relic.glow, relic.glow, 0.18)));
+      // Le secteur s'ouvre vers +X : un quart de tour met la pointe en bas et
+      // l'arc en haut, c'est-à-dire la tranche telle qu'on la tient.
+      slice.rotation.z = Math.PI / 2;
+      // Pépins **dans** la chair, donc entre la pointe et l'écorce, sur les
+      // deux faces. Repérés dans le repère de la tranche avant sa rotation.
+      for (const side of [1, -1]) {
+        for (const [radial, lateral] of [[0.42, -0.14], [0.55, 0.16], [0.7, -0.05], [0.66, 0.24]]) {
+          slice.add(mesh(new THREE.OctahedronGeometry(0.065, 0), plain(0x241a14), [radial, lateral, side * 0.18]));
+        }
+      }
+      const melon = new THREE.Group();
+      melon.add(slice);
+      melon.position.y = -0.95;
+      group.add(melon);
+      break;
+    }
+
+    /**
+     * Demi-noix de coco de Burbaloni Luliloli — celle dans laquelle le
+     * capybara est assis. La coque brune est fendue, la chair blanche à
+     * l'intérieur : c'est ce contraste qui la fait lire comme une noix de coco
+     * plutôt que comme un caillou.
+     */
+    case 'coconut': {
+      const half = (radius: number, material: THREE.Material) =>
+        mesh(new THREE.SphereGeometry(radius, 9, 5, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), material);
+      // La coque est peinte en brun **franc** et non avec `main` : l'émission
+      // de la teinte `glow` de cette relique est un blanc cassé, qui délavait
+      // le brun jusqu'à faire lire un bol de pierre.
+      group.add(half(0.92, plain(0x6b4d2e)));
+      // La chair est un **disque plein** et non une seconde demi-sphère : une
+      // calotte est creuse et ses faces internes sont supprimées au rendu, si
+      // bien qu'on voyait au travers et que la noix se lisait comme un bol vide.
+      const flesh = mesh(new THREE.CircleGeometry(0.82, 10), plain(0xf2efe6), [0, -0.06, 0], [-Math.PI / 2, 0, 0]);
+      group.add(flesh);
+      // Léger creux au centre, pour que la chair ne soit pas une surface plate.
+      group.add(mesh(new THREE.SphereGeometry(0.54, 9, 4, 0, Math.PI * 2, 0, Math.PI / 2.4), plain(0xe2dccb), [0, -0.3, 0]));
+      group.add(mesh(new THREE.TorusGeometry(0.88, 0.07, 3, 9), plain(0x4a3520), [0, 0, 0], [Math.PI / 2, 0, 0]));
+      // Bourre en touffes courtes réparties sur la coque. En hauteur pleine,
+      // elles se lisaient comme les douves d'un tonneau.
+      for (let i = 0; i < 11; i++) {
+        const angle = (i / 11) * Math.PI * 2;
+        const drop = -0.3 - (i % 3) * 0.16;
+        group.add(mesh(new THREE.BoxGeometry(0.1, 0.16, 0.06), plain(0x57411f),
+          [Math.sin(angle) * 0.87, drop, Math.cos(angle) * 0.87], [0.3, -angle, 0]));
+      }
+      group.position.y = -0.5;
+      break;
+    }
+
+    /**
+     * Peau de banane de Bananita Dolphinita : le cœur pelé et quatre lanières
+     * qui retombent. Une banane entière existe déjà pour Chimpanzini — la
+     * relique doit dire que le fruit a été **mangé**.
+     */
+    case 'banana-peel': {
+      group.add(mesh(loft([round(-0.5, 0.16, 0.3), round(-0.2, 0.2, 0.3), round(0.1, 0.12, 0.3)]), main));
+      for (let i = 0; i < 4; i++) {
+        const strip = mesh(
+          loft([
+            { y: -1.0, halfWidth: 0.1, front: 0.05, back: -0.05, chamfer: 0.3 },
+            { y: -0.4, halfWidth: 0.17, front: 0.06, back: -0.06, chamfer: 0.3 },
+            { y: 0.1, halfWidth: 0.13, front: 0.06, back: -0.06, chamfer: 0.3 }
+          ]),
+          main
+        );
+        // Chaque lanière vit dans un bras orienté à son azimut, et ne fait
+        // ensuite que basculer vers l'avant de ce bras. Composer les trois
+        // angles d'Euler à la main les mélangeait, et les quatre lanières
+        // restaient agglutinées au lieu de s'ouvrir.
+        const arm = new THREE.Group();
+        arm.rotation.y = (i / 4) * Math.PI * 2 + 0.4;
+        strip.position.set(0, -0.3, 0.3);
+        strip.rotation.x = -1.05;
+        arm.add(strip);
+        group.add(arm);
+      }
+      group.position.y = -0.35;
       break;
     }
 

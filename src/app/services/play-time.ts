@@ -66,3 +66,19 @@ export function formatDuration(seconds: number): string {
   if (minutes > 0) return `${minutes} min ${`${rest}`.padStart(2, '0')}`;
   return `${rest} s`;
 }
+
+/**
+ * Le même temps en `HH:MM:SS`, pour l'écran de fin.
+ *
+ * `formatDuration` est fait pour se **lire** en passant (« 14 h 22 ») et coupe
+ * volontairement l'unité la plus fine. Un temps de fin de partie est un
+ * **score** : il se compare, donc il se donne en entier et à chasse fixe.
+ */
+export function formatClock(seconds: number): string {
+  const total = Math.max(0, Math.floor(seconds));
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const rest = total % 60;
+  const pad = (value: number) => `${value}`.padStart(2, '0');
+  return `${pad(hours)}:${pad(minutes)}:${pad(rest)}`;
+}

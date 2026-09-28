@@ -1,0 +1,39 @@
+<div class="quantity">
+  <img [src]="icon" alt="" class="chest">
+  <h2 class="title">{{ ('CHEST_' + tier.toUpperCase()) | translate }}</h2>
+  <p class="lead">{{ 'CHEST_QUANTITY_LEAD' | translate }}</p>
+
+  <p class="count" aria-live="polite">{{ chosen() }}</p>
+
+  <label class="slider">
+    <span class="visually-hidden">{{ 'CHEST_QUANTITY_LABEL' | translate }}</span>
+    <input
+      type="range"
+      min="1"
+      [max]="affordable()"
+      [value]="chosen()"
+      (input)="onSlide($event)"
+    >
+  </label>
+
+  <div class="steps">
+    @for (step of steps(); track step) {
+      <button type="button" class="step" [class.on]="chosen() === step" (click)="setQuantity(step)">
+        {{ step }}
+      </button>
+    }
+    <button type="button" class="step" (click)="max()">{{ 'BUY_MAX' | translate }}</button>
+  </div>
+
+  <p class="total">
+    {{ 'CHEST_QUANTITY_TOTAL' | translate: { count: chosen() } }}
+    <strong>{{ total() }} 💎</strong>
+  </p>
+
+  <div class="actions">
+    <button type="button" class="ghost" (click)="cancel()">{{ 'CANCEL' | translate }}</button>
+    <button type="button" class="solid" [disabled]="!canBuy()" (click)="confirm()">
+      {{ 'BUY' | translate }}
+    </button>
+  </div>
+</div>
