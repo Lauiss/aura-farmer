@@ -325,6 +325,15 @@ Dans l'ordre où elle a été demandée, à garder sous la main :
 - **Onboarding** qui raconte l'histoire, en petite cinématique low poly.
 - **Housing** : la « maison » est un **garage**. Des objets prédéfinis à débloquer et améliorer, qui montent les statistiques des voitures trouvées dans les coffres, et des **sessions de drift** pour gagner aura et gemmes.
 - **Musique** du menu et du jeu à refaire : rien ne peut être produit ici, il faut une source audio externe.
+- **Refaire les modèles 3D**, décidé le 2026-11-03. Ils ne sont « pas ouf » en l'état. Référence de **forme seulement** : [How to Fish](https://store.steampowered.com/app/4001890/How_to_Fish/). On reprend ses volumes simples et gonflés, faits de capsules, de boîtes chanfreinées et de sphères à peu de segments. Low poly lisible, mais pas anguleux à l'extrême.
+  - **Non retenu** : ses proportions dégingandées, sa palette de plein jour, son ombrage et son atmosphère.
+  - **Modélisation dans Blender**, pour la qualité des rendus. Il faudra choisir comment les modèles entrent dans le jeu. Soit on exporte du glTF/GLB lu par `GLTFLoader`, ce qui mettrait fin à la règle « les modèles n'existent que sous forme de code » ; soit Blender sert de référence et on retranscrit dans `three/models/`. Sur l'existant, garder les `name` des matériaux du moyai, car `applyMoyaiPalette` les retrouve par là. Garder aussi le gabarit commun de 2,8, `userData.ignoreBounds`, et `flatShading`.
+  - **Le moyai reste une tête seule**, coupée sous la mâchoire : c'est le principe du jeu. Il passe en premier, comme modèle témoin. Ses dérivés sont à suivre : Chad et le père, les statuettes, `cosmetics.ts` (`JAW_BASE`, `BUST_BOTTOM`), `mog-face.ts`, la courbe de `cursor.ts`, le point faible et le favicon.
+  - **Les brainrots** se feront dans une session dédiée, sur des références que fournira l'utilisateur.
+  - **Les yeux ne changent pas** : on garde le système `Gaze`.
+  - **Le thème ne change pas** : le sombre de `menu-theme` et l'ambre restent.
+  - **Les ombres portées sont acceptées** : elles demandent une `shadowMap` sur la scène vivante, coupée en mode éco, et un disque d'ombre dans les vignettes `snapshot`.
+  - **Décors** : on passera à un **ciel en dégradé avec un peu de brume**. Cette exception est voulue : elle lève, pour le ciel et l'horizon, la règle « aplats francs, sans dégradé, sans brume » de la section Décors.
 
 ## Traductions
 
