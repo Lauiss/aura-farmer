@@ -5,6 +5,7 @@ import { ModalManager } from '../../services/modal-manager';
 import { ModelIcons } from '../../services/model-icons';
 import { Sound, SoundManager } from '../../services/sound-manager';
 import { ChestDefinition, ChestTier, chestDefinition } from '../../../assets/static/collectibles';
+import { GemIcon } from '../gem-icon/gem-icon';
 
 /** Coffres achetables d'un coup au maximum. */
 const MAX_BATCH = 50;
@@ -23,7 +24,7 @@ const MAX_BATCH = 50;
 @Component({
   selector: 'app-chest-quantity',
   standalone: true,
-  imports: [TranslatePipe],
+  imports: [GemIcon, TranslatePipe],
   templateUrl: './chest-quantity.html',
   styleUrl: './chest-quantity.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

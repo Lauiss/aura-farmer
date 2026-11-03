@@ -39,7 +39,7 @@
         <div class="reward bulk" role="status">
           <p class="rarity">{{ 'CHEST_BULK_TITLE' | translate: { count: total.count } }}</p>
           <ul class="bulk-lines">
-            <li>+{{ total.gems }} 💎</li>
+            <li>+{{ total.gems }} <app-gem-icon></app-gem-icon></li>
             @if (total.collectibles > 0) {
               <li>{{ 'CHEST_BULK_FIGURES' | translate: { count: total.collectibles } }}</li>
             }
@@ -75,7 +75,7 @@
           } @else {
             <h2 class="title">+{{ reward.aura | formatAura }} <small>{{ 'AURA' | translate }}</small></h2>
           }
-          <p class="gems">+{{ reward.gems }} 💎</p>
+          <p class="gems">+{{ reward.gems }} <app-gem-icon></app-gem-icon></p>
         </div>
 
         <div class="actions">

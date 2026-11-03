@@ -32,30 +32,15 @@
 }
 
 .back {
-  font: inherit;
-  font-weight: $menu-weight;
-  color: $menu-text-dim;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.back:hover,
-.back:focus-visible {
-  color: $menu-accent;
+  @include menu-back;
 }
 
 .heading {
-  font-size: $menu-size-title;
-  font-weight: $menu-weight-strong;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  @include menu-title;
 }
 
 .rate {
-  font-size: $menu-size-lead;
-  font-weight: $menu-weight-strong;
-  font-variant-numeric: tabular-nums;
+  @include menu-bar-value;
 
   span {
     font-size: $menu-size-small;
@@ -111,8 +96,8 @@
 // Vignette de la liste des boss, à ne pas confondre avec les combattants de
 // l'arène, qui ont leurs propres cotes.
 .portrait {
-  width: 7rem;
-  height: 7rem;
+  width: 9rem;
+  height: 9rem;
   object-fit: contain;
 }
 
@@ -131,8 +116,9 @@
 }
 
 .boss-card .name {
+  @include menu-display;
   font-size: $menu-size-subtitle;
-  font-weight: $menu-weight-strong;
+  line-height: 1.2;
   text-align: center;
 }
 
@@ -200,7 +186,10 @@
 .fight {
   flex: 1;
   display: grid;
-  grid-template-columns: auto minmax(16rem, 22rem) auto;
+  // Les deux colonnes des combattants se partagent tout ce que le panneau
+  // central laisse : en `auto`, elles se réduisaient à la largeur de leur
+  // vignette et le milieu de l'écran restait vide.
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem) minmax(0, 1fr);
   grid-template-rows: auto 1fr;
   align-items: center;
   justify-items: center;
@@ -230,9 +219,8 @@
 }
 
 .fighter .name {
-  font-size: $menu-size-lead;
-  font-weight: $menu-weight-strong;
-  letter-spacing: 0.06em;
+  @include menu-display;
+  font-size: $menu-size-title;
   text-transform: uppercase;
 }
 
@@ -245,10 +233,10 @@
 
 .bar-hp {
   width: 100%;
-  height: 1.6rem;
-  border-radius: $radius-100;
-  background: rgba(237, 230, 214, 0.12);
-  border: 2px solid $menu-border-strong;
+  height: 2rem;
+  border-radius: 4px;
+  background: $menu-surface-deep;
+  border: 3px solid $menu-border-strong;
   overflow: hidden;
   display: flex;
 }
@@ -266,6 +254,45 @@
 }
 
 /* --- Les combattants, en grand --- */
+// Le socle : deux aplats, un hexagone écrasé et son épaisseur plus sombre en
+// dessous. Ils sont sur `.spot`, qui ne bouge pas — posés sur l'enveloppe, ils
+// auraient respiré et frappé avec le personnage. Ils remplacent l'ombre floue
+// d'avant, un halo sombre là où tout le reste du jeu est en arêtes dures.
+.spot {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  justify-items: center;
+  align-self: end;
+  width: 100%;
+  padding-bottom: $spacing-500;
+}
+
+.spot::before,
+.spot::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  z-index: -1;
+  transform: translateX(-50%);
+}
+
+.spot::after {
+  bottom: $spacing-250;
+  width: min(90%, 26rem);
+  height: $spacing-700;
+  background: $menu-surface-solid;
+  clip-path: polygon(14% 0, 86% 0, 100% 50%, 86% 100%, 14% 100%, 0 50%);
+}
+
+.spot::before {
+  bottom: $spacing-150;
+  width: min(84%, 24rem);
+  height: $spacing-250;
+  background: $menu-surface-deep;
+  clip-path: polygon(0 0, 100% 0, 92% 100%, 8% 100%);
+}
+
 // L'enveloppe porte la posture, l'image le coup. Elle ne prend aucune place
 // propre : c'est le portrait qui dicte sa taille.
 .stance {
@@ -274,10 +301,9 @@
 
 .player-portrait,
 .boss-portrait {
-  width: min(22vw, 16rem);
-  height: min(30vh, 16rem);
+  width: min(30vw, 30rem);
+  height: min(50vh, 30rem);
   object-fit: contain;
-  filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.6));
 }
 
 .boss-hp span {
@@ -341,8 +367,8 @@
 // combat en utilisent un, et une mise à l'échelle statique aurait disparu dès
 // le premier coup porté.
 .boss-portrait.awakened {
-  width: min(25vw, 18rem);
-  height: min(34vh, 18rem);
+  width: min(34vw, 34rem);
+  height: min(56vh, 34rem);
 }
 
 /* --- Les dés : le coeur du tour, donc le plus gros de l'écran --- */
@@ -565,6 +591,20 @@
     height: min(18vh, 9rem);
   }
 
+  .spot {
+    padding-bottom: $spacing-300;
+  }
+
+  .spot::after {
+    bottom: $spacing-150;
+    height: $spacing-400;
+  }
+
+  .spot::before {
+    bottom: $spacing-50;
+    height: $spacing-150;
+  }
+
   .bar-hp {
     height: 1.1rem;
   }
@@ -682,10 +722,13 @@
 // elle occupe le haut de la colonne centrale et porte la couleur du danger.
 .intent {
   width: 100%;
-  padding: $spacing-150 $spacing-200;
-  border: 2px solid $menu-border-strong;
-  border-radius: $radius-100;
-  background: $menu-surface;
+  padding: $spacing-250 $spacing-300;
+  border: none;
+  // Un bandeau de couleur sur le bord haut suffit à dire la nature du coup ;
+  // un cadre complet en faisait une carte de plus parmi celles du bas.
+  border-top: 4px solid $menu-accent;
+  border-radius: 4px;
+  background: $menu-surface-solid;
 }
 
 .intent-label {
@@ -696,9 +739,9 @@
 }
 
 .intent-name {
-  font-size: $menu-size-title;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  @include menu-display;
+  font-size: 2rem;
+  line-height: 1.15;
 }
 
 .intent-detail {
@@ -707,7 +750,7 @@
 }
 
 .intent.kind-charge {
-  border-color: #ff4d6d;
+  border-top-color: #ff4d6d;
   background: color-mix(in srgb, #ff4d6d 12%, $menu-surface);
 }
 
@@ -716,7 +759,7 @@
 }
 
 .intent.kind-guard {
-  border-color: #5fd4ff;
+  border-top-color: #5fd4ff;
 }
 
 .intent.kind-guard .intent-name {

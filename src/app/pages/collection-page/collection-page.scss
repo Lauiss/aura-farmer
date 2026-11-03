@@ -20,34 +20,15 @@
 }
 
 .heading {
-  font-size: $menu-size-title;
-  font-weight: $menu-weight-strong;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  @include menu-title;
 }
 
 .gems {
-  font-size: $menu-size-title;
-  font-weight: $menu-weight-strong;
-  font-variant-numeric: tabular-nums;
+  @include menu-bar-value;
 }
 
 .back {
-  padding: $spacing-100 $spacing-150;
-  font-size: $menu-size-small;
-  font-weight: $menu-weight;
-  color: $menu-text-dim;
-  background: $menu-surface-raised;
-  border: 1px solid $menu-border;
-  border-radius: $radius-100;
-  cursor: pointer;
-}
-
-.back:hover,
-.back:focus-visible {
-  color: $menu-accent;
-  border-color: $menu-accent-border;
-  outline: none;
+  @include menu-back;
 }
 
 .content {
@@ -101,8 +82,11 @@ details[open] > summary::after {
 }
 
 .section-title {
-  font-size: $menu-size-title;
-  font-weight: $menu-weight-strong;
+  // Même titre de rayon que chez le marchand : ce sont deux vitrines du même
+  // inventaire.
+  @include menu-display;
+  font-size: $menu-size-lead;
+  text-transform: uppercase;
 }
 
 .section-lead,

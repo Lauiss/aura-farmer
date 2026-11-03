@@ -3,7 +3,7 @@
     <button type="button" class="back" (click)="back()">&larr; {{ 'BACK' | translate }}</button>
     <h1 class="heading">{{ 'COLLECTION' | translate }}</h1>
     <p class="gems" [attr.aria-label]="'GEMS' | translate">
-      {{ collection.gems() }} <span aria-hidden="true">💎</span>
+      {{ collection.gems() }} <app-gem-icon></app-gem-icon>
     </p>
   </header>
 
@@ -64,7 +64,7 @@
               @if (collection.isWatchOwned(watch.id)) {
                 &times;{{ watch.bonus }}
               } @else {
-                {{ watch.price }} 💎
+                {{ watch.price }} <app-gem-icon></app-gem-icon>
               }
             </span>
           </div>

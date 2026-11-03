@@ -1,4 +1,5 @@
 @use '../../../variables' as *;
+@use '../../../menu-theme' as *;
 
 :host {
   display: inline-block;
@@ -11,21 +12,24 @@
   width: $spacing-800;
   height: $spacing-800;
   padding: $spacing-100;
-  background-color: $bg-color;
-  border: 3px solid $text-color;
-  border-radius: $radius-200;
+  // Aplat de surface et filet clair : le cadre dit « bouton » au repos sans la
+  // tuile crème d'avant, seul élément clair d'un écran sombre, qui attirait
+  // l'œil loin de la statue.
+  background-color: $menu-surface-solid;
+  border: 2px solid $menu-border-strong;
+  border-radius: $radius-150;
   cursor: pointer;
   transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.15s ease;
 }
 
 .icon-btn:hover:not(:disabled),
 .icon-btn:focus-visible {
-  background-color: $btn-hover-bg-color;
+  border-color: $menu-accent;
   transform: scale(1.06);
 }
 
 .icon-btn:focus-visible {
-  outline: 3px solid $primary;
+  outline: 3px solid $menu-accent;
   outline-offset: 2px;
 }
 
@@ -35,8 +39,8 @@
 
 .icon-btn:disabled {
   cursor: not-allowed;
-  background-color: $btn-disabled-bg;
-  border-color: $btn-disabled-border;
+  background-color: $menu-surface-deep;
+  border-color: $menu-border;
 }
 
 .icon-btn:disabled .icon {
@@ -57,10 +61,11 @@
   left: 50%;
   transform: translateX(-50%);
   padding: $spacing-50 $spacing-100;
-  font-size: 0.8rem;
+  font-size: $menu-size-small;
+  font-weight: $menu-weight-strong;
   white-space: nowrap;
-  color: $bg-color;
-  background-color: $text-color;
+  color: $menu-accent-ink;
+  background-color: $menu-text;
   border-radius: $radius-100;
   opacity: 0;
   pointer-events: none;

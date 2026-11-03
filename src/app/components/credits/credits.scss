@@ -8,11 +8,7 @@
   min-width: min(20rem, 80vw);
 
   h2 {
-    font-size: $menu-size-title;
-    font-weight: $menu-weight-strong;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: $menu-text;
+    @include menu-title;
   }
 }
 

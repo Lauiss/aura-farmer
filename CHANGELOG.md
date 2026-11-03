@@ -14,6 +14,44 @@ reste.
 
 ---
 
+## Non publié
+
+### Modifié
+
+- **Une vraie typo** : Archivo, embarquée dans le jeu. Titres, compteurs et noms
+  passent en version élargie très grasse, le texte courant reste en chasse
+  normale. Le jeu tournait jusqu'ici sur la police du système.
+- **Écran de combat** : les deux combattants sont deux fois plus grands, rendus
+  en haute définition, et se tiennent chacun sur un socle. L'annonce du coup du
+  boss est mise en avant, et les jauges de vie sont plus épaisses.
+- **Casino** : la table passe sur un tapis vert bordé d'ambre, au centre de
+  l'écran. Roulette agrandie, plus de fondu sur les bords du bandeau, gros
+  bouton de mise en ambre plein.
+- **Marchand** : John Pork est rendu en haute définition et posé derrière un
+  vrai comptoir en bois, son nom en enseigne. Les rayons ont des titres
+  affirmés.
+- **Boutons de l'écran de jeu** : ils passent en sombre, comme le reste de
+  l'interface. Les tuiles crème étaient les seuls éléments clairs de l'écran.
+- **Gemmes** : le losange affiché à côté des montants est désormais celui du
+  jeu, en 3D, et non plus l'emoji 💎, qui changeait d'allure d'un système à
+  l'autre.
+- **En-têtes** : « ← Retour » en texte seul sur tous les écrans, et la même
+  présentation pour les gemmes, l'aura et le débit en haut à droite.
+- **Titres des modales** : tous en capitales, y compris celui des quêtes.
+- Les vignettes de la liste des battles sont plus grandes.
+
+### Dans le code
+
+- `menu-theme.scss` gagne la police (`$menu-font`) et quatre mixins :
+  `menu-display`, `menu-title`, `menu-back`, `menu-bar-value`. Les six titres
+  d'écran et les cinq titres de modale, qui étaient écrits à la main avec trois
+  interlettrages différents, passent par eux.
+- Nouveau composant `app-gem-icon`.
+- `ModelIcons.boss()` et `ModelIcons.moyai()` prennent une taille de rendu.
+- Dépendance ajoutée : `@fontsource-variable/archivo` (licence OFL).
+
+---
+
 ## 0.2.0 — 2026-09-28
 
 ### Ajouté

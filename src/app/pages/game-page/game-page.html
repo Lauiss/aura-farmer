@@ -83,7 +83,7 @@
       <!-- Même présentation que dans la collection et la boutique : la valeur
            puis le losange, partout pareil. -->
       <p class="counter gems" [attr.aria-label]="'GEMS' | translate">
-        <span class="value">{{ collection.gems() }}</span> <span aria-hidden="true">💎</span>
+        <span class="value">{{ collection.gems() }}</span> <app-gem-icon></app-gem-icon>
       </p>
     }
 

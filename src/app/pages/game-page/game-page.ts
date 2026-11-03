@@ -31,6 +31,7 @@ import { ConsumableManager } from '../../services/consumable-manager';
 import { ConsumableId } from '../../../assets/static/consumables';
 import { COMPANION_PHONE_PAYOUT, CompanionId, companionDefinition } from '../../../assets/static/companions';
 import { Router } from '@angular/router';
+import { GemIcon } from '../../components/gem-icon/gem-icon';
 
 @Component({
   standalone: true,
@@ -38,7 +39,7 @@ import { Router } from '@angular/router';
   templateUrl: './game-page.html',
   styleUrls: ['./game-page.scss'],
   changeDetection: ChangeDetectionStrategy.Eager,
-  imports: [MoyaiViewer, IconBtn, ComboMeter, DoomPhone, TranslatePipe, forwardRef(() => FormatAuraPipe)]
+  imports: [GemIcon, MoyaiViewer, IconBtn, ComboMeter, DoomPhone, TranslatePipe, forwardRef(() => FormatAuraPipe)]
 })
 export class GamePage {
 

@@ -55,8 +55,10 @@
   flex-direction: column;
   align-items: center;
   gap: $spacing-50;
-  // Les compteurs se détachent du décor sans le masquer.
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75);
+  // Les compteurs se détachent du décor sans le masquer. Ombre nette, décalée
+  // et sans flou : une ombre floue faisait un halo sombre, l'inverse des aplats
+  // du reste du jeu.
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.6);
 }
 
 .counter {
@@ -76,13 +78,15 @@
 }
 
 .counter.total {
-  font-size: 2.4rem;
-  font-weight: $menu-weight-strong;
+  @include menu-display;
+  font-size: 3rem;
   line-height: 1.1;
 }
 
 .counter.total .unit {
   font-size: $menu-size-body;
+  font-stretch: 100%;
+  font-weight: $menu-weight-strong;
 }
 
 .counter.rate {

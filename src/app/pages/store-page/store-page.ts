@@ -22,6 +22,7 @@ import {
   WatchDefinition
 } from '../../../assets/static/collectibles';
 import { ConsumableDefinition } from '../../../assets/static/consumables';
+import { GemIcon } from '../../components/gem-icon/gem-icon';
 
 /**
  * Boutique de **John Pork** : lui derrière son comptoir à gauche, la
@@ -42,7 +43,7 @@ import { ConsumableDefinition } from '../../../assets/static/consumables';
 @Component({
   selector: 'app-store-page',
   standalone: true,
-  imports: [TranslatePipe, NgTemplateOutlet],
+  imports: [GemIcon, TranslatePipe, NgTemplateOutlet],
   templateUrl: './store-page.html',
   styleUrl: './store-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -26,6 +26,7 @@ import { Sound, SoundManager } from '../../services/sound-manager';
 import { GameLoop } from '../../services/game-loop';
 import { StoreManager } from '../../services/store-manager';
 import { SettingsManager } from '../../services/settings-manager';
+import { GemIcon } from '../../components/gem-icon/gem-icon';
 
 type Game = 'roulette' | 'crash';
 /**
@@ -39,7 +40,7 @@ type CrashPhase = 'idle' | 'running' | 'reveal' | 'cashed' | 'busted';
 const STRIP_LAPS = 6;
 const LANDING_LAP = 4;
 /** Largeur d'une case du bandeau, en rem — à garder en phase avec le SCSS. */
-const POCKET_REM = 3.5;
+const POCKET_REM = 4.5;
 const SPIN_MS = 4200;
 
 /** Cadre du graphique du crash, en unités SVG. */
@@ -76,7 +77,7 @@ const CELEBRATION_MS = 1800;
 @Component({
   selector: 'app-casino-page',
   standalone: true,
-  imports: [TranslatePipe, NgTemplateOutlet],
+  imports: [GemIcon, TranslatePipe, NgTemplateOutlet],
   templateUrl: './casino-page.html',
   styleUrl: './casino-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

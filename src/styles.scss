@@ -1,3 +1,5 @@
+@use 'menu-theme' as *;
+
 *, *::before, *::after {  box-sizing: border-box;}
 
 * {
@@ -31,8 +33,7 @@ body {
     line-height: 1.5;
     background-color: #121211;
     overscroll-behavior: none;
-    // Pile système en attendant que la typo du jeu soit choisie.
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-family: $menu-font;
 }
 
 // Les contrôles de formulaire n'héritent pas de la police par défaut.
