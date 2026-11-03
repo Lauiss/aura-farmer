@@ -15,6 +15,7 @@ import {
   RelicDefinition,
   WatchDefinition
 } from '../../../assets/static/collectibles';
+import { GemIcon } from '../../components/gem-icon/gem-icon';
 
 /**
  * Collection : ce que l'on possède, et rien d'autre. Les statuettes, dont on
@@ -28,7 +29,7 @@ import {
 @Component({
   selector: 'app-collection-page',
   standalone: true,
-  imports: [TranslatePipe],
+  imports: [GemIcon, TranslatePipe],
   templateUrl: './collection-page.html',
   styleUrl: './collection-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

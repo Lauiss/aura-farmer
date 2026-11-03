@@ -64,9 +64,9 @@ export class ModelIcons {
   }
 
   /** Tête de moyai, pour les articles de la boutique. */
-  moyai(): string {
-    return this.render('moyai', () =>
-      renderToDataUrl(createMoyai(), { size: 192, distance: 5.4, rotation: [0.06, 0.5, 0] })
+  moyai(size = 192): string {
+    return this.render(size === 192 ? 'moyai' : `moyai-${size}`, () =>
+      renderToDataUrl(createMoyai(), { size, distance: 5.4, rotation: [0.06, 0.5, 0] })
     );
   }
 
@@ -230,13 +230,17 @@ export class ModelIcons {
   }
 
   /** Brainrot d'un boss de battle. */
-  boss(id: BossId, phase = 1): string {
-    return this.render(`boss-${id}-${phase}`, () =>
+  /**
+   * `size` ne sert qu'aux grands portraits : l'écran de combat les affiche à
+   * près de cinq cents pixels, et une vignette de 192 y devenait floue.
+   */
+  boss(id: BossId, phase = 1, size = 192): string {
+    return this.render(size === 192 ? `boss-${id}-${phase}` : `boss-${id}-${phase}-${size}`, () =>
       // À 7,6 la créature n'occupait que 58 % de sa vignette : gabarit commun
       // de 2,8 dans un cadre de 4,8. Elle flottait au milieu du vide, ce qui
       // la faisait paraître falote dans l'écran de combat comme dans la liste.
       renderToDataUrl(createBrainrot(bossDefinition(id), phase), {
-        size: 192,
+        size,
         distance: 5.9,
         rotation: [0.05, 0.45, 0]
       })

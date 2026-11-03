@@ -8,6 +8,11 @@ $black: #1b1b19;
 $green: #3d8a55;
 $win: #7ed28f;
 $lose: #e8836b;
+// Le tapis : un vert de table de jeu, en aplat, bordé d'ambre. C'est ce qui
+// fait lire « casino » d'un coup d'œil ; un panneau gris de plus ne disait
+// rien de l'endroit où l'on était.
+$felt: #1f3a2c;
+$felt-deep: #172b21;
 
 .casino-page {
   display: grid;
@@ -28,34 +33,15 @@ $lose: #e8836b;
 }
 
 .heading {
-  font-size: $menu-size-title;
-  font-weight: $menu-weight-strong;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  @include menu-title;
 }
 
 .gems {
-  font-size: $menu-size-title;
-  font-weight: $menu-weight-strong;
-  font-variant-numeric: tabular-nums;
+  @include menu-bar-value;
 }
 
 .back {
-  padding: $spacing-100 $spacing-150;
-  font-size: $menu-size-small;
-  font-weight: $menu-weight;
-  color: $menu-text-dim;
-  background: $menu-surface-raised;
-  border: 1px solid $menu-border;
-  border-radius: $radius-100;
-  cursor: pointer;
-}
-
-.back:hover,
-.back:focus-visible {
-  color: $menu-accent;
-  border-color: $menu-accent-border;
-  outline: none;
+  @include menu-back;
 }
 
 .content {
@@ -64,12 +50,16 @@ $lose: #e8836b;
   display: flex;
   flex-direction: column;
   align-items: center;
+  // Centré dans la hauteur : collé en haut, le jeu laissait toute la moitié
+  // basse de l'écran vide. `safe` le ramène en haut dès qu'il déborde, sans
+  // quoi le haut du panneau deviendrait inatteignable.
+  justify-content: safe center;
   gap: $spacing-300;
 }
 
 .content > * {
   width: 100%;
-  max-width: 40rem;
+  max-width: 52rem;
 }
 
 /* --- Onglets --- */
@@ -81,12 +71,12 @@ $lose: #e8836b;
 
 .tab {
   padding: $spacing-100 $spacing-200;
-  font-size: $menu-size-body;
+  font-size: $menu-size-lead;
   font-weight: $menu-weight-strong;
   color: $menu-text-faint;
   background: none;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-bottom: 3px solid transparent;
   margin-bottom: -1px;
   cursor: pointer;
 
@@ -178,34 +168,39 @@ $lose: #e8836b;
   display: flex;
   flex-direction: column;
   gap: $spacing-200;
-  padding: $spacing-300;
-  background: $menu-surface;
-  border: 1px solid $menu-border;
-  border-radius: $radius-150;
+  padding: $spacing-500 $spacing-400 $spacing-400;
+  background: $felt;
+  border: 4px solid $menu-accent-border;
+  border-radius: $radius-100;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-// Gain : le panneau s'allume d'un coup, comme une machine qui paie.
+// Gain : le panneau s'allume d'un coup, comme une machine qui paie. Un second
+// filet net plutôt qu'un rayonnement : le jeu n'a pas de halo.
 .panel.celebrating {
   border-color: $menu-accent;
-  box-shadow: 0 0 0 2px color-mix(in srgb, #{$menu-accent} 35%, transparent),
-              0 0 40px color-mix(in srgb, #{$menu-accent} 25%, transparent);
+  box-shadow: 0 0 0 4px $menu-bg, 0 0 0 7px $menu-accent;
 }
 
 /* --- Ampoules du fronton --- */
 .bulbs {
   position: absolute;
-  inset: -0.35rem;
+  top: $spacing-150;
+  left: $spacing-400;
+  right: $spacing-400;
   display: flex;
   justify-content: space-between;
   pointer-events: none;
 }
 
+// Les ampoules sont posées sur le tapis, au fronton : au bord du cadre, à
+// cheval sur la bordure, elles se lisaient comme des points égarés.
 .bulb {
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 0.75rem;
+  height: 0.75rem;
   border-radius: 50%;
-  background: $menu-border-strong;
+  background: $felt-deep;
+  border: 2px solid $menu-accent-border;
 }
 
 // Elles ne défilent **que** pendant la fête : allumées en permanence, elles
@@ -216,8 +211,8 @@ $lose: #e8836b;
 }
 
 @keyframes bulb-chase {
-  0%, 60% { background: $menu-border-strong; box-shadow: none; }
-  20% { background: $menu-accent; box-shadow: 0 0 10px $menu-accent; }
+  0%, 60% { background: $felt-deep; }
+  20% { background: $menu-accent; }
 }
 
 /* --- Le montant, en grand par-dessus le jeu --- */
@@ -228,11 +223,11 @@ $lose: #e8836b;
   right: 0;
   z-index: 2;
   text-align: center;
-  font-size: $menu-size-title * 1.6;
-  font-weight: $menu-weight-strong;
+  @include menu-display;
+  font-size: $menu-size-title * 2;
   font-variant-numeric: tabular-nums;
   color: $win;
-  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.85);
+  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.7);
   pointer-events: none;
   animation: payout-pop 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
@@ -272,21 +267,28 @@ $lose: #e8836b;
 }
 
 .play {
-  padding: $spacing-150;
-  font-size: $menu-size-subtitle;
-  font-weight: $menu-weight-strong;
-  letter-spacing: 0.08em;
+  @include menu-display;
+  padding: $spacing-200;
+  font-size: $menu-size-title;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: $menu-accent;
-  background: $menu-accent-soft;
-  border: 1px solid $menu-accent-border;
+  color: $menu-accent-ink;
+  background: $menu-accent;
+  border: none;
+  // Une tranche plus sombre sous le bouton : il a l'air de pouvoir s'enfoncer.
+  box-shadow: 0 4px 0 #9a7426;
   border-radius: $radius-100;
   cursor: pointer;
 
   &:hover:not([disabled]),
   &:focus-visible {
-    background: rgba(232, 184, 75, 0.26);
+    background: #f0c661;
     outline: none;
+  }
+
+  &:active:not([disabled]) {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #9a7426;
   }
 
   &[disabled] {
@@ -295,21 +297,22 @@ $lose: #e8836b;
   }
 
   &.cash {
-    color: $win;
-    background: rgba(126, 210, 143, 0.14);
-    border-color: rgba(126, 210, 143, 0.5);
+    color: $menu-accent-ink;
+    background: $win;
+    box-shadow: 0 4px 0 #4d8f5b;
   }
 }
 
 /* --- Roulette --- */
 .wheel {
   position: relative;
-  height: 4rem;
+  height: 5.5rem;
   overflow: hidden;
   border-radius: $radius-100;
-  background: $menu-bg;
-  // Fondu sur les bords : on devine les cases qui arrivent.
-  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  background: $felt-deep;
+  // Plus de fondu sur les bords : le bandeau est coupé net, et le cadre
+  // sombre suffit à dire que des cases arrivent de part et d'autre.
+  border: 4px solid $felt-deep;
 }
 
 .strip {
@@ -326,11 +329,11 @@ $lose: #e8836b;
 
 // Largeur à garder en phase avec `POCKET_REM` dans le composant.
 .pocket {
-  flex: 0 0 3.5rem;
+  @include menu-display;
+  flex: 0 0 4.5rem;
   display: grid;
   place-items: center;
-  font-size: $menu-size-subtitle;
-  font-weight: $menu-weight-strong;
+  font-size: $menu-size-title;
   font-variant-numeric: tabular-nums;
   color: #fff;
   border-right: 1px solid rgba(0, 0, 0, 0.35);
@@ -359,10 +362,9 @@ $lose: #e8836b;
   top: 0;
   bottom: 0;
   left: 50%;
-  width: 3px;
+  width: 4px;
   transform: translateX(-50%);
   background: $menu-accent;
-  box-shadow: 0 0 10px rgba(232, 184, 75, 0.8);
 }
 
 .colors {
@@ -376,9 +378,9 @@ $lose: #e8836b;
   flex-direction: column;
   align-items: center;
   gap: $spacing-50;
-  padding: $spacing-150 $spacing-100;
+  padding: $spacing-250 $spacing-100;
   color: #fff;
-  border: 2px solid transparent;
+  border: 3px solid transparent;
   border-radius: $radius-100;
   cursor: pointer;
   opacity: 0.6;
@@ -399,8 +401,8 @@ $lose: #e8836b;
 }
 
 .color-name {
-  font-size: $menu-size-body;
-  font-weight: $menu-weight-strong;
+  @include menu-display;
+  font-size: $menu-size-lead;
 }
 
 .color-payout {
@@ -432,7 +434,7 @@ $lose: #e8836b;
   display: grid;
   gap: $spacing-100;
   padding-top: $spacing-150;
-  border-top: 1px solid $menu-border;
+  border-top: 1px solid rgba(237, 230, 214, 0.12);
 }
 
 .history-title {
@@ -474,7 +476,7 @@ $lose: #e8836b;
 .chart {
   position: relative;
   aspect-ratio: 400 / 220;
-  background: $menu-bg;
+  background: $felt-deep;
   border-radius: $radius-100;
   overflow: hidden;
 
@@ -505,7 +507,7 @@ $lose: #e8836b;
   // le joueur a réellement touché quelque chose.
   .mark {
     fill: $win;
-    stroke: $menu-bg;
+    stroke: $felt-deep;
     stroke-width: 2;
   }
 
@@ -547,8 +549,8 @@ $lose: #e8836b;
   left: 0;
   right: 0;
   text-align: center;
-  font-size: $menu-size-title * 1.75;
-  font-weight: $menu-weight-strong;
+  @include menu-display;
+  font-size: $menu-size-title * 2.4;
   font-variant-numeric: tabular-nums;
   color: $menu-text;
   pointer-events: none;
@@ -593,6 +595,11 @@ $lose: #e8836b;
   }
 
   .panel {
-    padding: $spacing-200;
+    padding: $spacing-400 $spacing-200 $spacing-200;
+  }
+
+  .bulbs {
+    left: $spacing-200;
+    right: $spacing-200;
   }
 }

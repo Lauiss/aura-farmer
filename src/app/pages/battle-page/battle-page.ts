@@ -22,6 +22,7 @@ import {
   PLAYER_HP_SECONDS
 } from '../../../assets/static/bosses';
 import { RelicDefinition } from '../../../assets/static/collectibles';
+import { GemIcon } from '../../components/gem-icon/gem-icon';
 
 /** Un coup jouable : un enseignement doublé du rôle qu'il tient au combat. */
 export interface Attack {
@@ -49,6 +50,12 @@ interface Round {
 type Phase = 'select' | 'won' | 'lost';
 
 /**
+ * Définition des portraits de combat. Ils occupent jusqu'à trente rem de
+ * haut : rendus à 192 comme les vignettes de la liste, ils étaient flous.
+ */
+const PORTRAIT_SIZE = 512;
+
+/**
  * Battle d'aura : un duel au dé contre un brainrot.
  *
  * À chaque tour, le joueur choisit un enseignement débloqué ; les deux camps
@@ -59,13 +66,14 @@ type Phase = 'select' | 'won' | 'lost';
 @Component({
   selector: 'app-battle-page',
   standalone: true,
-  imports: [TranslatePipe, FormatAuraPipe],
+  imports: [GemIcon, TranslatePipe, FormatAuraPipe],
   templateUrl: './battle-page.html',
   styleUrl: './battle-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BattlePage {
 
+  readonly portraitSize = PORTRAIT_SIZE;
   readonly battles = inject(BattleManager);
   readonly shopManager = inject(ShopManager);
   private readonly auraManager = inject(AuraManager);
@@ -246,11 +254,11 @@ export class BattlePage {
    */
   readonly playerIcon = computed(() => {
     const worn = this.battles.worn();
-    return worn ? this.modelIcons.boss(worn) : this.modelIcons.moyai();
+    return worn ? this.modelIcons.boss(worn, 1, PORTRAIT_SIZE) : this.modelIcons.moyai(PORTRAIT_SIZE);
   });
 
-  bossIcon(boss: BossDefinition, phase = 1): string {
-    return this.modelIcons.boss(boss.id, phase);
+  bossIcon(boss: BossDefinition, phase = 1, size = 192): string {
+    return this.modelIcons.boss(boss.id, phase, size);
   }
 
   /**

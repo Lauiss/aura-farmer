@@ -14,11 +14,7 @@
   gap: $spacing-200;
 
   h2 {
-    font-size: $menu-size-title;
-    font-weight: $menu-weight-strong;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: $menu-text;
+    @include menu-title;
   }
 
   .progress {

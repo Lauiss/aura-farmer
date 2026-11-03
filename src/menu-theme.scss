@@ -31,6 +31,78 @@ $menu-size-subtitle: 1.05rem; // titre de carte
 $menu-size-body: 1rem;
 $menu-size-small: 0.9rem;
 
+// Typo : Archivo, embarquée (`@fontsource-variable/archivo`, licence OFL) pour
+// tourner sans réseau dans l'iframe d'itch. Une seule famille à axe de chasse :
+// normale pour lire, élargie et très grasse pour ce qui s'affiche — titres,
+// chiffres, noms. Ses terminaisons coupées net répondent aux facettes des
+// modèles, là où une police ronde les adoucissait.
+$menu-font: 'Archivo Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+$menu-display-stretch: 125%;
+$menu-display-weight: 800;
+
+// Ce qui s'affiche plutôt que ce qui se lit : titres d'écran, compteurs, noms.
+@mixin menu-display {
+  font-stretch: $menu-display-stretch;
+  font-weight: $menu-display-weight;
+  letter-spacing: 0.02em;
+}
+
+// Titre d'écran ou de panneau. Il était écrit six fois à la main, avec trois
+// interlettrages différents, et le journal des quêtes l'avait perdu en route.
+// Une police élargie demande moins d'interlettrage qu'une police normale.
+@mixin menu-title {
+  @include menu-display;
+  font-size: $menu-size-title;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $menu-text;
+
+  // Sur un téléphone, la chasse élargie faisait passer « Battle d'aura » sur
+  // deux lignes et poussait l'en-tête à trois rangs.
+  @media (max-width: 40rem) {
+    font-size: $menu-size-lead;
+    font-stretch: 110%;
+    letter-spacing: 0.02em;
+  }
+}
+
+// Retour d'en-tête : du texte seul, sur tous les écrans. Le casino et la
+// collection l'encadraient d'une pastille quand le marchand, la carte et les
+// battles s'en tenaient au texte — deux langages pour un même geste.
+@mixin menu-back {
+  padding: 0.25rem 0;
+  font: inherit;
+  font-weight: $menu-weight-strong;
+  color: $menu-text-dim;
+  background: none;
+  border: none;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    color: $menu-accent;
+  }
+}
+
+// Valeur affichée à droite de l'en-tête (gemmes, aura, débit).
+@mixin menu-bar-value {
+  @include menu-display;
+  font-size: $menu-size-lead;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  @media (max-width: 40rem) {
+    font-size: $menu-size-body;
+    font-stretch: 100%;
+  }
+}
+
+// Aplat de surface relevée, pour les tuiles et boutons posés sur le fond.
+$menu-surface-solid: #2e2e29;
+$menu-surface-deep: #1a1a17;
+
 $menu-accent: #e8b84b;
+$menu-accent-ink: #121211; // texte posé sur l'ambre
 $menu-accent-soft: rgba(232, 184, 75, 0.16);
 $menu-accent-border: rgba(232, 184, 75, 0.45);

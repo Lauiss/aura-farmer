@@ -21,6 +21,7 @@ import { Sound, SoundManager } from '../../services/sound-manager';
 import { SettingsManager } from '../../services/settings-manager';
 import { FormatAuraPipe } from '../../pipes/format-aura';
 import { ChestTier, RARITIES, RARITY_COLORS, Rarity } from '../../../assets/static/collectibles';
+import { GemIcon } from '../gem-icon/gem-icon';
 
 type Phase = 'idle' | 'rolling' | 'opening' | 'reveal';
 
@@ -40,7 +41,7 @@ const OPEN_DURATION = 0.75;
 @Component({
   selector: 'app-chest-opening',
   standalone: true,
-  imports: [TranslatePipe, FormatAuraPipe],
+  imports: [GemIcon, TranslatePipe, FormatAuraPipe],
   templateUrl: './chest-opening.html',
   styleUrl: './chest-opening.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

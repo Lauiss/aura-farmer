@@ -44,12 +44,16 @@
            l'image : les deux animations se composent au lieu de s'écraser. Le
            nœud intérieur est recréé à chaque tour, seul moyen de **rejouer**
            une animation CSS. -->
-      <span class="stance anim-ready" style="--dir: 1">
-        @for (key of [motionKey()]; track key) {
-          <img [src]="playerIcon()" alt=""
-            [class]="'portrait player-portrait ' + motion().player" style="--dir: 1">
-        }
-      </span>
+      <!-- Chaque combattant se tient sur son socle : un aplat qui ne bouge pas,
+           sous l'enveloppe qui, elle, respire et frappe. -->
+      <div class="spot">
+        <span class="stance anim-ready" style="--dir: 1">
+          @for (key of [motionKey()]; track key) {
+            <img [src]="playerIcon()" alt=""
+              [class]="'portrait player-portrait ' + motion().player" style="--dir: 1">
+          }
+        </span>
+      </div>
 
       <section class="middle">
         <!-- L'intention du boss, annoncée AVANT le choix : c'est là-dessus
@@ -120,7 +124,7 @@
           @case ('won') {
             <div class="verdict won" role="status">
               <p class="verdict-title">{{ 'BATTLE_WON' | translate }}</p>
-              <p class="verdict-gems">+{{ winnings() }} 💎</p>
+              <p class="verdict-gems">+{{ winnings() }} <app-gem-icon></app-gem-icon></p>
               @if (wonRelic(); as relic) {
                 <div class="verdict-relic">
                   <img [src]="relicIcon(relic)" alt="" class="verdict-relic-icon">
@@ -148,13 +152,15 @@
         }
       </section>
 
-      <span [class]="'stance ' + bossStance()" style="--dir: -1">
-        @for (key of [motionKey()]; track key) {
-          <img [src]="bossIcon(current, bossPhase())" alt=""
-            [class]="'portrait boss-portrait ' + motion().boss + (bossPhase() === 2 ? ' awakened' : '')"
-            style="--dir: -1">
-        }
-      </span>
+      <div class="spot">
+        <span [class]="'stance ' + bossStance()" style="--dir: -1">
+          @for (key of [motionKey()]; track key) {
+            <img [src]="bossIcon(current, bossPhase(), portraitSize)" alt=""
+              [class]="'portrait boss-portrait ' + motion().boss + (bossPhase() === 2 ? ' awakened' : '')"
+              style="--dir: -1">
+          }
+        </span>
+      </div>
     </main>
 
     @if (phase() === 'select') {
@@ -245,7 +251,7 @@
               <p class="recommended" [class.short]="!isReady(entry)">
                 {{ 'BATTLE_RECOMMENDED' | translate }} {{ entry.recommended | formatAura }} /s
               </p>
-              <p class="reward">{{ battles.reward(entry) }} 💎</p>
+              <p class="reward">{{ battles.reward(entry) }} <app-gem-icon></app-gem-icon></p>
 
               <button type="button" class="action primary" (click)="start(entry)">
                 {{ (battles.isDefeated(entry.id) ? 'BATTLE_REMATCH' : 'BATTLE_FIGHT') | translate }}

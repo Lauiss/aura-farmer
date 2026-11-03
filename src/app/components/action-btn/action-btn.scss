@@ -40,10 +40,10 @@ button.ghost {
 	border: none;
 	border-radius: 0;
 	color: $menu-text-dim;
-	font-size: $menu-size-lead;
-	font-weight: $menu-weight-strong;
-	// Un texte plus gras demande moins d'interlettrage pour rester aéré.
-	letter-spacing: 0.1em;
+	@include menu-display;
+	font-size: $menu-size-title;
+	// Une police élargie demande moins d'interlettrage pour rester aérée.
+	letter-spacing: 0.06em;
 	text-transform: uppercase;
 	transition: color 0.15s ease;
 }

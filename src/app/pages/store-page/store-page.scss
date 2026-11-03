@@ -21,32 +21,15 @@
 
 .back,
 .link {
-  font: inherit;
-  font-weight: $menu-weight;
-  color: $menu-text-dim;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.back:hover,
-.back:focus-visible,
-.link:hover,
-.link:focus-visible {
-  color: $menu-accent;
+  @include menu-back;
 }
 
 .heading {
-  font-size: $menu-size-title;
-  font-weight: $menu-weight-strong;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  @include menu-title;
 }
 
 .gems {
-  font-size: $menu-size-lead;
-  font-weight: $menu-weight-strong;
-  font-variant-numeric: tabular-nums;
+  @include menu-bar-value;
   color: #9fe6ff;
 }
 
@@ -85,7 +68,9 @@
   padding: $spacing-300 $spacing-200 0;
   overflow: hidden;
   border-right: 1px solid $menu-border;
-  background: linear-gradient(180deg, color-mix(in srgb, #{$menu-accent} 9%, $menu-bg), $menu-bg 70%);
+  // Le mur de la boutique : un aplat, comme les plans des décors. Le dégradé
+  // ambré d'avant était le seul de l'écran.
+  background: $menu-surface-deep;
 }
 
 .bubble {
@@ -116,36 +101,49 @@
 }
 
 .vendor {
-  align-self: center;
+  // Calé au bas de sa rangée, contre le comptoir : centré dans la hauteur,
+  // il flottait au-dessus du meuble qu'il est censé tenir.
+  align-self: end;
   justify-self: center;
   width: min(22rem, 100%);
   object-fit: contain;
   // Il est posé derrière le comptoir, qui le recouvre jusqu'à la poitrine.
-  margin-bottom: -3.4rem;
-  filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.6));
+  margin-bottom: -4.5rem;
 }
 
+// Le comptoir en trois aplats de bois : le plateau qui déborde, la façade, et
+// son ombre portée nette sur le sol. Un rectangle teinté uni se lisait comme
+// une bande de couleur et non comme un meuble.
 .counter {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  height: 7rem;
-  background: color-mix(in srgb, #{$menu-accent} 14%, $menu-surface);
-  border-top: 2px solid $menu-border-strong;
+  height: 9rem;
+  background: #6b4a2b;
+  clip-path: polygon(4% 0, 96% 0, 96% 100%, 4% 100%);
 }
 
 .counter-top {
   display: block;
-  height: 0.55rem;
-  background: color-mix(in srgb, #{$menu-accent} 40%, $menu-surface);
+  height: 1.1rem;
+  background: #8a6238;
+  border-bottom: 4px solid #4f361f;
 }
 
+// L'enseigne est clouée sur la façade du comptoir : seule au bas de la
+// colonne, elle se lisait comme une légende de photo.
 .vendor-name {
   position: absolute;
-  bottom: $spacing-200;
-  font-size: $menu-size-small;
-  font-weight: $menu-weight-strong;
-  letter-spacing: 0.1em;
+  z-index: 2;
+  bottom: $spacing-400;
+  padding: $spacing-50 $spacing-200;
+  @include menu-display;
+  font-size: $menu-size-body;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: $menu-text-faint;
+  color: $menu-accent-ink;
+  background: $menu-accent;
+  border-radius: 4px;
 }
 
 /* --- Rayons ------------------------------------------------------------- */
@@ -155,8 +153,9 @@
 }
 
 .shelf-title {
+  @include menu-display;
   font-size: $menu-size-lead;
-  font-weight: $menu-weight-strong;
+  text-transform: uppercase;
 }
 
 .shelf-lead,

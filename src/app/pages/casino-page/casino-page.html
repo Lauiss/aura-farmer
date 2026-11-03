@@ -3,7 +3,7 @@
     <button type="button" class="back" (click)="back()">&larr; {{ 'BACK' | translate }}</button>
     <h1 class="heading">{{ 'CASINO' | translate }}</h1>
     <p class="gems" [attr.aria-label]="'GEMS' | translate">
-      {{ collection.gems() }} <span aria-hidden="true">💎</span>
+      {{ collection.gems() }} <app-gem-icon></app-gem-icon>
     </p>
   </header>
 
@@ -25,7 +25,7 @@
         <span>{{ 'CASINO_BET' | translate }}</span>
         <input type="number" min="1" step="1" inputmode="numeric"
           [max]="collection.gems()" [value]="bet()" [disabled]="busy()" (input)="onBetInput($event)">
-        <span aria-hidden="true">💎</span>
+        <app-gem-icon></app-gem-icon>
       </label>
       <div class="bet-quick">
         <button type="button" class="chip" [disabled]="busy()" (click)="adjustBet('half')">½</button>
@@ -171,7 +171,7 @@
         }
       </span>
       @if (celebration(); as amount) {
-        <p class="payout" role="status">+{{ amount }} 💎</p>
+        <p class="payout" role="status">+{{ amount }} <app-gem-icon></app-gem-icon></p>
       }
     </ng-template>
 

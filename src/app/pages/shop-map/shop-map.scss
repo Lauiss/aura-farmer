@@ -86,9 +86,7 @@
 }
 
 .aura {
-  font-size: $menu-size-title;
-  font-weight: $menu-weight-strong;
-  font-variant-numeric: tabular-nums;
+  @include menu-bar-value;
 
   span {
     font-size: $menu-size-small;
@@ -119,10 +117,7 @@
 .heading {
   grid-column: 2;
   margin: 0;
-  font-size: $menu-size-title;
-  font-weight: $menu-weight-strong;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  @include menu-title;
 }
 
 /* --- Surface navigable --- */

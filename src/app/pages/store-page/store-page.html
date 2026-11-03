@@ -3,7 +3,7 @@
     <button type="button" class="back" (click)="back()">&larr; {{ 'BACK' | translate }}</button>
     <h1 class="heading">{{ 'STORE' | translate }}</h1>
     <p class="gems" [attr.aria-label]="'GEMS' | translate">
-      {{ collection.gems() }} <span aria-hidden="true">💎</span>
+      {{ collection.gems() }} <app-gem-icon></app-gem-icon>
     </p>
   </header>
 
@@ -111,7 +111,7 @@
             [disabled]="collection.gems() < item.price && !consumables.isActive(item.id)"
             (click)="buyConsumable(item)"
           >
-            {{ item.price }} 💎
+            {{ item.price }} <app-gem-icon></app-gem-icon>
           </button>
         </li>
       </ng-template>
@@ -140,7 +140,7 @@
                 [disabled]="collection.gems() < chest.price!"
                 (click)="buyChest(chest)"
               >
-                {{ chest.price }} 💎
+                {{ chest.price }} <app-gem-icon></app-gem-icon>
               </button>
             </li>
           }
@@ -170,7 +170,7 @@
                   [disabled]="collection.gems() < watch.price"
                   (click)="buyWatch(watch)"
                 >
-                  {{ watch.price }} 💎
+                  {{ watch.price }} <app-gem-icon></app-gem-icon>
                 </button>
               }
             </li>
