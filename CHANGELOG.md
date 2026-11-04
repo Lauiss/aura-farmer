@@ -14,6 +14,26 @@ reste.
 
 ---
 
+## Non publié
+
+### Modifié
+
+- **Le moyai est entièrement remodelé**, dans Blender : des volumes simples
+  et gonflés fondus en une seule pierre, avec une arcade lourde, des yeux en
+  fentes dans son ombre, un nez long qui s'évase, une lèvre en moue et des
+  oreilles rectangulaires. Les matières de statuettes, les accessoires, la
+  tête de mogger, le geste du « chut » et le point faible suivent la nouvelle
+  tête. Chad et le père, qui en dérivent, changent avec lui.
+- Le favicon est rendu depuis le nouveau modèle.
+
+### Dans le code
+
+- `tools/blender/moyai.py` construit la tête et écrit
+  `src/app/three/models/moyai-mesh.ts` ; `tools/blender/favicon.py` rend les
+  favicons. `createMoyai()` ne prend plus `roughness` ni `seed`.
+
+---
+
 ## 0.3.0 — 2026-11-03
 
 ### Modifié

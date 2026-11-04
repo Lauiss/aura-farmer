@@ -100,7 +100,7 @@ function createEarings(random: () => number): THREE.Group {
     });
     geometry.translate(0, 0, -0.025);
     geometry.rotateY(Math.PI / 2);
-    return mesh(chisel(geometry, 0.006, random), gold, [side * 0.7, -0.38, 0.02]);
+    return mesh(chisel(geometry, 0.006, random), gold, [side * 0.82, -0.74, -0.2]);
   };
 
   group.add(ring(-1));
@@ -115,16 +115,16 @@ function createSunglasses(random: () => number): THREE.Group {
   const group = new THREE.Group();
 
   const glass = (side: number) =>
-    mesh(chisel(slab(0.26, 0.15, 0.04, 0.18), 0.005, random), lens, [side * 0.33, 0.48, 0.37]);
+    mesh(chisel(slab(0.26, 0.15, 0.04, 0.18), 0.005, random), lens, [side * 0.34, 0.45, 0.5]);
   group.add(glass(-1));
   group.add(glass(1));
 
   // Pont entre les verres.
-  group.add(mesh(chisel(slab(0.09, 0.04, 0.04, 0.3), 0, random), frame, [0, 0.5, 0.36]));
+  group.add(mesh(chisel(slab(0.09, 0.04, 0.04, 0.3), 0, random), frame, [0, 0.47, 0.58]));
 
   // Branches, qui filent vers les tempes.
   const arm = (side: number) =>
-    mesh(chisel(slab(0.03, 0.04, 0.2, 0.3), 0, random), frame, [side * 0.61, 0.5, 0.2]);
+    mesh(chisel(slab(0.03, 0.04, 0.2, 0.3), 0, random), frame, [side * 0.7, 0.47, 0.3]);
   group.add(arm(-1));
   group.add(arm(1));
 
@@ -140,7 +140,7 @@ function createTatoos(random: () => number): THREE.Group {
     mesh(
       chisel(slab(0.02, 0.11, 0.02, 0.3), 0, random),
       ink,
-      [side * (0.42 + index * 0.09), 0.02 - index * 0.04, 0.33],
+      [side * (0.42 + index * 0.09), 0.02 - index * 0.04, 0.3],
       [0, 0, side * 0.35]
     );
 
