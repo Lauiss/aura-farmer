@@ -30,8 +30,13 @@ import {
  * rejouerait à qui l'avait déjà vue — le travers que `catchUp` existe
  * précisément pour empêcher.
  */
+const RENAMED_SCENES: Record<string, string> = {
+  'victory-piccolo': 'victory-verdolino',
+  'victory-sahur': 'victory-gnocchino'
+};
+
 function renameScene(id: string): string {
-  return id === 'victory-piccolo' ? 'victory-verdolino' : id;
+  return RENAMED_SCENES[id] ?? id;
 }
 
 @Injectable({

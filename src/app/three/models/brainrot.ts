@@ -2,13 +2,14 @@ import * as THREE from 'three';
 import { Ring, chisel, createRandom, loft, mesh } from '../geometry';
 import { createMoyai } from './moyai';
 import type { BossDefinition } from '../../../assets/static/bosses';
+import { GNOCCHINO_MESH } from './brainrots/gnocchino-mesh';
 
 /**
  * Boss des battles d'aura, en low poly.
  *
  * Les brainrots sont des collages précis, pas des formes vagues : un requin
- * bleu **couché à l'horizontale sur trois pattes en baskets**, une bûche de
- * bois à la batte, un singe-arbre à chapeau doré, un cactus-éléphant en
+ * bleu **couché à l'horizontale sur trois pattes en baskets**, un gnocchi
+ * au batticarne, un singe-arbre à chapeau doré, un cactus-éléphant en
  * sandales, un crocodile fondu dans un bombardier bimoteur. Chaque silhouette
  * suit la description du personnage, faute de quoi aucun n'est reconnaissable.
  *
@@ -45,6 +46,25 @@ function rough(
  * de tour pour obtenir un corps qui pointe vers l'avant. Même procédé que le
  * téléphone du doomscrolling.
  */
+/** Pièces d'un modèle Blender (`tools/blender/brainrot_lib.py`), une par couleur. */
+interface BlenderPart {
+  readonly color: number;
+  readonly positions: readonly number[];
+  readonly indices: readonly number[];
+}
+
+function fromBlender(parts: readonly BlenderPart[]): THREE.Group {
+  const group = new THREE.Group();
+  for (const piece of parts) {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute([...piece.positions], 3));
+    geometry.setIndex([...piece.indices]);
+    geometry.computeVertexNormals();
+    group.add(mesh(geometry, material(piece.color)));
+  }
+  return group;
+}
+
 function lying(color: number, rings: Ring[], position: [number, number, number]): THREE.Mesh {
   const geometry = loft(rings);
   geometry.rotateX(Math.PI / 2);
@@ -338,68 +358,16 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
     }
 
     /**
-     * Tung Tung Tung Sahur : une bûche de bois anthropomorphe, debout sur deux
-     * jambes, qui tient une batte. Le fût seul ne racontait rien.
+     * Gnocchino Martellone : un gnocchi debout sur deux jambes courtes, qui
+     * brandit un batticarne. Il remplace Tung Tung Tung Sahur, retiré pour une
+     * question de propriété intellectuelle. Modélisé dans Blender
+     * (`tools/blender/brainrots/gnocchino.py`) : le coussin incurvé en C, les
+     * rainures de la fourchette sur le bas, la tête cloutée du maillet.
      */
-    case 'club': {
-      group.add(
-        rough(color, [
-          { y: -0.55, halfWidth: 0.48, front: 0.48, back: -0.48, chamfer: 0.22 },
-          { y: 0.5, halfWidth: 0.56, front: 0.56, back: -0.56, chamfer: 0.2 },
-          { y: 1.45, halfWidth: 0.52, front: 0.52, back: -0.52, chamfer: 0.22 }
-        ], 22, 0.05)
-      );
-      // Écorce plus sombre en haut et en bas : la bûche a été sciée.
-      for (const y of [-0.55, 1.45]) {
-        group.add(
-          part(accent, [
-            { y: y - 0.06, halfWidth: 0.5, front: 0.5, back: -0.5, chamfer: 0.22 },
-            { y: y + 0.06, halfWidth: 0.53, front: 0.53, back: -0.53, chamfer: 0.22 }
-          ])
-        );
-      }
-
-      // Deux jambes courtes et deux pieds.
-      for (const side of [-1, 1]) {
-        group.add(
-          part(accent, [
-            { y: -1.25, halfWidth: 0.13, front: 0.13, back: -0.13, chamfer: 0.3 },
-            { y: -0.5, halfWidth: 0.16, front: 0.16, back: -0.16, chamfer: 0.3 }
-          ], [side * 0.26, 0, 0])
-        );
-        group.add(
-          part(accent, [
-            { y: -1.45, halfWidth: 0.2, front: 0.34, back: -0.16, chamfer: 0.3 },
-            { y: -1.22, halfWidth: 0.18, front: 0.26, back: -0.16, chamfer: 0.3 }
-          ], [side * 0.26, 0, 0.06])
-        );
-      }
-
-      // Bras gauche tendu, et la batte au bout : c'est elle qu'on reconnaît.
-      group.add(
-        part(accent, [
-          { y: -0.45, halfWidth: 0.1, front: 0.1, back: -0.1, chamfer: 0.3 },
-          { y: 0.35, halfWidth: 0.12, front: 0.12, back: -0.12, chamfer: 0.3 }
-        ], [-0.72, 0.2, 0.1], [0, 0, 0.5])
-      );
-      group.add(
-        part(0xc9a26b, [
-          { y: -0.6, halfWidth: 0.09, front: 0.09, back: -0.09, chamfer: 0.32 },
-          { y: 0.2, halfWidth: 0.13, front: 0.13, back: -0.13, chamfer: 0.32 },
-          { y: 0.95, halfWidth: 0.21, front: 0.21, back: -0.21, chamfer: 0.32 },
-          { y: 1.15, halfWidth: 0.18, front: 0.18, back: -0.18, chamfer: 0.34 }
-        ], [-1.18, 0.55, 0.18], [0, 0, 0.35])
-      );
-
-      // La bûche fronce : c'est un tueur, pas une mascotte.
-      group.add(eyes([0, 0.85, 0.6], 0.27, 1, { brow: -0.34, lid: 0.18, skin: color }));
-      // Bouche large, taillée dans le bois.
-      group.add(
-        part(0x2e2016, [
-          { y: 0.3, halfWidth: 0.3, front: 0.58, back: 0.4, chamfer: 0.3 },
-          { y: 0.42, halfWidth: 0.32, front: 0.59, back: 0.4, chamfer: 0.3 }
-        ])
-      );
+    case 'gnocchi': {
+      group.add(fromBlender(GNOCCHINO_MESH));
+      // Il fronce sous une paupière lourde : un gnocchi, mais mauvais.
+      group.add(eyes([0, 0.64, 0.5], 0.24, 0.9, { brow: -0.32, lid: 0.2, skin: color }));
       break;
     }
 

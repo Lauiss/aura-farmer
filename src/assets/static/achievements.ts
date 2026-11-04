@@ -491,9 +491,9 @@ export function createAchievements(
     },
     {
       id: 101,
-      title: "ACH_TUNG_TUNG_TUNG_TITLE",
-      description: "ACH_TUNG_TUNG_TUNG_DESC",
-      condition: () => isBossDefeated('sahur'),
+      title: "ACH_AL_DENTE_TITLE",
+      description: "ACH_AL_DENTE_DESC",
+      condition: () => isBossDefeated('gnocchino'),
       unlocked: false,
     },
     {
