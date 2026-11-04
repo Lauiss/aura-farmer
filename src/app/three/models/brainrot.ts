@@ -1691,8 +1691,6 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
     case 'ancestor': {
       group.add(
         createMoyai({
-          seed: 1789,
-          roughness: 0.06,
           palette: { stone: color, stoneDark: 0x5f6a5e, cavity: 0x161a18, glow: accent }
         })
       );
@@ -1743,7 +1741,6 @@ function shapeOf(definition: BossDefinition, phase: number): THREE.Group {
     case 'moai': {
       group.add(
         createMoyai({
-          seed: 4242,
           palette: { stone: color, stoneDark: 0x8a8578, cavity: 0x1c1a17 }
         })
       );

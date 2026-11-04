@@ -22,7 +22,7 @@ function brow(side: number): THREE.Mesh {
   ];
   // Incliné vers le centre : c'est cette convergence qui fait le regard dur.
   return mesh(loft(rings), new THREE.MeshStandardMaterial({ color: HOLLOW, flatShading: true }),
-    [side * 0.3, 0.72, 0.52], [0, 0, side * 0.42]);
+    [side * 0.3, 0.64, 0.66], [0, 0, side * 0.42]);
 }
 
 function eyeSlit(side: number): THREE.Mesh {
@@ -31,7 +31,7 @@ function eyeSlit(side: number): THREE.Mesh {
     { y: 0.03, halfWidth: 0.16, front: 0.05, back: -0.05, chamfer: 0.35 }
   ];
   return mesh(loft(rings), new THREE.MeshBasicMaterial({ color: 0x0d0c0a }),
-    [side * 0.3, 0.56, 0.54], [0, 0, side * 0.18]);
+    [side * 0.36, 0.46, 0.36], [0, 0, side * 0.18]);
 }
 
 export function createMogFace(): THREE.Group {
@@ -50,7 +50,7 @@ export function createMogFace(): THREE.Group {
       { y: 0.04, halfWidth: 0.26, front: 0.05, back: -0.05, chamfer: 0.4 }
     ]),
     new THREE.MeshStandardMaterial({ color: HOLLOW, flatShading: true }),
-    [0.06, -0.22, 0.66],
+    [0.06, -0.76, 0.66],
     [0, 0, 0.3]
   );
   group.add(smirk);

@@ -484,11 +484,11 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
    */
   private static readonly SHUSH_PATH = new THREE.CatmullRomCurve3(
     [
-      new THREE.Vector3(0.88, -0.48, -0.08), // sous l'oreille
-      new THREE.Vector3(0.78, -0.58, 0.26), // le long de la mâchoire
-      new THREE.Vector3(0.58, -0.6, 0.62), // coin du menton
-      new THREE.Vector3(0.38, -0.44, 0.86), // remontée vers la bouche
-      new THREE.Vector3(0.26, -0.18, 1.0) // devant les lèvres
+      new THREE.Vector3(0.92, -0.82, -0.12), // sous l'oreille
+      new THREE.Vector3(0.86, -1.1, 0.22), // le long de la mâchoire
+      new THREE.Vector3(0.62, -1.16, 0.58), // coin du menton
+      new THREE.Vector3(0.4, -0.98, 0.84), // remontée vers la bouche
+      new THREE.Vector3(0.26, -0.74, 0.96) // devant les lèvres
     ],
     false,
     'catmullrom',
@@ -496,7 +496,7 @@ export class MoyaiViewer implements AfterViewInit, OnDestroy {
   );
 
   /** Position du « chut », devant les lèvres : la fin du tracé. */
-  private static readonly SHUSH_POSE = new THREE.Vector3(0.26, -0.18, 1.0);
+  private static readonly SHUSH_POSE = new THREE.Vector3(0.26, -0.74, 0.96);
   private static readonly SHUSH_DURATION = 1.45;
 
   /** Le tir part de loin, en haut à droite, et vise le front de la statue. */
