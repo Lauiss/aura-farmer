@@ -9,7 +9,7 @@
 
 export type BossId =
   | 'tralalero'
-  | 'sahur'
+  | 'gnocchino'
   | 'piccione'
   | 'trippi'
   | 'patapim'
@@ -33,7 +33,7 @@ export type BossId =
 /** Allure générale d'un boss, qui commande son modèle low poly. */
 export type BossShape =
   | 'shark'
-  | 'club'
+  | 'gnocchi'
   | 'pigeon'
   | 'shrimp'
   | 'tree'
@@ -112,7 +112,7 @@ export interface BossDefinition {
  */
 export const BOSSES: readonly BossDefinition[] = [
   { id: 'tralalero', shape: 'shark', recommended: 500, hpSeconds: 25, damageSeconds: 4, reward: 15, color: 0x4a7fd4, accent: 0xf0f0f0 },
-  { id: 'sahur', shape: 'club', recommended: 5000, hpSeconds: 31, damageSeconds: 4.5, reward: 20, color: 0xa9793f, accent: 0x5c4326 },
+  { id: 'gnocchino', shape: 'gnocchi', recommended: 5000, hpSeconds: 31, damageSeconds: 4.5, reward: 20, color: 0xe6d29c, accent: 0xb4b9bf },
   { id: 'piccione', shape: 'pigeon', recommended: 40000, hpSeconds: 37, damageSeconds: 5, reward: 28, color: 0x6f7f93, accent: 0x9aa7b8 },
   { id: 'trippi', shape: 'shrimp', recommended: 1.1e+05, hpSeconds: 40, damageSeconds: 5.25, reward: 33, color: 0xe2703a, accent: 0xf4c9b0 },
   { id: 'patapim', shape: 'tree', recommended: 300000, hpSeconds: 43, damageSeconds: 5.5, reward: 38, color: 0x6b8f4e, accent: 0x7a5a38 },

@@ -4,7 +4,7 @@ import type { RelicDefinition } from '../../../assets/static/collectibles';
 
 /**
  * Reliques, en low poly : les trophées des boss — la basket de Tralalero, la
- * batte de Sahur… — posés sur un socle sombre, sous un anneau qui flotte.
+ * batticarne du Gnocchino… — posés sur un socle sombre, sous un anneau qui flotte.
  *
  * L'objet garde un matériau **éclairé** en `flatShading`, avec une légère
  * émission de la teinte `glow` : il se détache du socle sans perdre ses
@@ -114,13 +114,19 @@ function object(relic: RelicDefinition): THREE.Group {
       break;
     }
 
-    // Batte de Sahur, dressée : manche fin, tête large.
-    case 'bat': {
-      group.add(
-        mesh(loft([round(-1.02, 0.1), round(-0.3, 0.12), round(0.6, 0.22), round(1.05, 0.2), round(1.15, 0.12)]), main)
-      );
-      group.add(mesh(loft([round(-1.02, 0.14), round(-0.94, 0.14)]), plain(0x5c4326)));
-      group.rotation.z = 0.25;
+    // Batticarne du Gnocchino, dressé : manche en bois, tête d'acier dont une
+    // face est cloutée — les clous sont ce qui le distingue d'un marteau.
+    case 'mallet': {
+      group.add(mesh(loft([round(-1.05, 0.09), round(0.45, 0.11)]), plain(0x8a5a33)));
+      group.add(mesh(new THREE.BoxGeometry(0.95, 0.48, 0.5), main, [0, 0.7, 0]));
+      for (const dy of [-0.13, 0, 0.13]) {
+        for (const dz of [-0.13, 0, 0.13]) {
+          const stud = mesh(new THREE.ConeGeometry(0.07, 0.14, 4), main, [0.545, 0.7 + dy, dz]);
+          stud.rotation.z = -Math.PI / 2;
+          group.add(stud);
+        }
+      }
+      group.rotation.z = 0.3;
       break;
     }
 

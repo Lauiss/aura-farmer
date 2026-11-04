@@ -14,6 +14,24 @@ reste.
 
 ---
 
+## 0.5.0 — 2026-11-04
+
+### Modifié
+
+- **Tung Tung Tung Sahur laisse sa place à Gnocchino Martellone**, un gnocchi
+  sur deux jambes qui brandit un batticarne. Même rang dans l'échelle, même
+  combat. Qui avait battu Sahur garde sa victoire, et sa batte devient le
+  batticarne du Gnocchino. Le succès « Tung Tung Tung » devient « Al dente ».
+
+### Dans le code
+
+- Premier brainrot modélisé dans Blender : `tools/blender/brainrot_lib.py`
+  et `tools/blender/brainrots/gnocchino.py`, lus par `brainrot.ts`
+  (`fromBlender`). Migrations `sahur` → `gnocchino` et relique `bat` →
+  `mallet`.
+
+---
+
 ## 0.4.0 — 2026-11-04
 
 ### Modifié

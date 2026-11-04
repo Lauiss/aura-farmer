@@ -19,9 +19,11 @@ import {
  * rouvrirait un combat déjà gagné au milieu de l'échelle.
  *
  * `piccolo` est devenu `verdolino` pour s'éloigner de la franchise dont il
- * était le sosie.
+ * était le sosie. `sahur` a laissé sa place à `gnocchino` : Tung Tung Tung
+ * Sahur est sous propriété intellectuelle. Ce n'est pas un renommage mais un
+ * remplacement, traité pareil — qui avait battu le deuxième boss l'a battu.
  */
-const RENAMED: Record<string, BossId> = { piccolo: 'verdolino' };
+const RENAMED: Record<string, BossId> = { piccolo: 'verdolino', sahur: 'gnocchino' };
 
 function renameBoss(id: BossId): BossId {
   return RENAMED[id] ?? id;

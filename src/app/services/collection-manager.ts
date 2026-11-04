@@ -39,6 +39,9 @@ export interface ChestReward {
   watch?: WatchDefinition;
 }
 
+/** Reliques renommées depuis qu'elles existent. */
+const RENAMED_RELICS: Record<string, string> = { bat: 'mallet' };
+
 interface CollectionSave {
   gems: number;
   /** Gemmes amassées depuis le début, dépenses comprises : pour les succès. */
@@ -102,7 +105,11 @@ export class CollectionManager {
       // Les reliques d'avant tombaient des coffres et n'existent plus : chacune
       // est remboursée en gemmes. Celles des boss déjà battus sont rendues
       // par `BattleManager` au chargement.
-      const relics = saved.relics ?? [];
+      // La batte de Sahur est devenue le batticarne du Gnocchino : même boss,
+      // même place. Sans cette correspondance elle serait remboursée comme
+      // une relique disparue, **puis** rendue sous son nouveau nom par
+      // `BattleManager` — payée deux fois.
+      const relics = (saved.relics ?? []).map(id => RENAMED_RELICS[id] ?? id);
       const kept = relics.filter(id => relicDefinition(id));
       const retired = relics.length - kept.length;
       this.relicIds.set(new Set(kept));

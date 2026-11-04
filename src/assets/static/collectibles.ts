@@ -170,7 +170,7 @@ export const RARITY_AURA_SECONDS: Record<Rarity, number> = {
 
 /**
  * Les reliques sont les **trophées des boss** : la basket de Tralalero, la
- * batte de Tung Tung Tung Sahur… Chaque boss rend la sienne à sa première
+ * batticarne du Gnocchino Martellone… Chaque boss rend la sienne à sa première
  * défaite.
  *
  * Elles tombaient auparavant des coffres, à moins d'une chance sur cent : il
@@ -183,7 +183,7 @@ export const RARITY_AURA_SECONDS: Record<Rarity, number> = {
  */
 export type RelicShape =
   | 'sneaker'
-  | 'bat'
+  | 'mallet'
   | 'feather'
   | 'claw'
   | 'hat'
@@ -216,7 +216,7 @@ export interface RelicDefinition {
 
 export const RELICS: readonly RelicDefinition[] = [
   { id: 'sneaker', boss: 'tralalero', bonus: 1.07, color: 0x2f6fd0, glow: 0x1f4f94 },
-  { id: 'bat', boss: 'sahur', bonus: 1.08, color: 0xc9a26b, glow: 0x7a5a38 },
+  { id: 'mallet', boss: 'gnocchino', bonus: 1.08, color: 0xb4b9bf, glow: 0x5a5f66 },
   { id: 'feather', boss: 'piccione', bonus: 1.089, color: 0x9aa7b8, glow: 0x4a5566 },
   { id: 'claw', boss: 'trippi', bonus: 1.099, color: 0xe2703a, glow: 0x8a3a18 },
   { id: 'hat', boss: 'patapim', bonus: 1.109, color: 0xe8b84b, glow: 0x8a6412 },
